@@ -1,0 +1,133 @@
+datasource db {
+    provider = "sqlite"
+    url      = "file:./dev.db"
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+enum RoleType {
+    regular
+    cashier
+    manager
+    superuser
+}
+
+enum TransactionType {
+    purchase
+    redemption
+    adjustment
+    event
+    transfer
+}
+
+enum PromotionType {
+    automatic
+    onetime
+}
+
+model User {
+    id         Int       @id @default(autoincrement())
+    utorid     String    @unique
+    name       String?
+    email      String    @unique
+    password   String?
+    role       RoleType  @default(regular)
+    verified   Boolean   @default(false)
+    suspicious Boolean   @default(false)
+    points     Int       @default(0)
+    birthday   DateTime?
+    avatarUrl  String?
+    createdAt  DateTime  @default(now())
+    lastLogin  DateTime?
+
+    // Relations
+    transactions Transaction[]
+    guestEvents  EventGuest[]
+    organizedEvents EventOrganizer[]
+}
+
+model Transaction {
+    id         Int      @id @default(autoincrement())
+    type       TransactionType
+    amount     Int
+    spent      Float?
+    remark     String?
+    suspicious Boolean? @default(false)
+    createdAt  DateTime @default(now())
+    createdBy  String
+
+    processed    Boolean?   @default(false)
+    processedBy  String?
+
+    relatedId   Int?        // required by MarkUs tests
+
+    // RELATION TO USER
+    userId Int
+    user   User @relation(fields: [userId], references: [id])
+
+    // RELATION TO EVENT  (this fixes your validation error)
+    eventId Int?
+    event   Event? @relation("EventTransactions", fields: [eventId], references: [id])
+
+    // PROMOTIONS RELATION
+    promotions Promotion[] @relation("TransactionPromotions")
+}
+
+
+
+
+model Event {
+    id            Int       @id @default(autoincrement())
+    name          String
+    description   String
+    location      String
+    startTime     DateTime
+    endTime       DateTime
+    capacity      Int?
+    pointsRemain  Int
+    pointsAwarded Int
+    published     Boolean   @default(false)
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+
+    guests        EventGuest[]
+    organizers    EventOrganizer[]
+
+    // RELATION TO TRANSACTIONS
+    transactions  Transaction[] @relation("EventTransactions")
+}
+
+
+model EventGuest {
+    id      Int   @id @default(autoincrement())
+    user    User  @relation(fields: [userId], references: [id])
+    userId  Int
+    event   Event @relation(fields: [eventId], references: [id])
+    eventId Int
+    @@unique([userId, eventId])
+}
+
+model EventOrganizer {
+  id      Int   @id @default(autoincrement())
+  user    User  @relation(fields: [userId], references: [id])
+  userId  Int
+  event   Event @relation(fields: [eventId], references: [id])
+  eventId Int
+  @@unique([userId, eventId])
+}
+
+model Promotion {
+    id          Int           @id @default(autoincrement())
+    name        String
+    description String?
+    type        PromotionType
+    startTime   DateTime
+    endTime     DateTime
+    minSpending Float?
+    rate        Float?
+    points      Int?
+
+    transactions Transaction[] @relation("TransactionPromotions")
+}
