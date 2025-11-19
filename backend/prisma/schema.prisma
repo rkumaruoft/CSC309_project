@@ -61,7 +61,7 @@ model Transaction {
     processed    Boolean?   @default(false)
     processedBy  String?
 
-    relatedId   Int?        // required by MarkUs tests
+    relatedId   Int? 
 
     // RELATION TO USER
     userId Int
