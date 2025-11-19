@@ -14,7 +14,7 @@ const resetRateLimit = new Map();
 const resetTokens = new Map();
 
 // ---------------- /auth/tokens (POST) ----------------
-router.post("/auth/tokens", async (req, res) => {
+router.post("/tokens", async (req, res) => {
     try {
         const { utorid, password } = req.body;
 
@@ -65,7 +65,7 @@ router.post("/auth/tokens", async (req, res) => {
 });
 
 // ---------------- /auth/resets (POST) ----------------
-router.post("/auth/resets", async (req, res) => {
+router.post("/resets", async (req, res) => {
     try {
         // ------------------ PAYLOAD VALIDATION ------------------
         const allowed = ["utorid"];
@@ -116,7 +116,7 @@ router.post("/auth/resets", async (req, res) => {
 
 
 // ---------------- /auth/resets/:resetToken (POST) ----------------
-router.post("/auth/resets/:resetToken", async (req, res) => {
+router.post("/resets/:resetToken", async (req, res) => {
     try {
         const { resetToken } = req.params;
 

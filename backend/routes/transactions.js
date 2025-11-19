@@ -18,7 +18,7 @@ function isValidUtorid(id) {
 // ---------------- /transactions (POST) ----------------
 // Clearance: Cashier+
 router.post(
-    "/transactions",
+    "/",
     authenticate,
     requireClearance(["cashier", "manager", "superuser"]),
     async (req, res) => {
@@ -237,7 +237,7 @@ router.post(
 //---------------- /transactions (GET) ----------------
 // Clearance: Manager+
 router.get(
-    "/transactions",
+    "/",
     authenticate,
     requireClearance(["manager", "superuser"]),
     async (req, res) => {
@@ -371,7 +371,7 @@ router.get(
 // ---------------- /transactions/:transactionId (GET) ----------------
 // Clearance: Manager+
 router.get(
-    "/transactions/:transactionId",
+    "/:transactionId",
     authenticate,
     requireClearance(["manager", "superuser"]),
     async (req, res) => {
@@ -425,7 +425,7 @@ router.get(
 // ---------------- /transactions/:transactionId/suspicious (PATCH) ----------------
 // Clearance: Manager+
 router.patch(
-    "/transactions/:transactionId/suspicious",
+    "/:transactionId/suspicious",
     authenticate,
     requireClearance(["manager", "superuser"]),
     async (req, res) => {
@@ -525,7 +525,7 @@ router.patch(
 // ---------------- /transactions/:transactionId/processed (PATCH) ----------------
 // Clearance: Cashier+
 router.patch(
-    "/transactions/:transactionId/processed",
+    "/:transactionId/processed",
     authenticate,
     requireClearance(["cashier", "manager", "superuser"]),
     async (req, res) => {

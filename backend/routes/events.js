@@ -8,8 +8,6 @@ const authenticate = require("../middleware/authenticate");
 const requireClearance = require("../middleware/requireClearance");
 
 // ---------------- VALIDATORS ----------------
-
-
 function isValidUofTEmail(email) {
     return /^[A-Za-z0-9._%+-]+@mail\.utoronto\.ca$/.test(email);
 }
@@ -17,11 +15,10 @@ function isValidUtorid(id) {
     return /^[A-Za-z0-9]{7,8}$/.test(id);
 }
 
-
 // ---------------- /events (GET) ----------------
 // Clearance: Regular+
 router.get(
-    "/events",
+    "/",
     authenticate,
     requireClearance(["regular", "cashier", "manager", "superuser"]),
     async (req, res) => {
@@ -154,7 +151,7 @@ router.get(
 // ---------------- /events (POST) ----------------
 // Clearance: Manager+
 router.post(
-    "/events",
+    "/",
     authenticate,
     requireClearance(["manager", "superuser"]),
     async (req, res) => {
@@ -265,7 +262,7 @@ router.post(
 // ---------------- /events/:eventId (GET) ----------------
 // Clearance: Regular+
 router.get(
-    "/events/:eventId",
+    "/:eventId",
     authenticate,
     requireClearance(["regular", "cashier", "manager", "superuser"]),
     async (req, res) => {
@@ -359,7 +356,7 @@ router.get(
 // ---------------- /events/:eventId (PATCH) ----------------
 // Clearance: Regular+
 router.patch(
-    "/events/:eventId",
+    "/:eventId",
     authenticate,
     requireClearance(["regular", "cashier", "manager", "superuser"]),
     async (req, res) => {
@@ -575,7 +572,7 @@ router.patch(
 // ---------------- /events/:eventId (DELETE) ----------------
 // Clearance: Manager+
 router.delete(
-    "/events/:eventId",
+    "/:eventId",
     authenticate,
     requireClearance(["manager", "superuser"]),
     async (req, res) => {
@@ -649,7 +646,7 @@ router.delete(
 // ---------------- /events/:eventId/organizers (POST) ----------------
 // Clearance: Manager+
 router.post(
-    "/events/:eventId/organizers",
+    "/:eventId/organizers",
     authenticate,
     requireClearance(["manager", "superuser"]),
     async (req, res) => {
@@ -741,7 +738,7 @@ router.post(
 // ---------------- /events/:eventId/organizers/:userId (DELETE) ----------------
 // Clearance: Manager+
 router.delete(
-    "/events/:eventId/organizers/:userId",
+    "/:eventId/organizers/:userId",
     authenticate,
     requireClearance(["manager", "superuser"]),
     async (req, res) => {
@@ -783,7 +780,7 @@ router.delete(
 // ---------------- /events/:eventId/guests (POST) ----------------
 // Clearance: Manager+ OR organizer for this event
 router.post(
-    "/events/:eventId/guests",
+    "/:eventId/guests",
     authenticate,
     requireClearance(["regular", "cashier", "manager", "superuser"]),
     async (req, res) => {
@@ -901,7 +898,7 @@ router.post(
 // ---------------- /events/:eventId/guests/:userId (DELETE) ----------------
 // Clearance: Manager+
 router.delete(
-    "/events/:eventId/guests/:userId",
+    "/:eventId/guests/:userId",
     authenticate,
     requireClearance(["manager", "superuser"]),
     async (req, res) => {
@@ -939,7 +936,7 @@ router.delete(
 // ---------------- /events/:eventId/guests/me (POST) ----------------
 // Clearance: Regular or higher
 router.post(
-    "/events/:eventId/guests/me",
+    "/:eventId/guests/me",
     authenticate,
     async (req, res) => {
         try {
@@ -1012,7 +1009,7 @@ router.post(
 // ---------------- /events/:eventId/guests/me (DELETE) ----------------
 // Clearance: Regular or higher
 router.delete(
-    "/events/:eventId/guests/me",
+    "/:eventId/guests/me",
     authenticate,
     async (req, res) => {
         try {
@@ -1087,7 +1084,7 @@ router.delete(
 // ---------------- /events/:eventId/transactions (POST) ----------------
 // Clearance: Manager+ OR organizer for this event
 router.post(
-    "/events/:eventId/transactions",
+    "/:eventId/transactions",
     authenticate,
     requireClearance(["regular", "cashier", "manager", "superuser"]),
     async (req, res) => {
@@ -1263,3 +1260,5 @@ router.post(
         }
     }
 );
+
+module.exports = router;

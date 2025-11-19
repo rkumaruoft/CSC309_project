@@ -25,7 +25,7 @@ function isValidUtorid(id) {
 // ---------------- /User (POST) -------------------
 // Clearance: Cashier+
 router.post(
-    "/users",
+    "/",
     authenticate,
     requireClearance(["cashier", "manager", "superuser"]),
     async (req, res) => {
@@ -87,7 +87,7 @@ router.post(
 // ---------------- /users (GET) ----------------
 // Clearance: Manager+
 router.get(
-    "/users",
+    "/",
     authenticate,
     requireClearance(["manager", "superuser"]),
     async (req, res) => {
@@ -191,7 +191,7 @@ router.get(
 
 // --------------- /users/me (GET) ----------------
 router.get(
-    "/users/me",
+    "/me",
     authenticate,
     async (req, res) => {
         try {
@@ -259,7 +259,7 @@ router.get(
 // ---------------- /users/me (PATCH) ----------------
 // Clearance: Regular+
 router.patch(
-    "/users/me",
+    "/me",
     authenticate,
     upload.single("avatar"),
     async (req, res) => {
@@ -398,7 +398,7 @@ router.patch(
 // ---------------- /users/me/password (PATCH) ----------------
 // Clearance: Regular+
 router.patch(
-    "/users/me/password",
+    "/me/password",
     authenticate,
     async (req, res) => {
         try {
@@ -463,7 +463,7 @@ router.patch(
 // ---------------- /users/:userId (GET) ----------------
 // Clearance: Cashier+
 router.get(
-    "/users/:userId",
+    "/:userId",
     authenticate,
     requireClearance(["cashier", "manager", "superuser"]),
     async (req, res) => {
@@ -586,7 +586,7 @@ router.get(
 // ------------- /users/:userId (PATCH) -------------
 // Clearance: Manager+
 router.patch(
-    "/users/:userId",
+    "/:userId",
     authenticate,
     requireClearance(["manager", "superuser"]),
     async (req, res) => {
@@ -733,7 +733,7 @@ router.patch(
 // ---------------- /users/me/transactions (POST) ----------------
 // Clearance: Regular+
 router.post(
-    "/users/me/transactions",
+    "/me/transactions",
     authenticate,
     async (req, res) => {
         try {
@@ -817,7 +817,7 @@ router.post(
 // ---------------- /users/me/transactions (GET) ----------------
 // Clearance: Regular+
 router.get(
-    "/users/me/transactions",
+    "/me/transactions",
     authenticate,
     requireClearance(["regular", "cashier", "manager", "superuser"]),
     async (req, res) => {
@@ -905,7 +905,7 @@ router.get(
 // ---------------- /users/:userId/transactions (POST) ----------------
 // Clearance: Regular+
 router.post(
-    "/users/:userId/transactions",
+    "/:userId/transactions",
     authenticate,
     requireClearance(["regular", "cashier", "manager", "superuser"]),
     async (req, res) => {
