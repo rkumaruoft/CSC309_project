@@ -6,3 +6,4 @@ function requireClearance(allowedRoles) {
         next();
     };
 }
+module.exports = requireClearance;
