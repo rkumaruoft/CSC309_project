@@ -3,6 +3,8 @@ import Layout from "./layout/Layout.jsx";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Home from "./pages/Home";
+import Transfers from "./pages/Transfers";
 
 export default function App() {
   return (
@@ -29,15 +31,26 @@ export default function App() {
           } 
         />
 
-        {/* {DASHBOARD} */}
-        {/* <Route 
-          path="/dashboard" 
+        {/* Authenticated pages */}
+        <Route
+          path="/dashboard"
           element={
             <Layout>
-              <Dashboard />
+              <Home />
             </Layout>
-          } 
-        /> */}
+          }
+        />
+
+        <Route
+          path="/transfers"
+          element={
+            <Layout>
+              <Transfers />
+            </Layout>
+          }
+        />
+
+        {/* Other pages will be added by teammates. */}
 
         {/* DEFAULT ROUTE */}
         <Route path="/" element={<Navigate to="/login" />} />
