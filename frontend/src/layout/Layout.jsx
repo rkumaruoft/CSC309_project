@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 
 import Login_Header from "../headers/Login_Header";
+import Main_Header from "../headers/Main_Header";
 import Footer from "../headers/Footer";
 
 export default function Layout({ children }) {
@@ -11,6 +12,8 @@ export default function Layout({ children }) {
     // Show login/register header only
     if (pathname === "/login" || pathname === "/register") {
         HeaderComponent = Login_Header;
+    } else if (pathname === "/promotions") {
+        HeaderComponent = Main_Header;
     }
 
     return (

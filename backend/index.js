@@ -18,27 +18,32 @@ const port = (() => {
     return num;
 })();
 
-const express = require("express");
-const { PrismaClient } = require("@prisma/client");
-const dotenv = require("dotenv");
+import express from "express";
+import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
+import cors from "cors"
 dotenv.config();
 const app = express();
 app.use(express.json());
 
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const corsOptions = {
+    origin: FRONTEND_URL
+};
+app.use(cors(corsOptions));
+
 // ---------------- Middleware ----------------
-const authenticate = require("./middleware/authenticate");
-const requireClearance = require("./middleware/requireClearance");
 
 // ---------------- Routes ----------------
-const authRoutes = require("./routes/auth");
+import authRoutes from "./routes/auth.js";
 app.use("/auth", authRoutes);
-const userRoutes = require("./routes/users");
+import userRoutes from "./routes/users.js";
 app.use("/users", userRoutes);
-const transactionRoutes = require("./routes/transactions");
+import transactionRoutes from "./routes/transactions.js";
 app.use("/transactions", transactionRoutes);
-const eventRoutes = require("./routes/events");
+import eventRoutes from "./routes/events.js";
 app.use("/events", eventRoutes);
-const promotionRoutes = require("./routes/promotions");
+import promotionRoutes from "./routes/promotions.js";
 app.use("/promotions", promotionRoutes);
 
 // ---------------- FALLBACK ----------------

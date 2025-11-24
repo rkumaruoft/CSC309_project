@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import Transfers from "./pages/Transfers";
+import Promotions from "./pages/Promotions.jsx";
 
 export default function App() {
   return (
@@ -51,6 +52,15 @@ export default function App() {
         />
 
         {/* Other pages will be added by teammates. */}
+
+        <Route
+            path="/promotions"
+            element={
+                <Layout>
+                    <Promotions />
+                </Layout>
+            }
+        />
 
         {/* DEFAULT ROUTE */}
         <Route path="/" element={<Navigate to="/login" />} />
