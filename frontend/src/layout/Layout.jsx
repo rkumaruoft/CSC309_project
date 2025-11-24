@@ -12,7 +12,7 @@ export default function Layout({ children }) {
     if (pathname === "/login" || pathname === "/register") {
         HeaderComponent = Login_Header;
     }
-
+    //TODO:You can add more conditions here for different headers based on the route
     return (
         <div className="d-flex flex-column min-vh-100">
 
