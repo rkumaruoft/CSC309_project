@@ -46,6 +46,11 @@ app.use("/events", eventRoutes);
 import promotionRoutes from "./routes/promotions.js";
 app.use("/promotions", promotionRoutes);
 
+// ---------------- HEALTHCHECK ----------------
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
+});
+
 // ---------------- FALLBACK ----------------
 app.use((req, res) => {
     res.status(404).json({ error: "Not Found" });

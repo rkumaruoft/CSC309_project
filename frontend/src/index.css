@@ -71,6 +71,22 @@ header {
   color: white !important;
 }
 
+.main-header {
+  background: var(--banana-yellow-dark) !important;
+  color: white !important;
+}
+
+.main-header a {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+}
+.main-header .btn-outline-dark {
+  color: inherit;
+  background-color: transparent !important;
+  border-color: rgba(0,0,0,0.12) !important;
+}
+
 /* ========== FOOTER STYLE ========== */
 footer {
   background: var(--banana-brown) !important;

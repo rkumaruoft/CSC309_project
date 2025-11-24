@@ -7,13 +7,11 @@ import Footer from "../headers/Footer";
 export default function Layout({ children }) {
     const { pathname } = useLocation();
 
-    let HeaderComponent = null;
+    // Default to main header;
+    let HeaderComponent = Main_Header;
 
-    // Show login/register header only
     if (pathname === "/login" || pathname === "/register") {
         HeaderComponent = Login_Header;
-    } else if (pathname === "/promotions") {
-        HeaderComponent = Main_Header;
     }
     //TODO:You can add more conditions here for different headers based on the route
     return (
