@@ -13,23 +13,23 @@ export default function App() {
       <Routes>
 
         {/* LOGIN */}
-        <Route 
-          path="/login" 
+        <Route
+          path="/login"
           element={
             <Layout>
               <Login />
             </Layout>
-          } 
+          }
         />
 
         {/* REGISTER */}
-        <Route 
-          path="/register" 
+        <Route
+          path="/register"
           element={
             <Layout>
               <Register />
             </Layout>
-          } 
+          }
         />
 
         {/* Authenticated pages */}
@@ -63,7 +63,6 @@ export default function App() {
         />
 
         {/* DEFAULT ROUTE */}
-        <Route path="/" element={<Navigate to="/login" />} />
 
         {/* 404 */}
         <Route path="*" element={<h2>Page Not Found</h2>} />

@@ -15,7 +15,7 @@ export default function Layout({ children }) {
     } else if (pathname === "/promotions") {
         HeaderComponent = Main_Header;
     }
-
+    //TODO:You can add more conditions here for different headers based on the route
     return (
         <div className="d-flex flex-column min-vh-100">
 
