@@ -1,11 +1,10 @@
-const express = require("express");
+import express from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
+import { randomUUID } from "crypto";
+
 const router = express.Router();
-
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const { PrismaClient } = require("@prisma/client");
-const { randomUUID } = require("crypto");
-
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -179,4 +178,4 @@ router.post("/resets/:resetToken", async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

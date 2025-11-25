@@ -1,16 +1,15 @@
-const express = require("express");
+import express from "express";
+import bcrypt from "bcrypt";
+import multer from "multer";
+import { PrismaClient } from "@prisma/client";
+import authenticate from "../middleware/authenticate.js";
+import requireClearance from "../middleware/requireClearance.js";
+import { randomUUID } from "crypto";
+
 const router = express.Router();
-
-const bcrypt = require("bcrypt");
-const multer = require("multer");
-const upload = multer({ dest: "uploads/avatars/" });
-
-const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-const authenticate = require("../middleware/authenticate");
-const requireClearance = require("../middleware/requireClearance");
-const { randomUUID } = require("crypto");
+const upload = multer({ dest: "uploads/avatars/" });
 
 
 // ---------------- VALIDATORS ----------------
@@ -1022,4 +1021,4 @@ router.post(
     }
 );
 
-module.exports = router;
+export default router;

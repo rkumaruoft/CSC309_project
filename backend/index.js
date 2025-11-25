@@ -26,13 +26,28 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
-const corsOptions = {
-    origin: FRONTEND_URL
-};
-app.use(cors(corsOptions));
 
-// ---------------- Middleware ----------------
+const allowedOrigins = [
+    "http://localhost:5173",
+    process.env.FRONTEND_URL
+];
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: "Content-Type, Authorization",
+    credentials: true
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
 
 // ---------------- Routes ----------------
 import authRoutes from "./routes/auth.js";
