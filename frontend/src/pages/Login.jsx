@@ -1,21 +1,29 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Form, Button, Card } from "react-bootstrap";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
-  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const [email, setEmail] = useState("");
+  const [utorid, setUtorid] = useState("");
   const [password, setPassword] = useState("");
-  const [error] = useState("");
+  const [error, setError] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    navigate("/dashboard"); // TEMP
+
+    const err = await login(utorid, password); // AuthContext handles navigation
+    if (err) {
+      setError(err);
+    }
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vertical-center" style={{ minHeight: "80vh" }}>
+    <div
+      className="d-flex justify-content-center align-items-center vertical-center"
+      style={{ minHeight: "80vh" }}
+    >
       <Card style={{ width: "380px" }} className="p-4 shadow-lg">
         <h2 className="text-center mb-4">Login</h2>
 
@@ -23,13 +31,13 @@ export default function Login() {
 
         <Form onSubmit={handleLogin}>
           <Form.Group className="mb-3">
-            <Form.Label>Email</Form.Label>
+            <Form.Label>UTORid</Form.Label>
             <Form.Control
-              type="email"
-              placeholder="Enter your email"
+              type="text"
+              placeholder="Enter your UTORid"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={utorid}
+              onChange={(e) => setUtorid(e.target.value)}
             />
           </Form.Group>
 

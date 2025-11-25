@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-'use strict';
-
 const port = (() => {
     const args = process.argv;
 
@@ -20,9 +18,7 @@ const port = (() => {
 
 import express from "express";
 import { PrismaClient } from "@prisma/client";
-import dotenv from "dotenv";
 import cors from "cors"
-dotenv.config();
 const app = express();
 app.use(express.json());
 
