@@ -81,7 +81,7 @@ export default function Home() {
 
               <div className="mt-3 d-flex gap-2">
                 <Button className="btn-qr" onClick={() => setShowQr(true)}>My QR code</Button>
-                <Button variant="outline-primary" onClick={() => navigate('/promotions')}>Redeem</Button>
+                <Button variant="outline-primary" onClick={() => navigate('/redemption')}>Redeem</Button>
                 <Button variant="outline-secondary" onClick={() => navigate('/transfers')}>Transfers</Button>
               </div>
 

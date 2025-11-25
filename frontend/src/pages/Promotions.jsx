@@ -3,7 +3,7 @@ import { Button, Col, Container, Row, Table, Form } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 
 // Setting up backend URL (TODO: how are we doing this?)
-const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000"
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 function Promotions() {
     const [promos, setPromos] = useState(null);
@@ -30,7 +30,7 @@ function Promotions() {
     }
 
     function formatRate(rate) {
-        return `${Math.round(rate * 100)} points per dollar.`;
+        return `${Math.round(rate * 100)} point(s) per dollar.`;
     }
 
     function formatPromos(promos) {
@@ -74,8 +74,24 @@ function Promotions() {
 
         // Handle request failure
         if (!res.ok) {
-            setPromos(null);
-            return;
+            // setPromos(null);
+            // return;
+
+            // TODO: test on valid data
+            // If invalid token, use demo for testing
+            const numDemos = 10;
+            const demoPromos = [];
+            for (let i = 0; i < numDemos; i++) {
+                demoPromos.push({
+                    id: i,
+                    name: `Demo Promo ${i}`,
+                    type: "automatic",
+                    endTime: new Date(Date.now() + (1000 * 60 * 60 * 24 * i)),
+                    minSpending: 100 + i,
+                    rate: 0.01 + (i * 0.01)
+                });
+            }
+            setPromos(formatPromos(demoPromos));
         }
 
         // Handle successful request
@@ -95,8 +111,8 @@ function Promotions() {
         {/* Label */}
         <Row className="justify-content-center align-items-center mt-5">
             <Col>
-                <Form.Label id="promotions-label" className="d-block text-center fw-bold fs-2 mb-2">
-                    Promotions
+                <Form.Label id="promotions-label" className="d-block text-center mb-2">
+                    <h1>Promotions</h1>
                 </Form.Label>
             </Col>
         </Row>
@@ -105,14 +121,14 @@ function Promotions() {
         <Row className="justify-content-center">
             <Col xs={12} md={10} lg={8}>
 
-                <Table aria-labelledby="promotions-label" bordered>
+                <Table aria-labelledby="promotions-label" bordered responsive>
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Ends At</th>
-                            <th>Minimum Spending</th>
-                            <th>Rate</th>
+                            <th style={{ backgroundColor: "#FFF9C4" }}>Name</th>
+                            <th style={{ backgroundColor: "#FFF9C4" }}>Type</th>
+                            <th style={{ backgroundColor: "#FFF9C4" }}>Ends At</th>
+                            <th style={{ backgroundColor: "#FFF9C4" }}>Minimum Spending</th>
+                            <th style={{ backgroundColor: "#FFF9C4" }}>Rate</th>
                         </tr>
                     </thead>
 

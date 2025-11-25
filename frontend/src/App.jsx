@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import Transfers from "./pages/Transfers";
 import Promotions from "./pages/Promotions.jsx";
+import Redemption from "./pages/Redemption.jsx";
 
 export default function App() {
   return (
@@ -58,6 +59,15 @@ export default function App() {
             element={
                 <Layout>
                     <Promotions />
+                </Layout>
+            }
+        />
+
+        <Route
+            path="/redemption"
+            element={
+                <Layout>
+                    <Redemption points={1234567} />
                 </Layout>
             }
         />

@@ -11,7 +11,7 @@ export default function Main_Header() {
           <Link to="/promotions">Promotions</Link>
           <Link to="/events">Events</Link>
           <Link to="/transactions">Transactions</Link>
-          <Link to="/redeem">Redeem</Link>
+          <Link to="/redemption">Redeem</Link>
           <Link to="/transfers">Transfers</Link>
         </div>
 
