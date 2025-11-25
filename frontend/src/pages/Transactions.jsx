@@ -6,46 +6,71 @@ export default function Transactions() {
   const [txs, setTxs] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
-  const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   async function fetchPage(p) {
-    if (p < 1 || (totalPages && p > totalPages)) return;
+    setLoading(true);
+    setError(null);
+
+    if (p < 1 || (totalPages && p > totalPages)) {
+      setLoading(false);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+
     try {
-      const res = await fetch(`${VITE_BACKEND_URL}/users/me/transactions?page=${p}&limit=10`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!res.ok) {
-        // demo data
-        const demo = [];
-        for (let i = 0; i < 10; i++) {
-          demo.push({ id: i + (p-1)*10, type: 'transfer', amount: 10*(i+1), relatedId: 'demo' + i, time: new Date().toISOString() });
+      if (token) {
+        // try to fetch authenticated transactions
+        const res = await fetch(`/users/me/transactions?page=${p}&limit=10`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const ct = res.headers.get("content-type") || "";
+        if (res.ok && ct.includes("application/json")) {
+          const data = await res.json();
+          setTxs(data.results || []);
+          setPage(p);
+          setTotalPages(Math.max(1, Math.ceil(data.count / 10)));
+          return;
+        } else {
+          const text = await res.text();
+          console.warn("/users/me/transactions returned non-JSON or non-OK:", res.status, ct, text.slice ? text.slice(0, 400) : text);
         }
-        setTxs(demo);
-        setPage(p);
-        setTotalPages(2);
-        return;
       }
 
-      const data = await res.json();
-      setTxs(data.results || []);
+      // If not authenticated (no token) or fetch failed, use demo transactions
+      const totalDemo = 12;
+      const perPage = 10;
+      const demo = [];
+      const start = (p - 1) * perPage;
+      const end = Math.min(totalDemo, start + perPage);
+      for (let i = start; i < end; i++) {
+        demo.push({ id: `demo-${i+1}`, type: i % 2 === 0 ? 'transfer' : 'redemption', amount: 10*(i+1), relatedId: 'demo_user', time: new Date(Date.now() - i*60000).toISOString() });
+      }
+      setTxs(demo);
       setPage(p);
-      setTotalPages(Math.max(1, Math.ceil((data.count || (data.results||[]).length) / 10)));
-    } catch (e) {
-      setTxs([]);
+      setTotalPages(Math.max(1, Math.ceil(totalDemo / perPage)));
+
+    } catch (err) {
+      setError(err.message || String(err));
+    } finally {
+      setLoading(false);
     }
   }
 
   useEffect(() => {
     fetchPage(1);
   }, []);
-
   return (
     <div className="container mt-4">
       <h1>Transactions</h1>
 
-      {txs === null ? (
-        <div>Loading...</div>
+      {loading ? (
+        <div className="mt-3">Loading...</div>
+      ) : error ? (
+        <div className="alert alert-danger mt-3">Error: {error}</div>
       ) : txs.length === 0 ? (
         <div className="text-muted">No transactions found.</div>
       ) : (
