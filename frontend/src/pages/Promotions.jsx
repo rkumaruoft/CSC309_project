@@ -80,11 +80,12 @@ function Promotions() {
             // TODO: test on valid data
             // If invalid token, use demo for testing
             const numDemos = 10;
+            const numPages = 2;
             const demoPromos = [];
             for (let i = 0; i < numDemos; i++) {
                 demoPromos.push({
                     id: i,
-                    name: `Demo Promo ${i}`,
+                    name: `Page ${page} Demo Promo ${i}`,
                     type: "automatic",
                     endTime: new Date(Date.now() + (1000 * 60 * 60 * 24 * i)),
                     minSpending: 100 + i,
@@ -92,6 +93,9 @@ function Promotions() {
                 });
             }
             setPromos(formatPromos(demoPromos));
+            setPageNum(page);
+            setTotalPages(numPages);
+            return;
         }
 
         // Handle successful request
