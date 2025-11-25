@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import Transfers from "./pages/Transfers";
 import Promotions from "./pages/Promotions.jsx";
+import Transactions from "./pages/Transactions.jsx";
 import Redemption from "./pages/Redemption.jsx";
 
 export default function App() {
@@ -47,6 +48,15 @@ export default function App() {
                 element={
                     <Layout>
                         <Transfers />
+                    </Layout>
+                }
+            />
+
+            <Route
+                path="/transactions"
+                element={
+                    <Layout>
+                        <Transactions />
                     </Layout>
                 }
             />
