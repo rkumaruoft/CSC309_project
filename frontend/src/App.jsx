@@ -7,6 +7,8 @@ import Home from "./pages/Home";
 import Transfers from "./pages/Transfers";
 import Promotions from "./pages/Promotions.jsx";
 import Redemption from "./pages/Redemption.jsx";
+import Events from "./pages/Events.jsx";
+import Event from "./pages/Event.jsx"
 
 export default function App() {
   return (
@@ -48,6 +50,24 @@ export default function App() {
           element={
             <Layout>
               <Transfers />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/events"
+          element={
+            <Layout>
+              <Events />
+            </Layout>
+          }
+        />
+
+         <Route
+          path="/events/:eventId"
+          element={
+            <Layout>
+              <Event />
             </Layout>
           }
         />
