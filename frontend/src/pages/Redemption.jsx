@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Badge, Button, Col, Container, Form, Modal, Row } from "react-bootstrap";
+import { Badge, Button, Card, Col, Container, Form, Modal, Row } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 
 
@@ -37,7 +37,6 @@ function Redemption({ points }) {
         const positiveIntReg = /^[0-9]*$/;
         if (!positiveIntReg.test(redeem)) {
             setTransaction(null);
-            console.log("passed positive int reg");
             inputRef.current.setCustomValidity("Please input a positive integer.");
             return;
         }
@@ -109,29 +108,30 @@ function Redemption({ points }) {
             <Col>
 
                 <Form onSubmit={submitRedemption} aria-labelledby="redemption-label">
-                    <Form.Group>
-                        <Form.Label>
-                            <span className="fs-4">Your Balance:</span> {" "}
-                            <Badge
-                                bg="warning"
-                                text="dark"
-                                className="fs-6 border">
-                                    {points} <span className="fw-normal">points</span>
-                            </Badge>
-                        </Form.Label>
-                        
-                        {/* TODO: add remarks! */}
-                        <Form.Control
-                            ref={inputRef}
-                            className="mb-4"
-                            type="number"
-                            required
-                            value={redeem}
-                            onChange={handleRedeemChange}
-                            placeholder="Enter a positive number of points" />
-                    </Form.Group>
+                    <Card style={{ backgroundColor: "#FFF9C4" }}>
+                        <Form.Group className="m-3">
+                            <Form.Label>
+                                <span className="fs-4">Your Balance:</span> {" "}
+                                <Badge
+                                    bg="warning"
+                                    text="dark"
+                                    className="fs-6 border">
+                                        {points} <span className="fw-normal">points</span>
+                                </Badge>
+                            </Form.Label>
+                            
+                            {/* TODO: add remarks! */}
+                            <Form.Control
+                                ref={inputRef}
+                                type="number"
+                                required
+                                value={redeem}
+                                onChange={handleRedeemChange}
+                                placeholder="Enter a positive number of points" />
+                        </Form.Group>
+                    </Card>
 
-                    <Button variant="warning"
+                    <Button variant="warning" className="mt-4"
                         type="submit">Generate QR Code</Button>
                 </Form>
 
