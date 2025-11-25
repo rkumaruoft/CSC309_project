@@ -1,11 +1,10 @@
-const express = require("express");
+import express from "express";
+import { PrismaClient } from "@prisma/client";
+import authenticate from "../middleware/authenticate.js";
+import requireClearance from "../middleware/requireClearance.js";
+
 const router = express.Router();
-
-const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-
-const authenticate = require("../middleware/authenticate");
-const requireClearance = require("../middleware/requireClearance");
 
 // ---------------- VALIDATORS ----------------
 function isValidUofTEmail(email) {
@@ -600,4 +599,4 @@ router.patch(
     }
 );
 
-module.exports = router;
+export default router;

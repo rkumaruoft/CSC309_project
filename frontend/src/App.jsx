@@ -9,76 +9,74 @@ import Promotions from "./pages/Promotions.jsx";
 import Redemption from "./pages/Redemption.jsx";
 
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
+    return (
+        <Routes>
 
-        {/* LOGIN */}
-        <Route
-          path="/login"
-          element={
-            <Layout>
-              <Login />
-            </Layout>
-          }
-        />
+            {/* LOGIN */}
+            <Route
+                path="/login"
+                element={
+                    <Layout>
+                        <Login />
+                    </Layout>
+                }
+            />
 
-        {/* REGISTER */}
-        <Route
-          path="/register"
-          element={
-            <Layout>
-              <Register />
-            </Layout>
-          }
-        />
+            {/* REGISTER */}
+            <Route
+                path="/register"
+                element={
+                    <Layout>
+                        <Register />
+                    </Layout>
+                }
+            />
 
-        {/* Authenticated pages */}
-        <Route
-          path="/dashboard"
-          element={
-            <Layout>
-              <Home />
-            </Layout>
-          }
-        />
+            {/* Authenticated pages */}
+            <Route
+                path="/dashboard"
+                element={
+                    <Layout>
+                        <Home />
+                    </Layout>
+                }
+            />
 
-        <Route
-          path="/transfers"
-          element={
-            <Layout>
-              <Transfers />
-            </Layout>
-          }
-        />
+            <Route
+                path="/transfers"
+                element={
+                    <Layout>
+                        <Transfers />
+                    </Layout>
+                }
+            />
 
-        {/* Other pages will be added by teammates. */}
+            {/* Other pages will be added by teammates. */}
 
-        <Route
-            path="/promotions"
-            element={
-                <Layout>
-                    <Promotions />
-                </Layout>
-            }
-        />
+            <Route
+                path="/promotions"
+                element={
+                    <Layout>
+                        <Promotions />
+                    </Layout>
+                }
+            />
 
-        <Route
-            path="/redemption"
-            element={
-                <Layout>
-                    <Redemption points={1234567} />
-                </Layout>
-            }
-        />
+            <Route
+                path="/redemption"
+                element={
+                    <Layout>
+                        <Redemption points={1234567} />
+                    </Layout>
+                }
+            />
 
-        {/* DEFAULT ROUTE */}
-        <Route path="/" element={<Navigate to="/login" />} />
+            {/* DEFAULT ROUTE */}
+            <Route path="/" element={<Navigate to="/login" />} />
 
-        {/* 404 */}
-        <Route path="*" element={<h2>Page Not Found</h2>} />
+            {/* 404 */}
+            <Route path="*" element={<h2>Page Not Found</h2>} />
 
-      </Routes>
-    </BrowserRouter>
-  );
+        </Routes>
+    );
 }
