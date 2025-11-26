@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Button } from "react-bootstrap";
+import { Button, Form, Col, Container, Row, Table, Modal} from "react-bootstrap";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -31,21 +31,10 @@ export default function EventsList() {
             new_event.endTime = new Date(event.endTime).toDateString();
             new_event.pointsRemain = event.pointsRemain;
             new_event.avilableSeats = remaining_seats;
-            new_events.push(new_promo);
+            new_events.push(new_event);
         }
         return new_events;
     }
-
-    // async function showPopUp(id){
-    //     const params = { id: id };
-    //     const event = await fetch(`${BACKEND_URL}/events?${new URLSearchParams(params).toString()}`, {
-    //         method: "GET",
-    //         headers: {
-    //             Authorization: `Bearer ${token}`
-    //         }
-    //     }
-    // );
-    // }
 
     async function fetchEvents(page){
         if (page < 1 || page > totalPages) {
@@ -84,6 +73,7 @@ export default function EventsList() {
             setTotalPages(numPages);
             return;
         }
+        
         setEvents(formatEvents(data.results));
         setPageNum(page);
         setTotalPages(Math.max(1, Math.ceil(data.count / 10)));
@@ -104,7 +94,7 @@ export default function EventsList() {
         </Row>
 
         {/* Table */}
-        <Row className="justify-content-center" onClick>
+        <Row className="justify-content-center">
             <Col xs={12} md={10} lg={8}>
 
                 <Table bordered responsive>
@@ -113,25 +103,23 @@ export default function EventsList() {
                             <th style={{ backgroundColor: "#FFF9C4" }}>Name</th>
                             <th style={{ backgroundColor: "#FFF9C4" }}>Location</th>
                             <th style={{ backgroundColor: "#FFF9C4" }}>Ends At</th>
-                            <th style={{ backgroundColor: "#FFF9C4" }}>Points available</th>
                             <th style={{ backgroundColor: "#FFF9C4" }}>Available slots</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        {promos === null ? (
+                        {events === null ? (
                             <tr>
                                 <td colSpan={5} className="text-center">
                                         Page {pageNum} could not be found
                                 </td>
                             </tr>
                         ) : (
-                            promos.map(item => (
-                                <tr key={item.id} onClick={() => handleRowClick(item.id)} style={{cursor: "pointer"}}>
+                            events.map(item => (
+                                <tr key={item.id} onClick={() => handleRowClick(item)} style={{cursor: "pointer"}}>
                                     <td>{item.name}</td>
                                     <td>{item.location}</td>
                                     <td>{item.endTime}</td>
-                                    <td>{item.pointsRemain}</td>
                                     <td>{item.avilableSeats}</td>
                                 </tr>
                             ))
@@ -179,7 +167,6 @@ export default function EventsList() {
             <Modal.Body>
                 <p><strong>Location:</strong> {selectedEvent?.location}</p>
                 <p><strong>Ends:</strong> {selectedEvent?.endTime}</p>
-                <p><strong>Points Available:</strong> {selectedEvent?.pointsRemain}</p>
                 <p><strong>Seats:</strong> {selectedEvent?.avilableSeats}</p>
             </Modal.Body>
 

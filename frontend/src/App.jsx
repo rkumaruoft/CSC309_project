@@ -72,15 +72,6 @@ export default function App() {
         }
       />
 
-      <Route
-        path="/events/:eventId"
-        element={
-          <Layout>
-            <Event />
-          </Layout>
-        }
-      />
-
       {/* Other pages will be added by teammates. */}
 
       <Route
