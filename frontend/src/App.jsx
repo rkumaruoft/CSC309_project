@@ -6,99 +6,107 @@ import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import Transfers from "./pages/Transfers";
 import Promotions from "./pages/Promotions.jsx";
+import Transactions from "./pages/Transactions.jsx";
 import Redemption from "./pages/Redemption.jsx";
-import EventsList from "./pages/EventsList.jsxList.jsx";
+import EventsList from "./pages/EventsList.jsx";
 import Event from "./pages/Event.jsx";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <Routes>
 
-        {/* LOGIN */}
-        <Route
-          path="/login"
-          element={
-            <Layout>
-              <Login />
-            </Layout>
-          }
-        />
+      {/* LOGIN */}
+      <Route
+        path="/login"
+        element={
+          <Layout>
+            <Login />
+          </Layout>
+        }
+      />
 
-        {/* REGISTER */}
-        <Route
-          path="/register"
-          element={
-            <Layout>
-              <Register />
-            </Layout>
-          }
-        />
+      {/* REGISTER */}
+      <Route
+        path="/register"
+        element={
+          <Layout>
+            <Register />
+          </Layout>
+        }
+      />
 
-        {/* Authenticated pages */}
-        <Route
-          path="/dashboard"
-          element={
-            <Layout>
-              <Home />
-            </Layout>
-          }
-        />
+      {/* Authenticated pages */}
+      <Route
+        path="/dashboard"
+        element={
+          <Layout>
+            <Home />
+          </Layout>
+        }
+      />
 
-        <Route
-          path="/transfers"
-          element={
-            <Layout>
-              <Transfers />
-            </Layout>
-          }
-        />
+      <Route
+        path="/transfers"
+        element={
+          <Layout>
+            <Transfers />
+          </Layout>
+        }
+      />
 
-        <Route
-          path="/events"
-          element={
-            <Layout>
-              <EventsList />
-            </Layout>
-          }
-        />
+      <Route
+        path="/transactions"
+        element={
+          <Layout>
+            <Transactions />
+          </Layout>
+        }
+      />
 
-         <Route
-          path="/events/:eventId"
-          element={
-            <Layout>
-              <Event />
-            </Layout>
-          }
-        />
+      <Route
+        path="/events"
+        element={
+          <Layout>
+            <EventsList />
+          </Layout>
+        }
+      />
 
-        {/* Other pages will be added by teammates. */}
+      <Route
+        path="/events/:eventId"
+        element={
+          <Layout>
+            <Event />
+          </Layout>
+        }
+      />
 
-        <Route
-            path="/promotions"
-            element={
-                <Layout>
-                    <Promotions />
-                </Layout>
-            }
-        />
+      {/* Other pages will be added by teammates. */}
 
-        <Route
-            path="/redemption"
-            element={
-                <Layout>
-                    <Redemption points={1234567} />
-                </Layout>
-            }
-        />
+      <Route
+        path="/promotions"
+        element={
+          <Layout>
+            <Promotions />
+          </Layout>
+        }
+      />
 
-        {/* DEFAULT ROUTE */}
-        <Route path="/" element={<Navigate to="/login" />} />
+      <Route
+        path="/redemption"
+        element={
+          <Layout>
+            <Redemption points={1234567} />
+          </Layout>
+        }
+      />
 
-        {/* 404 */}
-        <Route path="*" element={<h2>Page Not Found</h2>} />
+      {/* DEFAULT ROUTE */}
+      <Route path="/" element={<Navigate to="/login" />} />
 
-      </Routes>
-    </BrowserRouter>
+      {/* 404 */}
+      <Route path="*" element={<h2>Page Not Found</h2>} />
+
+    </Routes>
   );
 }

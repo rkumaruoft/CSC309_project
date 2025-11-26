@@ -1,60 +1,71 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Form, Button, Card } from "react-bootstrap";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
-  const navigate = useNavigate();
+    const { login, user } = useAuth();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error] = useState("");
+    if (user) {
+        return <Navigate to="/dashboard" replace />;
+    }
+    const [utorid, setUtorid] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    navigate("/dashboard"); // TEMP
-  };
+    const handleLogin = async (e) => {
+        e.preventDefault();
 
-  return (
-    <div className="d-flex justify-content-center align-items-center vertical-center" style={{ minHeight: "80vh" }}>
-      <Card style={{ width: "380px" }} className="p-4 shadow-lg">
-        <h2 className="text-center mb-4">Login</h2>
+        const err = await login(utorid, password); // AuthContext handles navigation
+        if (err) {
+            setError(err);
+        }
+    };
 
-        {error && <div className="alert alert-danger">{error}</div>}
+    return (
+        <div
+            className="d-flex justify-content-center align-items-center vertical-center"
+            style={{ minHeight: "80vh" }}
+        >
+            <Card style={{ width: "380px" }} className="p-4 shadow-lg">
+                <h2 className="text-center mb-4">Login</h2>
 
-        <Form onSubmit={handleLogin}>
-          <Form.Group className="mb-3">
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              type="email"
-              placeholder="Enter your email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </Form.Group>
+                {error && <div className="alert alert-danger">{error}</div>}
 
-          <Form.Group className="mb-3">
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type="password"
-              placeholder="Enter your password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </Form.Group>
+                <Form onSubmit={handleLogin}>
+                    <Form.Group className="mb-3">
+                        <Form.Label>UTORid</Form.Label>
+                        <Form.Control
+                            type="text"
+                            placeholder="Enter your UTORid"
+                            required
+                            value={utorid}
+                            onChange={(e) => setUtorid(e.target.value)}
+                        />
+                    </Form.Group>
 
-          <Button type="submit" className="w-100 mt-2">
-            Login
-          </Button>
-        </Form>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Password</Form.Label>
+                        <Form.Control
+                            type="password"
+                            placeholder="Enter your password"
+                            required
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </Form.Group>
 
-        <div className="text-center mt-3">
-          <small>Don't have an account?</small>
-          <br />
-          <Link to="/register">Create New User</Link>
+                    <Button type="submit" className="w-100 mt-2">
+                        Login
+                    </Button>
+                </Form>
+
+                <div className="text-center mt-3">
+                    <small>Don't have an account?</small>
+                    <br />
+                    <Link to="/register">Create New User</Link>
+                </div>
+            </Card>
         </div>
-      </Card>
-    </div>
-  );
+    );
 }

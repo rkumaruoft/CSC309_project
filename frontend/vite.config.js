@@ -11,13 +11,9 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '') // Optional: removes /api prefix
       },
-      // Or if you don't use an /api prefix in your backend routes:
-      // Proxy specific routes like /users, /auth, etc.
+      // Keep API-only routes proxied (e.g., `/users`, `/auth`, `/api`).
       '/users': 'http://localhost:3000',
-      '/auth': 'http://localhost:3000',
-      '/transactions': 'http://localhost:3000',
-      '/events': 'http://localhost:3000',
-      '/promotions': 'http://localhost:3000',
+      '/auth': 'http://localhost:3000'
     }
   }
 })

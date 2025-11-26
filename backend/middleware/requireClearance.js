@@ -6,4 +6,4 @@ function requireClearance(allowedRoles) {
         next();
     };
 }
-module.exports = requireClearance;
+export default requireClearance;

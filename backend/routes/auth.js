@@ -1,13 +1,14 @@
-const express = require("express");
+
+import express from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
+import { randomUUID } from "crypto";
+import { JWT_SECRET } from "../config/env.js";
+
+
 const router = express.Router();
-
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const { PrismaClient } = require("@prisma/client");
-const { randomUUID } = require("crypto");
-
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET;
 
 // Keep these maps inside auth only
 const resetRateLimit = new Map();
@@ -179,4 +180,4 @@ router.post("/resets/:resetToken", async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;
