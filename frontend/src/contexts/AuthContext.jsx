@@ -8,49 +8,74 @@ export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
 
+   
+    // Helper to fetch the profile for a token and set context + localStorage
+    async function fetchProfile(token) {
+        const res = await fetch(`${BACKEND_URL}/users/me`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to retrieve user profile');
+        const userData = await res.json();
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return userData;
+    }
+
+    // ---------------- DEV AUTO LOGIN ----------------
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            // Development helper: if no token but a `localStorage.user` exists,
-            // initialize the context from that value. This makes it easy to
-            // test role-specific UI without authenticating. Only enabled in dev.
-            if (import.meta.env.DEV) {
-                const stored = localStorage.getItem("user");
-                if (stored) {
+        (async () => {
+            const token = localStorage.getItem("token");
+
+            if (token) {
+                try {
+                    await fetchProfile(token);
+                    return;
+                } catch (e) {
+                    localStorage.removeItem('token');
+                    setUser(null);
+                    return;
+                }
+            }
+
+            // No token path
+                if (import.meta.env.DEV) {
+                    // Try to perform a quick DEV login using seeded credentials
                     try {
+                        const loginRes = await fetch(`${BACKEND_URL}/auth/tokens`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ utorid: 'regular1', password: 'Password123!' })
+                        });
+
+                        if (loginRes.ok) {
+                            const loginData = await loginRes.json();
+                            localStorage.setItem('token', loginData.token);
+                            try {
+                                await fetchProfile(loginData.token);
+                                return;
+                            } catch (e) {
+                                // failed to fetch profile after login; fall through
+                            }
+                        }
+                    } catch (e) {
+                        // ignore and fall back to stored user
+                    }
+
+                // If login failed, fall back to any stored local user
+                try {
+                    const stored = localStorage.getItem("user");
+                    if (stored) {
                         setUser(JSON.parse(stored));
                         return;
-                    } catch (e) {
-                        // fall through to clearing user
                     }
+                } catch (e) {
+                    // ignore
                 }
             }
 
             setUser(null);
-            return;
-        }
-
-        fetch(`${BACKEND_URL}/users/me`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-            },
-        })
-            .then(async (res) => {
-                if (!res.ok) {
-                    // Token invalid or expired
-                    localStorage.removeItem("token");
-                    setUser(null);
-                    return;
-                }
-                const data = await res.json();
-                setUser(data);
-                localStorage.setItem("user", JSON.stringify(data));
-            })
-            .catch(() => {
-                setUser(null);
-                localStorage.removeItem("token");
-            });
+        })();
     }, []);
 
     // ---------------- LOGOUT ----------------
