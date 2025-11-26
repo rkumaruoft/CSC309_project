@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
@@ -7,7 +6,6 @@ import { useAuth } from "../contexts/AuthContext";
 export default function Home() {
   const { user } = useAuth();
   const [showQr, setShowQr] = useState(false);
-
   const navigate = useNavigate();
   const [promos, setPromos] = useState([]);
   const [recentTxs, setRecentTxs] = useState([]);
@@ -58,7 +56,8 @@ export default function Home() {
   // If there is no authentication token, redirect back to the login page.
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) {
+    const devUser = import.meta.env.DEV && localStorage.getItem('user');
+    if (!token && !devUser) {
       navigate('/login');
     }
   }, [navigate, user]);
@@ -67,7 +66,38 @@ export default function Home() {
     <div className="container mt-4 home-page">
       <h1 className="home-hero">Welcome to BananaCreds!</h1>
 
-      
+      {/* Dev testing toolbar: set a fake user role for quick header testing (DEV only) */}
+      {import.meta.env.DEV && (
+        <div className="mb-3">
+          <small className="text-muted">Dev role test:</small>
+          <div className="btn-group ms-2" role="group" aria-label="role buttons">
+            <button className="btn btn-sm btn-outline-primary" onClick={() => { 
+              const u = { utorid: 'regular1', name: 'Regular User', email: 'regular@mail.utoronto.ca', role: 'regular', points: 100 };
+              localStorage.setItem('user', JSON.stringify(u));
+              localStorage.setItem('token', 'dev:regular1');
+              location.reload();
+            }}>Regular</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => { 
+              const u = { utorid: 'cash001', name: 'Cashier User', email: 'cashier@mail.utoronto.ca', role: 'cashier', points: 0 };
+              localStorage.setItem('user', JSON.stringify(u));
+              localStorage.setItem('token', 'dev:cash001');
+              location.reload();
+            }}>Cashier</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => { 
+              const u = { utorid: 'manag01', name: 'Manager User', email: 'manager@mail.utoronto.ca', role: 'manager', points: 0 };
+              localStorage.setItem('user', JSON.stringify(u));
+              localStorage.setItem('token', 'dev:manag01');
+              location.reload();
+            }}>Manager</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => { 
+              const u = { utorid: 'super01', name: 'Super Admin', email: 'superuser@mail.utoronto.ca', role: 'superuser', points: 0 };
+              localStorage.setItem('user', JSON.stringify(u));
+              localStorage.setItem('token', 'dev:super01');
+              location.reload();
+            }}>Admin</button>
+          </div>
+        </div>
+      )}
 
       <div className="mt-3 home-card">
         <div className="d-flex align-items-center">

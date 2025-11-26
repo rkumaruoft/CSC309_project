@@ -11,9 +11,7 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token) {
-            // Development helper: if no token but a `localStorage.user` exists,
-            // initialize the context from that value. This makes it easy to
-            // test role-specific UI without authenticating. Only enabled in dev.
+            // If there's no token, allow DEV bootstrapping from localStorage.user
             if (import.meta.env.DEV) {
                 const stored = localStorage.getItem("user");
                 if (stored) {
@@ -28,6 +26,20 @@ export const AuthProvider = ({ children }) => {
 
             setUser(null);
             return;
+        }
+
+        // Support a dev token format `dev:<utorid>` which should initialize
+        // the context from the already-stored `localStorage.user` (no backend).
+        if (import.meta.env.DEV && typeof token === 'string' && token.startsWith('dev:')) {
+            const stored = localStorage.getItem("user");
+            if (stored) {
+                try {
+                    setUser(JSON.parse(stored));
+                    return;
+                } catch (e) {
+                    // fall through to normal fetch
+                }
+            }
         }
 
         fetch(`${BACKEND_URL}/users/me`, {
