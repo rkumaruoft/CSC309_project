@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
@@ -48,6 +48,50 @@ export default function Home() {
     load();
   }, []);
 
+  // small previews: promotions and recent transactions
+  const [promos, setPromos] = useState([]);
+  const [recentTxs, setRecentTxs] = useState([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+
+    async function fetchPromos() {
+      try {
+        const res = await fetch(`${VITE_BACKEND_URL}/promotions?page=1&limit=3`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setPromos((data.results || []).slice(0, 3));
+        } else {
+          setPromos([]);
+        }
+      } catch (e) {
+        setPromos([]);
+      }
+    }
+
+    async function fetchRecentTxs() {
+      try {
+        const res = await fetch(`${VITE_BACKEND_URL}/users/me/transactions?page=1&limit=5`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setRecentTxs(data.results || []);
+        } else {
+          setRecentTxs([]);
+        }
+      } catch (e) {
+        setRecentTxs([]);
+      }
+    }
+
+    fetchPromos();
+    fetchRecentTxs();
+  }, []);
+
   return (
     <div className="container mt-4 home-page">
       <h1 className="home-hero">Welcome to BananaCreds!</h1>
@@ -81,7 +125,7 @@ export default function Home() {
 
               <div className="mt-3 d-flex gap-2">
                 <Button className="btn-qr" onClick={() => setShowQr(true)}>My QR code</Button>
-                <Button variant="outline-primary" onClick={() => navigate('/redemption')}>Redeem</Button>
+                <Button variant="outline-primary" onClick={() => navigate('/promotions')}>Redeem</Button>
                 <Button variant="outline-secondary" onClick={() => navigate('/transfers')}>Transfers</Button>
               </div>
 
@@ -101,6 +145,55 @@ export default function Home() {
                   <Button variant="secondary" onClick={() => setShowQr(false)}>Close</Button>
                 </Modal.Footer>
               </Modal>
+
+              {/* Previews: Promotions and Recent Transactions */}
+              <div className="mt-4">
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <div className="card p-3">
+                      <div className="d-flex justify-content-between align-items-center">
+                        <h5 className="mb-0">Promotions</h5>
+                        <Link to="/promotions">View all</Link>
+                      </div>
+                      <hr />
+                      {promos.length === 0 ? (
+                        <div className="text-muted">No promotions available.</div>
+                      ) : (
+                        promos.map(p => (
+                          <div key={p.id} className="mb-2">
+                            <div className="fw-bold">{p.name}</div>
+                            <div className="small text-muted">Ends: {p.endTime ? new Date(p.endTime).toDateString() : ''}</div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <div className="card p-3">
+                      <div className="d-flex justify-content-between align-items-center">
+                        <h5 className="mb-0">Recent Transactions</h5>
+                        <Link to="/transactions">View all</Link>
+                      </div>
+                      <hr />
+                      {recentTxs.length === 0 ? (
+                        <div className="text-muted">No recent transactions.</div>
+                      ) : (
+                        recentTxs.map(t => (
+                          <div key={t.id} className="mb-2">
+                            <div>
+                              <span className="fw-semibold">{t.type}</span>
+                              {" — "}
+                              <span>{t.amount} pts</span>
+                            </div>
+                            <div className="small text-muted">Related: {t.relatedId ?? t.relatedUtorid ?? '-'}</div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           );
         })()
