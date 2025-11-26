@@ -30,9 +30,9 @@ export default function Regular_User_Header() {
                     {/* LEFT MENU LINKS */}
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                         <li className="nav-item"><Link className="nav-link" to="/dashboard">Home</Link></li>
+                        <li className="nav-item"><Link className="nav-link" to="/transactions">Transactions</Link></li>
                         <li className="nav-item"><Link className="nav-link" to="/promotions">Promotions</Link></li>
                         <li className="nav-item"><Link className="nav-link" to="/events">Events</Link></li>
-                        <li className="nav-item"><Link className="nav-link" to="/transactions">Transactions</Link></li>
                         <li className="nav-item"><Link className="nav-link" to="/redemption">Redeem</Link></li>
                         <li className="nav-item"><Link className="nav-link" to="/transfers">Transfers</Link></li>
                     </ul>

@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, initialized } = useAuth();
   const [showQr, setShowQr] = useState(false);
   const navigate = useNavigate();
   const [promos, setPromos] = useState([]);
@@ -51,8 +51,6 @@ export default function Home() {
     fetchRecentTxs();
   }, []);
 
-  const displayUser = user || {};
-
   // If there is no authentication token, redirect back to the login page.
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -61,6 +59,11 @@ export default function Home() {
       navigate('/login');
     }
   }, [navigate, user]);
+
+  // Wait until auth is initialized to avoid reading properties from null
+  if (!initialized) return <div className="container mt-4">Loading...</div>;
+
+  const displayUser = user || {};
 
   return (
     <div className="container mt-4 home-page">
