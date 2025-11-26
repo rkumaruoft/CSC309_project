@@ -1,3 +1,5 @@
+// TODO: Design seperate home pages for different user roles (regular, cashier, manager, superuser)
+
 import { useEffect, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
@@ -9,6 +11,47 @@ export default function Home() {
   const navigate = useNavigate();
   const [promos, setPromos] = useState([]);
   const [recentTxs, setRecentTxs] = useState([]);
+
+  // Dev helper: attempt real backend login for seeded users
+  async function bootstrapDevUser(u) {
+    const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+    try {
+      const res = await fetch(`${VITE_BACKEND_URL}/auth/tokens`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ utorid: u.utorid, password: 'Password123!' }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem('token', data.token);
+
+        // Try to fetch the profile and persist it; fall back to the provided user
+        try {
+          const meRes = await fetch(`${VITE_BACKEND_URL}/users/me`, { headers: { Authorization: `Bearer ${data.token}` } });
+          if (meRes.ok) {
+            const profile = await meRes.json();
+            localStorage.setItem('user', JSON.stringify(profile));
+          } else {
+            localStorage.setItem('user', JSON.stringify(u));
+          }
+        } catch (e) {
+          localStorage.setItem('user', JSON.stringify(u));
+        }
+
+        // Reload so AuthContext bootstraps from the new token/user
+        location.reload();
+        return;
+      }
+    } catch (e) {
+      // fall through to fallback below
+    }
+
+    // Fallback: dev-only token + local user (offline mode)
+    localStorage.setItem('user', JSON.stringify(u));
+    localStorage.setItem('token', `dev:${u.utorid}`);
+    location.reload();
+  }
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -74,30 +117,10 @@ export default function Home() {
         <div className="mb-3">
           <small className="text-muted">Dev role test:</small>
           <div className="btn-group ms-2" role="group" aria-label="role buttons">
-            <button className="btn btn-sm btn-outline-primary" onClick={() => { 
-              const u = { utorid: 'regular1', name: 'Regular User', email: 'regular@mail.utoronto.ca', role: 'regular', points: 100 };
-              localStorage.setItem('user', JSON.stringify(u));
-              localStorage.setItem('token', 'dev:regular1');
-              location.reload();
-            }}>Regular</button>
-            <button className="btn btn-sm btn-outline-primary" onClick={() => { 
-              const u = { utorid: 'cash001', name: 'Cashier User', email: 'cashier@mail.utoronto.ca', role: 'cashier', points: 0 };
-              localStorage.setItem('user', JSON.stringify(u));
-              localStorage.setItem('token', 'dev:cash001');
-              location.reload();
-            }}>Cashier</button>
-            <button className="btn btn-sm btn-outline-primary" onClick={() => { 
-              const u = { utorid: 'manag01', name: 'Manager User', email: 'manager@mail.utoronto.ca', role: 'manager', points: 0 };
-              localStorage.setItem('user', JSON.stringify(u));
-              localStorage.setItem('token', 'dev:manag01');
-              location.reload();
-            }}>Manager</button>
-            <button className="btn btn-sm btn-outline-primary" onClick={() => { 
-              const u = { utorid: 'super01', name: 'Super Admin', email: 'superuser@mail.utoronto.ca', role: 'superuser', points: 0 };
-              localStorage.setItem('user', JSON.stringify(u));
-              localStorage.setItem('token', 'dev:super01');
-              location.reload();
-            }}>Admin</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => bootstrapDevUser({ utorid: 'regular1', name: 'Regular User', email: 'regular@mail.utoronto.ca', role: 'regular', points: 100 })}>Regular</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => bootstrapDevUser({ utorid: 'cash001', name: 'Cashier User', email: 'cashier@mail.utoronto.ca', role: 'cashier', points: 0 })}>Cashier</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => bootstrapDevUser({ utorid: 'manag01', name: 'Manager User', email: 'manager@mail.utoronto.ca', role: 'manager', points: 0 })}>Manager</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => bootstrapDevUser({ utorid: 'super01', name: 'Super Admin', email: 'superuser@mail.utoronto.ca', role: 'superuser', points: 0 })}>Admin</button>
           </div>
         </div>
       )}
