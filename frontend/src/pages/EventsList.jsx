@@ -29,7 +29,7 @@ export default function EventsList() {
             new_event.name = event.name;
             new_event.location = event.location;
             new_event.endTime = new Date(event.endTime).toDateString();
-            new_event.pointsRemain = event.pointsRemain;
+            new_event.pointsRemain = event.pointsRemain;    
             new_event.avilableSeats = remaining_seats;
             new_events.push(new_event);
         }
