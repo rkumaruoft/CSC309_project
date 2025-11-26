@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../contexts/AuthContext.jsx";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -37,21 +38,14 @@ export default function Transactions() {
         } else {
           const text = await res.text();
           console.warn("/users/me/transactions returned non-JSON or non-OK:", res.status, ct, text.slice ? text.slice(0, 400) : text);
+          // fall through to empty results below
         }
       }
 
-      // If not authenticated (no token) or fetch failed, use demo transactions
-      const totalDemo = 12;
-      const perPage = 10;
-      const demo = [];
-      const start = (p - 1) * perPage;
-      const end = Math.min(totalDemo, start + perPage);
-      for (let i = start; i < end; i++) {
-        demo.push({ id: `demo-${i+1}`, type: i % 2 === 0 ? 'transfer' : 'redemption', amount: 10*(i+1), relatedId: 'demo_user', time: new Date(Date.now() - i*60000).toISOString() });
-      }
-      setTxs(demo);
+      // If not authenticated (no token) or fetch failed, show no transactions.
+      setTxs([]);
       setPage(p);
-      setTotalPages(Math.max(1, Math.ceil(totalDemo / perPage)));
+      setTotalPages(1);
 
     } catch (err) {
       setError(err.message || String(err));
@@ -60,9 +54,12 @@ export default function Transactions() {
     }
   }
 
+  const { initialized } = useAuth();
+
   useEffect(() => {
+    if (!initialized) return;
     fetchPage(1);
-  }, []);
+  }, [initialized]);
   return (
     <div className="container mt-4">
       <h1>Transactions</h1>
