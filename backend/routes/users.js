@@ -383,9 +383,8 @@ router.patch(
             if (updated.birthday) {
                 updated.birthday = updated.birthday.toISOString().split("T")[0];
             }
-
-
             return res.status(200).json(updated);
+        
 
         } catch (err) {
             console.error(err);
