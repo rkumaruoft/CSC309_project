@@ -11,6 +11,21 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token) {
+            // Development helper: if no token but a `localStorage.user` exists,
+            // initialize the context from that value. This makes it easy to
+            // test role-specific UI without authenticating. Only enabled in dev.
+            if (import.meta.env.DEV) {
+                const stored = localStorage.getItem("user");
+                if (stored) {
+                    try {
+                        setUser(JSON.parse(stored));
+                        return;
+                    } catch (e) {
+                        // fall through to clearing user
+                    }
+                }
+            }
+
             setUser(null);
             return;
         }
