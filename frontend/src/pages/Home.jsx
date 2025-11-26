@@ -96,6 +96,19 @@ export default function Home() {
     <div className="container mt-4 home-page">
       <h1 className="home-hero">Welcome to BananaCreds!</h1>
 
+      {/* Dev testing toolbar: set a fake user role for quick header testing (DEV only) */}
+      {import.meta.env.DEV && (
+        <div className="mb-3">
+          <small className="text-muted">Dev role test:</small>
+          <div className="btn-group ms-2" role="group" aria-label="role buttons">
+            <button className="btn btn-sm btn-outline-primary" onClick={() => { localStorage.setItem('user', JSON.stringify({ utorid: 'demo', name: 'Demo User', role: 'regular' })); location.reload(); }}>Regular</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => { localStorage.setItem('user', JSON.stringify({ utorid: 'cashier1', name: 'Cashier', role: 'cashier' })); location.reload(); }}>Cashier</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => { localStorage.setItem('user', JSON.stringify({ utorid: 'mgr1', name: 'Manager', role: 'manager' })); location.reload(); }}>Manager</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => { localStorage.setItem('user', JSON.stringify({ utorid: 'admin', name: 'Admin', role: 'superuser' })); location.reload(); }}>Admin</button>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="mt-3">Loading...</div>
       ) : error ? (
