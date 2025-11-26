@@ -152,7 +152,7 @@ function Redemption({ points }) {
         {transaction &&
         <Row>
             <Col>
-                <Modal show={transaction} onHide={() => setTransaction(null)}>
+                <Modal show={transaction} onHide={cancelRedemption}>
                     <Modal.Header closeButton style={{ backgroundColor: "#FFF9C4" }}>
                         <Modal.Title>Scan to Redeem Your Transaction</Modal.Title>
                     </Modal.Header>
@@ -163,7 +163,7 @@ function Redemption({ points }) {
                         </div>
                     </Modal.Body>
                     <Modal.Footer style={{ backgroundColor: "#FFF9C4" }}>
-                        <Button variant="warning" onClick={() => setTransaction(null)}>Cancel</Button>
+                        <Button variant="warning" onClick={cancelRedemption}>Cancel</Button>
                     </Modal.Footer>
                 </Modal>
             </Col>

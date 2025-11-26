@@ -77,7 +77,6 @@ function Promotions() {
             // setPromos(null);
             // return;
 
-            // TODO: test on valid data
             // If invalid token, use demo for testing
             const numDemos = 10;
             const numPages = 2;
@@ -140,7 +139,7 @@ function Promotions() {
                         {promos === null ? (
                             <tr>
                                 <td colSpan={5} className="text-center">
-                                        Page {pageNum} could not be found
+                                        No promotions could be found
                                 </td>
                             </tr>
                         ) : (
@@ -160,7 +159,7 @@ function Promotions() {
             </Col>
         </Row>
 
-        {/* Pagination and page display */}
+        {/* Pagination and page display (TODO: add better page scrolling as an option) */}
         <Row className="justify-content-center align-items-center">
             {/* Back button */}
             <Col xs="auto">

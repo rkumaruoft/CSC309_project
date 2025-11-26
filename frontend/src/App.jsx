@@ -66,7 +66,8 @@ export default function App() {
                 path="/redemption"
                 element={
                     <Layout>
-                        <Redemption points={1234567} />
+                        {localStorage.getItem("user") &&
+                        <Redemption points={JSON.parse(localStorage.getItem("user")).points} />}
                     </Layout>
                 }
             />
