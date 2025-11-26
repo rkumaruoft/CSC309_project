@@ -75,15 +75,7 @@ export default function Main_Header() {
                                         Profile
                                     </Link>
                                 </li>
-
-                                <li>
-                                    <button className="dropdown-item">
-                                        Show QR
-                                    </button>
-                                </li>
-
                                 <li><hr className="dropdown-divider" /></li>
-
                                 <li>
                                     <button className="dropdown-item text-danger" onClick={logout}>
                                         Logout
