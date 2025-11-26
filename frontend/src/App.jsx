@@ -7,8 +7,8 @@ import Home from "./pages/Home";
 import Transfers from "./pages/Transfers";
 import Promotions from "./pages/Promotions.jsx";
 import Redemption from "./pages/Redemption.jsx";
-import Events from "./pages/Events.jsx";
-import Event from "./pages/Event.jsx"
+import EventsList from "./pages/EventsList.jsxList.jsx";
+import Event from "./pages/Event.jsx";
 
 export default function App() {
   return (
@@ -58,7 +58,7 @@ export default function App() {
           path="/events"
           element={
             <Layout>
-              <Events />
+              <EventsList />
             </Layout>
           }
         />

@@ -102,7 +102,25 @@ export default function EventsList() {
             setPageNum(page);
             setTotalPages(Math.max(1, Math.ceil(data.count / 10)));
         } catch (error) {
-            setEvents([]);
+            const numDemos = 10;
+            const numPages = 2;
+            const demoEvents = [];
+            for (let i = 0; i < numDemos; i++) {
+                demoEvents.push({
+                    id: i,
+                    name: `Event ${i + 1}`,
+                    location: `Location ${i + 1}`,
+                    pointsRemain: 100 + i,
+                    startTime: new Date(Date.now() - (1000 * 60 * 60 * 24 * (i+1))),
+                    endTime: new Date(Date.now() + (1000 * 60 * 60 * 24 * (i+1))),
+                    capacity: i + 20,
+                    guests: ["a", "b", "c"]
+                });
+            }
+            setEvents(demoEvents);
+            setPageNum(page);
+            setTotalPages(numPages);
+            return;
         }
     }
 
