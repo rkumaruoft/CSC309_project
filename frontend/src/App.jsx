@@ -9,7 +9,6 @@ import Promotions from "./pages/Promotions.jsx";
 import Transactions from "./pages/Transactions.jsx";
 import Redemption from "./pages/Redemption.jsx";
 import EventsList from "./pages/EventsList.jsx";
-import Event from "./pages/Event.jsx";
 
 export default function App() {
   return (

@@ -12,9 +12,15 @@ export default function EventsList() {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [totalPages, setTotalPages] = useState(1);
+    const [rsvp, setRSVP] = useState(false)
 
-    const handleRowClick = (event) => {
-        setSelectedEvent(event);
+    const handleRowClick = async (event) => {
+        const url = `${BACKEND_URL}/events/${event.id}`;
+        const ev = await fetch(url, {method: "GET", headers: {Authorization: `Bearer ${token}`}});
+        const data = await ev.json();
+        let formatted_event = formatEvents([data]);
+        formatted_event = formatted_event[0]; 
+        setSelectedEvent(formatted_event);
         setShowModal(true);
     };
 
@@ -28,12 +34,29 @@ export default function EventsList() {
             new_event.id = event.id;
             new_event.name = event.name;
             new_event.location = event.location;
-            new_event.endTime = new Date(event.endTime).toDateString();
-            new_event.pointsRemain = event.pointsRemain;    
-            new_event.avilableSeats = remaining_seats;
+            new_event.description = event.description;
+            new_event.endTime = new Date(event.endTime).toDateString();   
+            new_event.availableSeats = remaining_seats;
             new_events.push(new_event);
         }
         return new_events;
+    }
+
+    async function rsvp_user(event){
+        const url = `${BACKEND_URL}/events/${event.id}/guests/me`;
+
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {Authorization: `Bearer ${token}`}
+        });
+
+        if (!res.ok){
+            const data = await res.json();
+            console.log(data.error);
+            return;
+        }
+        console.log("RSVP'd\n");
+        setRSVP(true);
     }
 
     async function fetchEvents(page){
@@ -73,7 +96,6 @@ export default function EventsList() {
             setTotalPages(numPages);
             return;
         }
-        
         setEvents(formatEvents(data.results));
         setPageNum(page);
         setTotalPages(Math.max(1, Math.ceil(data.count / 10)));
@@ -166,11 +188,13 @@ export default function EventsList() {
 
             <Modal.Body>
                 <p><strong>Location:</strong> {selectedEvent?.location}</p>
+                <p><strong>Description</strong> {selectedEvent?.description}</p>
                 <p><strong>Ends:</strong> {selectedEvent?.endTime}</p>
-                <p><strong>Seats:</strong> {selectedEvent?.avilableSeats}</p>
+                <p><strong>Seats:</strong> {selectedEvent?.availableSeats}</p>
             </Modal.Body>
 
             <Modal.Footer>
+                <Button variant="primary" onClick={() => rsvp_user(selectedEvent)}>RSVP</Button>
                 <Button variant="secondary" onClick={() => setShowModal(false)}>
                     Close
                 </Button>
