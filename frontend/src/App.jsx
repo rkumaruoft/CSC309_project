@@ -8,6 +8,7 @@ import Transfers from "./pages/Transfers";
 import Promotions from "./pages/Promotions.jsx";
 import Transactions from "./pages/Transactions.jsx";
 import Redemption from "./pages/Redemption.jsx";
+import Profile from "./pages/Profile.jsx";
 
 export default function App() {
     return (
@@ -76,8 +77,16 @@ export default function App() {
                 path="/redemption"
                 element={
                     <Layout>
-                        {localStorage.getItem("user") &&
-                        <Redemption points={JSON.parse(localStorage.getItem("user")).points} />}
+                        <Redemption />
+                    </Layout>
+                }
+            />
+
+            <Route
+                path="/profile"
+                element={
+                    <Layout>
+                        <Profile />
                     </Layout>
                 }
             />

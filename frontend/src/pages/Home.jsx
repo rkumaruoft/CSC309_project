@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
+import { findAvatar } from "./Profile";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
@@ -107,11 +108,7 @@ export default function Home() {
             <div className="mt-3 home-card">
               <div className="d-flex align-items-center">
                 <div style={{ width: 96, height: 96, borderRadius: 8, overflow: 'hidden', background: '#eee' }}>
-                  {displayUser.avatarUrl ? (
-                    <img src={displayUser.avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <div className="d-flex align-items-center justify-content-center h-100 w-100 text-muted">No<br/>Avatar</div>
-                  )}
+                    <img src={findAvatar(displayUser)} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
                 <div className="ms-3">
                   <h4 className="mb-0">{displayUser.name || displayUser.utorid}</h4>
