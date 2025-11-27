@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./layout/Layout.jsx";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -8,6 +8,8 @@ import Transfers from "./pages/Transfers";
 import Promotions from "./pages/Promotions.jsx";
 import Transactions from "./pages/Transactions.jsx";
 import Redemption from "./pages/Redemption.jsx";
+import RequireRole from "./components/RequireRole.jsx";
+import CashierTransactions from "./pages/CashierTransactions.jsx";
 import Profile from "./pages/Profile.jsx";
 
 export default function App() {
@@ -53,14 +55,29 @@ export default function App() {
                 }
             />
 
-            <Route
-                path="/transactions"
-                element={
-                    <Layout>
-                        <Transactions />
-                    </Layout>
-                }
-            />
+            {/* Regular user transactions (protected for role 'regular') */}
+            <Route element={<RequireRole allowedRoles={["regular"]} />}>
+                <Route
+                    path="/transactions"
+                    element={
+                        <Layout>
+                            <Transactions />
+                        </Layout>
+                    }
+                />
+            </Route>
+
+            {/* Cashier transactions (protected for cashiers) */}
+            <Route element={<RequireRole allowedRoles={["cashier"]} />}>
+                <Route
+                    path="/cashier/transactions"
+                    element={
+                        <Layout>
+                            <CashierTransactions />
+                        </Layout>
+                    }
+                />
+            </Route>
 
             {/* Other pages will be added by teammates. */}
 
