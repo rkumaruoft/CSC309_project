@@ -74,26 +74,7 @@ function Promotions() {
 
         // Handle request failure
         if (!res.ok) {
-            // setPromos(null);
-            // return;
-
-            // If invalid token, use demo for testing
-            const numDemos = 10;
-            const numPages = 2;
-            const demoPromos = [];
-            for (let i = 0; i < numDemos; i++) {
-                demoPromos.push({
-                    id: i,
-                    name: `Page ${page} Demo Promo ${i}`,
-                    type: "automatic",
-                    endTime: new Date(Date.now() + (1000 * 60 * 60 * 24 * i)),
-                    minSpending: 100 + i,
-                    rate: 0.01 + (i * 0.01)
-                });
-            }
-            setPromos(formatPromos(demoPromos));
-            setPageNum(page);
-            setTotalPages(numPages);
+            setPromos(null);
             return;
         }
 
@@ -125,18 +106,18 @@ function Promotions() {
             <Col xs={12} md={10} lg={8}>
 
                 <Table aria-labelledby="promotions-label" bordered responsive>
-                    <thead>
+                    <thead className="table-primary">
                         <tr>
-                            <th style={{ backgroundColor: "#FFF9C4" }}>Name</th>
-                            <th style={{ backgroundColor: "#FFF9C4" }}>Type</th>
-                            <th style={{ backgroundColor: "#FFF9C4" }}>Ends At</th>
-                            <th style={{ backgroundColor: "#FFF9C4" }}>Minimum Spending</th>
-                            <th style={{ backgroundColor: "#FFF9C4" }}>Rate</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Ends At</th>
+                            <th>Minimum Spending</th>
+                            <th>Rate</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        {promos === null ? (
+                        {(promos === null || promos.length === 0) ? (
                             <tr>
                                 <td colSpan={5} className="text-center">
                                         No promotions could be found
@@ -160,11 +141,10 @@ function Promotions() {
         </Row>
 
         {/* Pagination and page display (TODO: add better page scrolling as an option) */}
-        <Row className="justify-content-center align-items-center">
+        <Row className="justify-content-center align-items-center mb-2">
             {/* Back button */}
             <Col xs="auto">
                 <Button
-                    variant="warning"
                     onClick={() => fetchPromos(pageNum - 1)}
                     disabled={pageNum === 1}>
                         Back
@@ -181,7 +161,6 @@ function Promotions() {
             {/* Forward Button */}
             <Col xs="auto">
                 <Button
-                    variant="warning"
                     onClick={() => fetchPromos(pageNum + 1)}
                     disabled={pageNum === totalPages}>
                         Next
