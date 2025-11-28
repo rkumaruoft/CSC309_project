@@ -7,26 +7,31 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
+    const [initialized, setInitialized] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (!token) {
-            // Development helper: if no token but a `localStorage.user` exists,
-            // initialize the context from that value. This makes it easy to
-            // test role-specific UI without authenticating. Only enabled in dev.
-            if (import.meta.env.DEV) {
-                const stored = localStorage.getItem("user");
-                if (stored) {
-                    try {
-                        setUser(JSON.parse(stored));
-                        return;
-                    } catch (e) {
-                        // fall through to clearing user
-                    }
+
+        // DEV shortcut: when running locally we support bootstrapping from
+        // `localStorage.user` either when there's no token or when the token
+        // is a dev token of the form `dev:<utorid>`.
+        if (import.meta.env.DEV && (!token || token?.startsWith('dev:'))) {
+            const stored = localStorage.getItem("user");
+            if (stored) {
+                try {
+                    setUser(JSON.parse(stored));
+                    setInitialized(true);
+                    return;
+                } catch (e) {
+
                 }
             }
+        }
 
+        // Non-DEV + no token => unauthenticated (finish bootstrap)
+        if (!token) {
             setUser(null);
+            setInitialized(true);
             return;
         }
 
@@ -50,6 +55,9 @@ export const AuthProvider = ({ children }) => {
             .catch(() => {
                 setUser(null);
                 localStorage.removeItem("token");
+            })
+            .finally(() => {
+                setInitialized(true);
             });
     }, []);
 
@@ -98,7 +106,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, initialized }}>
             {children}
         </AuthContext.Provider>
     );
