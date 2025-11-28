@@ -131,7 +131,7 @@ router.patch(
             }
             // -------- AVATAR UPLOAD --------
             if (req.file) {
-                data.avatarUrl = `${req.file.filename}`;
+                data.avatarUrl = req.file.filename;
             }
 
             // ----------------------------
