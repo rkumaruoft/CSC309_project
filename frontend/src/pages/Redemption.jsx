@@ -21,7 +21,17 @@ function Redemption() {
     // ---------- Initialize error to nothing on reload ----------
     useEffect(() => {
         setError("");
-        const currPoints = JSON.parse(localStorage.getItem("user")).points;
+        const userStr = localStorage.getItem("user");
+        let currPoints = 0;
+        if (userStr) {
+            try {
+                const userObj = JSON.parse(userStr);
+                currPoints = userObj.points || 0;
+            } catch (e) {
+                // Optionally log error or set error state
+                currPoints = 0;
+            }
+        }
         setPoints(currPoints);
     }, [location]);
 
