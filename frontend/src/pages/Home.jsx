@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
+import { findAvatar } from "./Profile";
 import { useAuth } from "../contexts/AuthContext";
+
 
 export default function Home() {
   const { user, initialized } = useAuth();
@@ -128,11 +130,7 @@ export default function Home() {
       <div className="mt-3 home-card">
         <div className="d-flex align-items-center">
           <div style={{ width: 96, height: 96, borderRadius: 8, overflow: 'hidden', background: '#eee' }}>
-            {displayUser.avatarUrl ? (
-              <img src={displayUser.avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <div className="d-flex align-items-center justify-content-center h-100 w-100 text-muted">No<br/>Avatar</div>
-            )}
+            <img src={findAvatar(displayUser)} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div className="ms-3">
             <h4 className="mb-0">{displayUser.name || displayUser.utorid}</h4>
@@ -146,7 +144,7 @@ export default function Home() {
 
         <div className="mt-3 d-flex gap-2">
           <Button className="btn-qr" onClick={() => setShowQr(true)}>My QR code</Button>
-          <Button variant="outline-primary" onClick={() => navigate('/promotions')}>Redeem</Button>
+          <Button variant="outline-primary" onClick={() => navigate('/redemption')}>Redeem</Button>
           <Button variant="outline-secondary" onClick={() => navigate('/transfers')}>Transfers</Button>
         </div>
 
