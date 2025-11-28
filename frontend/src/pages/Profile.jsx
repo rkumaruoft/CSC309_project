@@ -191,7 +191,8 @@ function Profile() {
     useEffect(() => {
         setHovering("");
         setError("");
-        setUser(JSON.parse(localStorage.getItem("user")));
+        const userStr = localStorage.getItem("user");
+        setUser(userStr ? JSON.parse(userStr) : null);
     }, [location]);
 
     // ---------- Change currUser info if there are unsaved changes when user changes ----------
