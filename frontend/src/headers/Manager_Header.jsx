@@ -75,10 +75,6 @@ export default function Manager_Header() {
                                     </Link>
                                 </li>
 
-                                <li>
-                                    <button className="dropdown-item">Admin Tools</button>
-                                </li>
-
                                 <li><hr className="dropdown-divider" /></li>
 
                                 <li>

@@ -76,10 +76,6 @@ export default function Superuser_Header() {
                                     </Link>
                                 </li>
 
-                                <li>
-                                    <button className="dropdown-item">Admin Console</button>
-                                </li>
-
                                 <li><hr className="dropdown-divider" /></li>
 
                                 <li>

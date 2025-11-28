@@ -30,7 +30,7 @@ export default function Cashier_Header() {
                     {/* LEFT MENU LINKS */}
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                         <li className="nav-item"><Link className="nav-link" to="/dashboard">Home</Link></li>
-                        <li className="nav-item"><Link className="nav-link" to="/transactions">Transactions</Link></li>
+                        <li className="nav-item"><Link className="nav-link" to="/cashier/transactions">Transactions</Link></li>
                         <li className="nav-item"><Link className="nav-link" to="/redemption">Redeem</Link></li>
                     </ul>
 
