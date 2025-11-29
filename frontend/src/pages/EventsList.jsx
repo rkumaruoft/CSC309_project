@@ -7,6 +7,9 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 export default function EventsList() {
     const location = useLocation();
     const token = localStorage.getItem("token");
+    const user_info = localStorage.getItem("")
+    const [isEditing, setIsEditing] = useState(false);
+    const [editData, setEditData] = useState({});
     const [events, setEvents] = useState([]);
     const [pageNum, setPageNum] = useState(1);
     const [selectedEvent, setSelectedEvent] = useState(null);
@@ -21,9 +24,131 @@ export default function EventsList() {
         let formatted_event = formatEvents([data]);
         formatted_event = formatted_event[0]; 
         setSelectedEvent(formatted_event);
+        setEditData(formatted_event);
+        setIsEditing(false);
         setShowModal(true);
     };
 
+    function renderEditForm() {
+        return (
+            <Form>
+                <Form.Group className="mb-3">
+                    <Form.Label>Name</Form.Label>
+                    <Form.Control
+                        type="text"
+                        value={editData.name}
+                        onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                    />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                    <Form.Label>Description</Form.Label>
+                    <Form.Control
+                        as="textarea"
+                        rows={3}
+                        value={editData.description}
+                        onChange={(e) =>
+                            setEditData({ ...editData, description: e.target.value })
+                        }
+                    />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                    <Form.Label>Location</Form.Label>
+                    <Form.Control
+                        type="text"
+                        value={editData.location}
+                        onChange={(e) =>
+                            setEditData({ ...editData, location: e.target.value })
+                        }
+                    />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                    <Form.Label>End Time</Form.Label>
+                    <Form.Control
+                        type="datetime-local"
+                        value={editData.endTime}
+                        onChange={(e) =>
+                            setEditData({ ...editData, endTime: e.target.value })
+                        }
+                    />
+                </Form.Group>
+            </Form>
+        );
+    }
+
+    async function saveEdits() {
+        const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
+
+        const res = await fetch(url, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(editData)
+        });
+
+        if (!res.ok) {
+            console.error("Failed to update event");
+            return;
+        }
+
+        // update UI
+        setSelectedEvent(editData);
+        setIsEditing(false);
+        fetchEvents(pageNum);
+    }
+
+
+
+    function showNormalModal({ selectedEvent }){
+        return (
+            <>
+                <Modal.Body>
+                    <p><strong>Location:</strong> {selectedEvent?.location}</p>
+                    <p><strong>Description</strong> {selectedEvent?.description}</p>
+                    <p><strong>Starts:</strong> {selectedEvent.startTime}  <strong>Ends:</strong> {selectedEvent?.endTime}</p>
+                    <p><strong>Seats:</strong> {selectedEvent?.availableSeats}</p>
+                </Modal.Body>
+
+                <Modal.Footer>
+                    <Button variant="primary" onClick={() => rsvp_user(selectedEvent)}>RSVP</Button>
+                    <Button variant="secondary" onClick={() => setShowModal(false)}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </>
+        );
+    }
+
+    function showOrganizerModal({ selectedEvent }){
+        return(
+            <>
+                <Modal.Body>
+                    {isEditing ? (
+                        renderEditForm()
+                    ) : (
+                        showOrganizerModal({ selectedEvent })
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    {isEditing ? (
+                        <>
+                            <Button variant="success" onClick={saveEdits}>Save</Button>
+                            <Button variant="secondary" onClick={() => setIsEditing(false)}>Cancel</Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button variant="primary" onClick={() => setIsEditing(true)}>Edit Info</Button>
+                            <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
+                        </>
+                    )}
+                </Modal.Footer>
+            </>
+        )
+    }
 
     function formatEvents(events) {
         let new_events = [];
@@ -35,8 +160,11 @@ export default function EventsList() {
             new_event.name = event.name;
             new_event.location = event.location;
             new_event.description = event.description;
-            new_event.endTime = new Date(event.endTime).toDateString();   
+            new_event.startTime = new Date(event.startTime).toDateString() || null;
+            new_event.endTime = new Date(event.endTime).toDateString();  
             new_event.availableSeats = remaining_seats;
+            new_event.pointsRemain = event.pointsRemain || null;
+            new_event.pointsAwarded = event.pointsAwarded || null;
             new_events.push(new_event);
         }
         return new_events;
@@ -186,19 +314,7 @@ export default function EventsList() {
                 <Modal.Title>{selectedEvent?.name}</Modal.Title>
             </Modal.Header>
 
-            <Modal.Body>
-                <p><strong>Location:</strong> {selectedEvent?.location}</p>
-                <p><strong>Description</strong> {selectedEvent?.description}</p>
-                <p><strong>Ends:</strong> {selectedEvent?.endTime}</p>
-                <p><strong>Seats:</strong> {selectedEvent?.availableSeats}</p>
-            </Modal.Body>
-
-            <Modal.Footer>
-                <Button variant="primary" onClick={() => rsvp_user(selectedEvent)}>RSVP</Button>
-                <Button variant="secondary" onClick={() => setShowModal(false)}>
-                    Close
-                </Button>
-            </Modal.Footer>
+            
         </Modal>
         </Container>
     );
