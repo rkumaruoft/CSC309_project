@@ -8,7 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 
 export default function Home() {
-  const { user, initialized } = useAuth();
+  const { user } = useAuth();
   const [showQr, setShowQr] = useState(false);
   const navigate = useNavigate();
   const [promos, setPromos] = useState([]);
@@ -104,9 +104,6 @@ export default function Home() {
       navigate('/login');
     }
   }, [navigate, user]);
-
-  // Wait until auth is initialized to avoid reading properties from null
-  if (!initialized) return <div className="container mt-4">Loading...</div>;
 
   const displayUser = user || {};
 

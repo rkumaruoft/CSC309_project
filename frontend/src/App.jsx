@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./layout/Layout.jsx";
+import { useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -13,6 +14,11 @@ import CashierTransactions from "./pages/CashierTransactions.jsx";
 import Profile from "./pages/Profile.jsx";
 
 export default function App() {
+    const { initialized } = useAuth();
+
+    if (!initialized) {
+        return <div className="container mt-4">Loading...</div>;
+    }
     return (
         <Routes>
 
