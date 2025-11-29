@@ -20,11 +20,11 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import cors from "cors"
 const app = express();
-app.use(express.json());
 
 
 const allowedOrigins = [
     "http://localhost:5173",
+    "http://localhost:4173",
     process.env.FRONTEND_URL
 ];
 
@@ -46,10 +46,18 @@ app.options("*", cors(corsOptions));
 
 
 // ---------------- Routes ----------------
-import authRoutes from "./routes/auth.js";
-app.use("/auth", authRoutes);
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const avatarsPath = path.join(__dirname, "uploads", "avatars");
+app.use("/avatars", express.static(avatarsPath));  // expose avatars under an endpoint
+
 import userRoutes from "./routes/users.js";
 app.use("/users", userRoutes);
+app.use(express.json());  // one route in userRoutes does not want JSON
+import authRoutes from "./routes/auth.js";
+app.use("/auth", authRoutes);
 import transactionRoutes from "./routes/transactions.js";
 app.use("/transactions", transactionRoutes);
 import eventRoutes from "./routes/events.js";

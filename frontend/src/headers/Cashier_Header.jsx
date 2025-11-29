@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
 
-export default function Main_Header() {
+export default function Cashier_Header() {
     const { user, logout } = useAuth();
     const [expanded, setExpanded] = useState(false);
 
@@ -12,7 +12,7 @@ export default function Main_Header() {
 
                 {/* BRAND */}
                 <Link className="navbar-brand" to="/dashboard">
-                    CSSU Rewards
+                    CSSU Rewards — Cashier
                 </Link>
 
                 {/* MOBILE TOGGLER */}
@@ -30,11 +30,8 @@ export default function Main_Header() {
                     {/* LEFT MENU LINKS */}
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                         <li className="nav-item"><Link className="nav-link" to="/dashboard">Home</Link></li>
-                        <li className="nav-item"><Link className="nav-link" to="/promotions">Promotions</Link></li>
-                        <li className="nav-item"><Link className="nav-link" to="/events">Events</Link></li>
-                        <li className="nav-item"><Link className="nav-link" to="/transactions">Transactions</Link></li>
+                        <li className="nav-item"><Link className="nav-link" to="/cashier/transactions">Transactions</Link></li>
                         <li className="nav-item"><Link className="nav-link" to="/redemption">Redeem</Link></li>
-                        <li className="nav-item"><Link className="nav-link" to="/transfers">Transfers</Link></li>
                     </ul>
 
                     {/* RIGHT SIDE — USER DROPDOWN */}
@@ -74,12 +71,6 @@ export default function Main_Header() {
                                     <Link className="dropdown-item" to="/profile">
                                         Profile
                                     </Link>
-                                </li>
-
-                                <li>
-                                    <button className="dropdown-item">
-                                        Show QR
-                                    </button>
                                 </li>
 
                                 <li><hr className="dropdown-divider" /></li>

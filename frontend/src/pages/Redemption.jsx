@@ -7,7 +7,8 @@ import { useLocation } from "react-router-dom";
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 // TODO: make points a user state/context that comes from "outside"
-function Redemption({ points }) {
+function Redemption() {
+    const [points, setPoints] = useState(0);
     const [redeem, setRedeem] = useState("");  // points in the redeem field
     const [transaction, setTransaction] = useState(null);  // contains id and amount
     const [error, setError] = useState("");
@@ -20,6 +21,18 @@ function Redemption({ points }) {
     // ---------- Initialize error to nothing on reload ----------
     useEffect(() => {
         setError("");
+        const userStr = localStorage.getItem("user");
+        let currPoints = 0;
+        if (userStr) {
+            try {
+                const userObj = JSON.parse(userStr);
+                currPoints = userObj.points || 0;
+            } catch (e) {
+                // Optionally log error or set error state
+                currPoints = 0;
+            }
+        }
+        setPoints(currPoints);
     }, [location]);
 
     // ---------- Handle redeem and error value changes ----------
@@ -35,7 +48,7 @@ function Redemption({ points }) {
 
         // Input validation
         const positiveIntReg = /^[0-9]*$/;
-        if (!positiveIntReg.test(redeem)) {
+        if (!positiveIntReg.test(redeem) || redeem === "0") {
             setTransaction(null);
             inputRef.current.setCustomValidity("Please input a positive integer.");
             return;
@@ -108,20 +121,21 @@ function Redemption({ points }) {
             <Col>
 
                 <Form onSubmit={submitRedemption} aria-labelledby="redemption-label">
-                    <Card style={{ backgroundColor: "#FFF9C4" }}>
+                    <Card bg="light">
                         <Form.Group className="m-3">
                             <Form.Label>
                                 <span className="fs-4">Your Balance:</span> {" "}
                                 <Badge
-                                    bg="warning"
+                                    bg="secondary"
                                     text="dark"
-                                    className="fs-6 border">
+                                    className="fs-6">
                                         {points} <span className="fw-normal">points</span>
                                 </Badge>
                             </Form.Label>
                             
                             {/* TODO: add remarks! */}
                             <Form.Control
+                                className="bg-secondary"
                                 ref={inputRef}
                                 type="number"
                                 required
@@ -152,18 +166,19 @@ function Redemption({ points }) {
         {transaction &&
         <Row>
             <Col>
-                <Modal show={transaction} onHide={() => setTransaction(null)}>
-                    <Modal.Header closeButton style={{ backgroundColor: "#FFF9C4" }}>
+                <Modal show={transaction} onHide={cancelRedemption}>
+                    <Modal.Header closeButton className="bg-light">
                         <Modal.Title>Scan to Redeem Your Transaction</Modal.Title>
                     </Modal.Header>
                     <Modal.Body className="d-flex flex-column justify-content-center align-items-center">
                         <p className="mb-1">Redeeming <strong>{transaction.amount}</strong> points</p>
+                        {/* Placeholder for QR code */}
                         <div style={{ width: 220, height: 220, background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <div className="text-muted">QR</div>
                         </div>
                     </Modal.Body>
-                    <Modal.Footer style={{ backgroundColor: "#FFF9C4" }}>
-                        <Button variant="warning" onClick={() => setTransaction(null)}>Cancel</Button>
+                    <Modal.Footer className="bg-light">
+                        <Button variant="warning" onClick={cancelRedemption}>Cancel</Button>
                     </Modal.Footer>
                 </Modal>
             </Col>

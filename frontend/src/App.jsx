@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./layout/Layout.jsx";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -9,6 +9,9 @@ import Promotions from "./pages/Promotions.jsx";
 import Transactions from "./pages/Transactions.jsx";
 import Redemption from "./pages/Redemption.jsx";
 import EventsList from "./pages/EventsList.jsx";
+import RequireRole from "./components/RequireRole.jsx";
+import CashierTransactions from "./pages/CashierTransactions.jsx";
+import Profile from "./pages/Profile.jsx";
 
 export default function App() {
   return (
@@ -61,7 +64,31 @@ export default function App() {
           </Layout>
         }
       />
+      {/* Regular user transactions (protected for role 'regular') */}
+      <Route element={<RequireRole allowedRoles={["regular"]} />}>
+          <Route
+              path="/transactions"
+              element={
+                  <Layout>
+                      <Transactions />
+                  </Layout>
+              }
+          />
+      </Route>
 
+      {/* Cashier transactions (protected for cashiers) */}
+      <Route element={<RequireRole allowedRoles={["cashier"]} />}>
+          <Route
+              path="/cashier/transactions"
+              element={
+                  <Layout>
+                      <CashierTransactions />
+                  </Layout>
+              }
+          />
+      </Route>
+
+      {/*Displaying events, displays different popups depending on organizer or attendee*/}
       <Route
         path="/events"
         element={
@@ -72,7 +99,6 @@ export default function App() {
       />
 
       {/* Other pages will be added by teammates. */}
-
       <Route
         path="/promotions"
         element={
@@ -81,14 +107,22 @@ export default function App() {
           </Layout>
         }
       />
+      <Route
+          path="/redemption"
+          element={
+              <Layout>
+                  <Redemption />
+              </Layout>
+          }
+      />
 
       <Route
-        path="/redemption"
-        element={
-          <Layout>
-            <Redemption points={1234567} />
-          </Layout>
-        }
+          path="/profile"
+          element={
+              <Layout>
+                  <Profile />
+              </Layout>
+          }
       />
 
       {/* DEFAULT ROUTE */}

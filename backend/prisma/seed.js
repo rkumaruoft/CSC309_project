@@ -107,6 +107,19 @@ async function main() {
 
     console.log("✔ Promotion created");
 
+    // ---- Sample Transaction ----
+    await prisma.transaction.create({
+        data: {
+            type: 'redemption',
+            amount: 10,
+            remark: 'Sample redemption from seed',
+            createdBy: 'seed',
+            userId: regular.id,
+        }
+    });
+
+    console.log("✔ Sample transaction created");
+
     console.log("🌱 Seeding complete!");
 }
 

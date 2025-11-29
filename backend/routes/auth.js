@@ -163,7 +163,7 @@ router.post("/resets/:resetToken", async (req, res) => {
         if (!strong) {
             return res.status(400).json({ error: "Weak password" });
         }
-
+            
         // 6. Update password
         const hashed = await bcrypt.hash(password, 10);
         await prisma.user.update({
