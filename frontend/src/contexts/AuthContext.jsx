@@ -13,9 +13,12 @@ export const AuthProvider = ({ children }) => {
     const [currentRole, setCurrentRole] = useState(null);
     const [initialized, setInitialized] = useState(false);
     const [showQr, setShowQr] = useState(false);
+    const showQrModal = () => setShowQr(true);
+    const hideQrModal = () => setShowQr(false);
+
 
     // ----------------------------------------------------
-    // 🔥 FAST, SAFE AUTO-LOGIN ON PAGE LOAD
+    // FAST, SAFE AUTO-LOGIN ON PAGE LOAD
     // ----------------------------------------------------
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -127,7 +130,7 @@ export const AuthProvider = ({ children }) => {
 
             const userData = await meRes.json();
             setUser(userData);
-            
+
             // Initialize role
             setCurrentRole(userData.role || "regular");
             localStorage.setItem("currentRole", userData.role || "regular");
@@ -197,6 +200,8 @@ export const AuthProvider = ({ children }) => {
                 switchRole,
                 showQr,
                 setShowQr,
+                showQrModal,
+                hideQrModal,
             }}
         >
             {children}
