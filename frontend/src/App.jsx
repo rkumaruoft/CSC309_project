@@ -13,6 +13,9 @@ import CashierTransactions from "./pages/CashierTransactions.jsx";
 import Verify from "./pages/Verify.jsx";
 import CashierRedemptions from "./pages/CashierRedemptions.jsx";
 import Profile from "./pages/Profile.jsx";
+import ManageUsers from "./pages/ManageUsers.jsx";
+import ProfileQrModal from "./components/ProfileQrModal.jsx";
+
 
 export default function App() {
     const { initialized } = useAuth();
@@ -20,125 +23,141 @@ export default function App() {
     if (!initialized) {
         return <div className="container mt-4">Loading...</div>;
     }
+
     return (
-        <Routes>
+        <>
+            {/* All routes */}
+            <Routes>
 
-            {/* LOGIN */}
-            <Route
-                path="/login"
-                element={
-                    <Layout>
-                        <Login />
-                    </Layout>
-                }
-            />
-
-            {/* REGISTER */}
-            <Route
-                path="/register"
-                element={
-                    <Layout>
-                        <Register />
-                    </Layout>
-                }
-            />
-
-            {/* Verify email */}
-            <Route
-                path="/verify"
-                element={
-                    <Layout>
-                        <Verify />
-                    </Layout>
-                }
-            />
-
-            {/* Authenticated pages */}
-            <Route
-                path="/dashboard"
-                element={
-                    <Layout>
-                        <Home />
-                    </Layout>
-                }
-            />
-
-            <Route
-                path="/transfers"
-                element={
-                    <Layout>
-                        <Transfers />
-                    </Layout>
-                }
-            />
-
-            {/* Regular user transactions (protected for role 'regular') */}
-            <Route element={<RequireRole allowedRoles={["regular"]} />}>
+                {/* LOGIN */}
                 <Route
-                    path="/transactions"
+                    path="/login"
                     element={
                         <Layout>
-                            <Transactions />
+                            <Login />
                         </Layout>
                     }
                 />
-            </Route>
 
-            {/* Cashier transactions (protected for cashiers) */}
-            <Route element={<RequireRole allowedRoles={["cashier"]} />}>
+                {/* REGISTER */}
                 <Route
-                    path="/cashier/transactions"
+                    path="/register"
                     element={
                         <Layout>
-                            <CashierTransactions />
+                            <Register />
                         </Layout>
                     }
                 />
+
+                {/* Verify email */}
                 <Route
-                    path="/cashier/redemption"
+                    path="/verify"
                     element={
                         <Layout>
-                            <CashierRedemptions />
+                            <Verify />
                         </Layout>
                     }
                 />
-            </Route>
 
-            {/* Other pages will be added by teammates. */}
+                {/* Authenticated pages */}
+                <Route
+                    path="/dashboard"
+                    element={
+                        <Layout>
+                            <Home />
+                        </Layout>
+                    }
+                />
 
-            <Route
-                path="/promotions"
-                element={
-                    <Layout>
-                        <Promotions />
-                    </Layout>
-                }
-            />
+                <Route
+                    path="/transfers"
+                    element={
+                        <Layout>
+                            <Transfers />
+                        </Layout>
+                    }
+                />
 
-            <Route
-                path="/redemption"
-                element={
-                    <Layout>
-                        <Redemption />
-                    </Layout>
-                }
-            />
+                {/* Regular user transactions */}
+                <Route element={<RequireRole allowedRoles={["regular"]} />}>
+                    <Route
+                        path="/transactions"
+                        element={
+                            <Layout>
+                                <Transactions />
+                            </Layout>
+                        }
+                    />
+                </Route>
 
-            <Route
-                path="/profile"
-                element={
-                    <Layout>
-                        <Profile />
-                    </Layout>
-                }
-            />
+                {/* Cashier transactions */}
+                <Route element={<RequireRole allowedRoles={["cashier"]} />}>
+                    <Route
+                        path="/cashier/transactions"
+                        element={
+                            <Layout>
+                                <CashierTransactions />
+                            </Layout>
+                        }
+                    />
+                    <Route
+                        path="/cashier/redemption"
+                        element={
+                            <Layout>
+                                <CashierRedemptions />
+                            </Layout>
+                        }
+                    />
+                </Route>
 
-            {/* DEFAULT ROUTE */}
-            <Route path="/" element={<Navigate to="/login" />} />
+                <Route
+                    path="/promotions"
+                    element={
+                        <Layout>
+                            <Promotions />
+                        </Layout>
+                    }
+                />
 
-            {/* 404 */}
-            <Route path="*" element={<h2>Page Not Found</h2>} />
+                <Route
+                    path="/redemption"
+                    element={
+                        <Layout>
+                            <Redemption />
+                        </Layout>
+                    }
+                />
 
-        </Routes>
+                {/* Manager / Superuser pages */}
+                <Route element={<RequireRole allowedRoles={["manager", "superuser"]} />}>
+                    <Route
+                        path="/manageUsers"
+                        element={
+                            <Layout>
+                                <ManageUsers />
+                            </Layout>
+                        }
+                    />
+                </Route>
+
+                <Route
+                    path="/profile"
+                    element={
+                        <Layout>
+                            <Profile />
+                        </Layout>
+                    }
+                />
+
+                {/* Default route */}
+                <Route path="/" element={<Navigate to="/login" />} />
+
+                {/* 404 */}
+                <Route path="*" element={<h2>Page Not Found</h2>} />
+            </Routes>
+
+            {/* ⬇⬇ QR Modal mounted globally ⬇⬇ */}
+            <ProfileQrModal />
+        </>
     );
 }

@@ -32,136 +32,107 @@ function isValidUtorid(id) {
     return /^[A-Za-z0-9]{7,8}$/.test(id);
 }
 
-// ---------------- /users/me (PATCH) ----------------
-// Clearance: Regular+
-router.patch(
-    "/me",
+// ---------------- /users (POST) -------------------
+// Clearance: Cashier+  (manager, superuser)
+router.post(
+    "/",
     authenticate,
-    upload.single("avatarUrl"),
+    requireClearance(["manager", "superuser"]),
     async (req, res) => {
         try {
-            const userId = req.user.id;
+            let { utorid, name, email, role, password } = req.body;
 
-            // ----------------------------
-            // STRICT ALLOWED FIELDS
-            // ----------------------------
-            const allowed = ["name", "email", "birthday", "avatar"];
-            const bodyKeys = Object.keys(req.body);
+            // ---------- Required Fields ----------
+            if (!utorid)
+                return res.status(400).json({ message: "Utorid is required" });
+            if (!name)
+                return res.status(400).json({ message: "Name is required" });
+            if (!email)
+                return res.status(400).json({ message: "Email is required" });
 
-            if (bodyKeys.length === 0 && !req.file) {
-                return res.status(400).json({ error: "Missing fields in request 1" });
-            }
+            // ---------- Validation ----------
+            if (!isValidUtorid(utorid))
+                return res.status(400).json({ message: "Invalid utorid format" });
 
-            for (const key of bodyKeys) {
-                if (!allowed.includes(key)) {
-                    return res.status(400).json({ error: "Invalid fields in request" });
-                }
-            }
+            if (name.length < 1 || name.length > 50)
+                return res.status(400).json({ message: "Invalid name length" });
 
-            const allEmpty = bodyKeys.every(key => {
-                const value = req.body[key];
-                return value === null || value === undefined || value === "";
+            if (!isValidUofTEmail(email))
+                return res.status(400).json({ message: "Invalid UofT email" });
+
+            // ---------- Unique Check ----------
+            const existing = await prisma.user.findFirst({
+                where: { OR: [{ utorid }, { email }] },
             });
+            if (existing)
+                return res.status(409).json({ error: "User already exists" });
 
-            if (allEmpty && !req.file) {
-                return res.status(400).json({ error: "Missing fields in request 2" });
+            // ---------- ROLE ASSIGNMENT ----------
+            // Default: regular
+            let finalRole = "regular";
+
+            // Managers can create: regular, cashier
+            if (req.user.role === "manager") {
+                if (role === "cashier") finalRole = "cashier";
             }
 
-            // ----------------------------
-            // BUILD UPDATE DATA
-            // ----------------------------
-            const data = {};
-
-            // -------- NAME --------
-            if ("name" in req.body && req.body.name !== null) {
-                const name = req.body.name.trim();
-                if (name.length < 1 || name.length > 50) {
-                    return res.status(400).json({ error: "Invalid name" });
-                }
-                data.name = name;
-            }
-
-            // -------- EMAIL --------
-            if ("email" in req.body && req.body.email !== null) {
-                const email = req.body.email.trim();
-                const emailRegex = /^[A-Za-z0-9._%+-]+@mail\.utoronto\.ca$/;
-
-                if (!emailRegex.test(email)) {
-                    return res.status(400).json({ error: "Invalid UofT email" });
-                }
-
-                data.email = email;
-            }
-
-            // -------- BIRTHDAY --------
-            if ("birthday" in req.body) {
-                const raw = req.body.birthday;
-
-                // If null → do NOT update birthday (skip)
-                if (raw === null) {
-                    // do nothing (don't put anything in data)
-                } else {
-                    // Must be string
-                    if (typeof raw !== "string" || raw.trim() === "") {
-                        return res.status(400).json({ error: "Invalid birthday format" });
-                    }
-
-                    // Must match YYYY-MM-DD
-                    const regex = /^\d{4}-\d{2}-\d{2}$/;
-                    if (!regex.test(raw)) {
-                        return res.status(400).json({ error: "Invalid birthday format" });
-                    }
-
-                    const d = new Date(raw);
-
-                    // Reject invalid date (e.g. Feb 30)
-                    if (isNaN(d.getTime())) {
-                        return res.status(400).json({ error: "Invalid birthday format" });
-                    }
-
-                    // Round-trip check: ensure date is real
-                    const iso = d.toISOString().split("T")[0];
-                    if (iso !== raw) {
-                        return res.status(400).json({ error: "Invalid birthday format" });
-                    }
-
-                    // Valid → update the date
-                    data.birthday = d.toISOString();
+            // Superusers can create ANY role
+            if (req.user.role === "superuser") {
+                if (["regular", "cashier", "manager", "superuser"].includes(role)) {
+                    finalRole = role;
                 }
             }
-            // -------- AVATAR UPLOAD --------
-            if (req.file) {
-                data.avatarUrl = req.file.filename;
+
+            // ---------- PASSWORD HANDLING ----------
+            let hashedPassword = null;
+            if (password) {
+                // Accept immediate password (super useful for admin-created accounts)
+                hashedPassword = bcrypt.hashSync(password, 10);
             }
 
-            // ----------------------------
-            // UPDATE USER SAFELY
-            // ----------------------------
-            const updated = await prisma.user.update({
-                where: { id: userId },
-                data,
+            // ---------- If no password → use resetToken workflow ----------
+            let resetToken = null;
+            let expiresAt = null;
+
+            if (!hashedPassword) {
+                resetToken = randomUUID();
+                expiresAt = new Date();
+                expiresAt.setDate(expiresAt.getDate() + 7);
+                resetTokens.set(resetToken, { utorid, expiresAt });
+            }
+
+            // ---------- CREATE USER ----------
+            const user = await prisma.user.create({
+                data: {
+                    utorid,
+                    name,
+                    email,
+                    role: finalRole,
+                    password: hashedPassword, // may be null
+                    verified: !!hashedPassword, // auto-verified if password was set
+                },
                 select: {
                     id: true,
                     utorid: true,
                     name: true,
                     email: true,
-                    birthday: true,
                     role: true,
-                    points: true,
-                    createdAt: true,
-                    lastLogin: true,
                     verified: true,
-                    suspicious: true,
-                    avatarUrl: true
-                }
+                },
             });
 
-            // Convert from 1987-06-05T00:00:00.000Z → 1987-06-05
-            if (updated.birthday) {
-                updated.birthday = updated.birthday.toISOString().split("T")[0];
+            // ---------- RESPONSE ----------
+            if (hashedPassword) {
+                // No need for reset token, user is ready
+                return res.status(201).json(user);
             }
-            return res.status(200).json(updated);
-        
+
+            // Otherwise return resetToken
+            return res.status(201).json({
+                ...user,
+                resetToken,
+                expiresAt: expiresAt.toISOString(),
+            });
 
         } catch (err) {
             console.error(err);
@@ -169,8 +140,6 @@ router.patch(
         }
     }
 );
-
-router.use(express.json());
 
 // ---------------- /User (POST) -------------------
 // Clearance: Cashier+
@@ -242,7 +211,11 @@ router.get(
     requireClearance(["manager", "superuser"]),
     async (req, res) => {
         try {
-            let { name, role, verified, activated, page = "1", limit = "10" } = req.query;
+            let {
+                search,
+                page = "1",
+                limit = "10"
+            } = req.query;
 
             // ------------------ VALIDATE PAGINATION ------------------
             page = Number(page);
@@ -255,65 +228,26 @@ router.get(
                 return res.status(400).json({ error: "Invalid pagination" });
             }
 
-            // ------------------ BUILD FILTERS SAFELY ------------------
+            // ------------------ BUILD FILTERS ------------------
             const filters = {};
 
-            // NAME filter
-            if (typeof name === "string" && name.trim() !== "") {
-                const query = name.trim();
+            if (typeof search === "string" && search.trim() !== "") {
+                const query = search.trim();
+
                 filters.OR = [
-                    { name: { contains: query } },
-                    { utorid: { contains: query } }
+                    { name: { contains: query} },
+                    { utorid: { contains: query} }
                 ];
-            }
-
-            // ROLE filter
-            if (typeof role === "string" && role.trim() !== "") {
-                filters.role = role;
-            }
-
-            // VERIFIED filter
-            if (verified !== undefined) {
-
-                // accept booleans OR strings
-                if (
-                    verified !== true &&
-                    verified !== false &&
-                    verified !== "true" &&
-                    verified !== "false"
-                ) {
-                    return res.status(400).json({ error: "Invalid verified value" });
-                }
-
-                // normalize to boolean
-                const v =
-                    verified === true ||
-                    verified === "true";
-
-                filters.verified = v;
-            }
-
-
-            // ACTIVATED filter
-            if (activated !== undefined) {
-                if (activated !== "true" && activated !== "false") {
-                    return res.status(400).json({ error: "Invalid activated value" });
-                }
-
-                filters.lastLogin =
-                    activated === "true"
-                        ? { not: null }
-                        : { equals: null };
             }
 
             // ------------------ QUERY DATABASE ------------------
             const count = await prisma.user.count({ where: filters });
+
             const users = await prisma.user.findMany({
                 where: filters,
                 skip: (page - 1) * limit,
                 take: limit,
                 orderBy: { id: "asc" },
-                // EXPLICITLY exclude password fields
                 select: {
                     id: true,
                     utorid: true,
@@ -338,6 +272,7 @@ router.get(
         }
     }
 );
+
 
 // --------------- /users/me (GET) ----------------
 router.get(
@@ -603,7 +538,6 @@ router.patch(
     async (req, res) => {
         try {
             const id = Number(req.params.userId);
-            console.log(req.user.role);
             // Validate userId
             if (!req.params.userId || isNaN(id) || id <= 0) {
                 return res.status(400).json({ error: "Invalid userId" });
@@ -748,8 +682,6 @@ router.post(
     authenticate,
     async (req, res) => {
         try {
-            console.log("POST /users/me/transactions body:", req.body);
-
             // ---- Validate body ----
             const allowed = ["type", "amount", "remark"];
             const keys = Object.keys(req.body);
@@ -822,8 +754,6 @@ router.post(
         }
     }
 );
-
-
 
 // ---------------- /users/me/transactions (GET) ----------------
 // Clearance: Regular+
