@@ -110,7 +110,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // ---------------- LOGIN ----------------
+    // ---------------- LOGIN -----------------------
     const login = async (utorid, password) => {
         try {
             const res = await fetch(`${BACKEND_URL}/auth/tokens`, {
@@ -120,34 +120,41 @@ export const AuthProvider = ({ children }) => {
             });
 
             const data = await res.json();
-            if (!res.ok) return data.message || data.error;
 
+            // ----------- ERROR HANDLING -----------
+            if (!res.ok) {
+                // NEW: Detect unverified accounts
+                if (res.status === 403 && data.error === "Account not verified") {
+                    return { unverified: true, utorid };
+                }
+
+                return data.message || data.error || "Login failed.";
+            }
+
+            // ----------- NORMAL LOGIN FLOW -----------
             localStorage.setItem("token", data.token);
 
-            // Fetch user profile
             const meRes = await fetch(`${BACKEND_URL}/users/me`, {
                 method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${data.token}`,
-                },
+                headers: { "Authorization": `Bearer ${data.token}` },
             });
 
             if (!meRes.ok) return "Failed to retrieve user profile.";
             const userData = await meRes.json();
 
             setUser(userData);
-            // set default current role on login
-            setCurrentRole(userData.role || 'regular');
-            localStorage.setItem('currentRole', userData.role || 'regular');
+            setCurrentRole(userData.role || "regular");
+            localStorage.setItem("currentRole", userData.role || "regular");
             localStorage.setItem("user", JSON.stringify(userData));
 
             navigate("/dashboard");
             return null;
 
         } catch (e) {
-            return "Network error during login." + e.message;
+            return "Network error during login: " + e.message;
         }
     };
+
 
     // compute available roles the user may switch to based on their backend role
     const computeAvailableRoles = (u) => {

@@ -1,24 +1,40 @@
 import { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { Form, Button, Card } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
     const { login, user } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const params = new URLSearchParams(location.search);
+    const justRegistered = params.get("registered") === "1";
+    const justVerified = params.get("verified") === "1";
 
     if (user) {
         return <Navigate to="/dashboard" replace />;
     }
+
     const [utorid, setUtorid] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setError("");
 
-        const err = await login(utorid, password); // AuthContext handles navigation
-        if (err) {
-            setError(err);
+        const result = await login(utorid, password);
+
+        // --- UNVERIFIED DETECTED ---
+        if (result?.unverified) {
+            navigate(`/verify?utorid=${result.utorid}`);
+            return;
+        }
+
+        // --- NORMAL LOGIN ERROR ---
+        if (typeof result === "string") {
+            setError(result);
         }
     };
 
@@ -30,6 +46,20 @@ export default function Login() {
             <Card style={{ width: "380px" }} className="p-4 shadow-lg">
                 <h2 className="text-center mb-4">Login</h2>
 
+                {/* SUCCESS ALERTS */}
+                {justRegistered && (
+                    <div className="alert alert-success">
+                        Account created! Please check your email for the verification code.
+                    </div>
+                )}
+
+                {justVerified && (
+                    <div className="alert alert-success">
+                        Your account has been verified! You can now log in.
+                    </div>
+                )}
+
+                {/* ERROR ALERT */}
                 {error && <div className="alert alert-danger">{error}</div>}
 
                 <Form onSubmit={handleLogin}>

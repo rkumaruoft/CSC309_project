@@ -11,6 +11,7 @@ import Transactions from "./pages/Transactions.jsx";
 import Redemption from "./pages/Redemption.jsx";
 import RequireRole from "./components/RequireRole.jsx";
 import CashierTransactions from "./pages/CashierTransactions.jsx";
+import Verify from "./pages/Verify.jsx";
 import Profile from "./pages/Profile.jsx";
 
 export default function App() {
@@ -38,6 +39,16 @@ export default function App() {
                 element={
                     <Layout>
                         <Register />
+                    </Layout>
+                }
+            />
+
+            {/* Verify email */}
+            <Route
+                path="/verify"
+                element={
+                    <Layout>
+                        <Verify />
                     </Layout>
                 }
             />
