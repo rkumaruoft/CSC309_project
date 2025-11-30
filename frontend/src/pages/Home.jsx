@@ -10,6 +10,7 @@ import { useAuth } from "../contexts/AuthContext";
 export default function Home() {
   const { user } = useAuth();
   const [showQr, setShowQr] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const navigate = useNavigate();
   const [promos, setPromos] = useState([]);
   const [recentTxs, setRecentTxs] = useState([]);
@@ -49,9 +50,8 @@ export default function Home() {
       // fall through to fallback below
     }
 
-    // Fallback: dev-only token + local user (offline mode)
+    // Fallback: persist local user for offline/dev mode
     localStorage.setItem('user', JSON.stringify(u));
-    localStorage.setItem('token', `dev:${u.utorid}`);
     location.reload();
   }
 
@@ -116,10 +116,10 @@ export default function Home() {
         <div className="mb-3">
           <small className="text-muted">Dev role test:</small>
           <div className="btn-group ms-2" role="group" aria-label="role buttons">
-            <button className="btn btn-sm btn-outline-primary" onClick={() => bootstrapDevUser({ utorid: 'regular1', name: 'Regular User', email: 'regular@mail.utoronto.ca', role: 'regular', points: 100 })}>Regular</button>
-            <button className="btn btn-sm btn-outline-primary" onClick={() => bootstrapDevUser({ utorid: 'cash001', name: 'Cashier User', email: 'cashier@mail.utoronto.ca', role: 'cashier', points: 0 })}>Cashier</button>
-            <button className="btn btn-sm btn-outline-primary" onClick={() => bootstrapDevUser({ utorid: 'manag01', name: 'Manager User', email: 'manager@mail.utoronto.ca', role: 'manager', points: 0 })}>Manager</button>
-            <button className="btn btn-sm btn-outline-primary" onClick={() => bootstrapDevUser({ utorid: 'super01', name: 'Super Admin', email: 'superuser@mail.utoronto.ca', role: 'superuser', points: 0 })}>Admin</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => bootstrapDevUser({ utorid: 'regular1', name: 'Regular User', email: 'regular@mail.utoronto.ca', role: 'regular' })}>Regular</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => bootstrapDevUser({ utorid: 'cash001', name: 'Cashier User', email: 'cashier@mail.utoronto.ca', role: 'cashier' })}>Cashier</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => bootstrapDevUser({ utorid: 'manag01', name: 'Manager User', email: 'manager@mail.utoronto.ca', role: 'manager' })}>Manager</button>
+            <button className="btn btn-sm btn-outline-primary" onClick={() => bootstrapDevUser({ utorid: 'super01', name: 'Super Admin', email: 'superuser@mail.utoronto.ca', role: 'superuser' })}>Admin</button>
           </div>
         </div>
       )}
@@ -132,6 +132,27 @@ export default function Home() {
           <div className="ms-3">
             <h4 className="mb-0">{displayUser.name || displayUser.utorid}</h4>
             <div className="text-muted small">{displayUser.email ?? ''}</div>
+            {/* DEV: start debug user info (development only) */}
+            {import.meta.env.DEV && (
+              <>
+                <div className="text-muted small mt-1">
+                  <strong>ID:</strong> {displayUser.id ?? "(unknown)"} {' '}
+                  • <strong>Role:</strong> {displayUser.role ?? '(n/a)'} {' '}
+                  • <strong>Verified:</strong> {displayUser.verified ? 'yes' : 'no'}
+                </div>
+                <div className="mt-2">
+                  <button className="btn btn-sm btn-outline-secondary" onClick={() => setShowInfo(s => !s)}>
+                    {showInfo ? 'Hide my info' : 'Show my info'}
+                  </button>
+                </div>
+                {showInfo && (
+                  <pre className="mt-2 bg-light p-2" style={{ maxWidth: 420, overflow: 'auto' }}>
+                    {JSON.stringify(displayUser, null, 2)}
+                  </pre>
+                )}
+              </>
+            )}
+            {/* DEV: end debug user info */}
           </div>
           <div className="ms-auto text-end">
             <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{displayUser.points ?? 0}</div>

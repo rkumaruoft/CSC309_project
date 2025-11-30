@@ -901,7 +901,8 @@ router.get(
                 relatedId: t.relatedId ?? undefined,
                 promotionIds: t.promotions.map(p => p.id),
                 remark: t.remark ?? "",
-                createdBy: t.createdBy
+                createdBy: t.createdBy,
+                createdAt: t.createdAt
             }));
 
             return res.json({ count, results });

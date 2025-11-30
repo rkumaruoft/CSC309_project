@@ -4,7 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 export default function Transfers() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [toId, setToId] = useState("");
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,30 +24,11 @@ export default function Transfers() {
     setSuccess(null);
   };
 
-  // Try to resolve recipient id from input. If input is numeric, use it directly.
-  // Otherwise try to query `/users?name=` (may require elevated permissions).
-  async function resolveRecipientId(input, token) {
+  function resolveRecipientId(input) {
     const trimmed = input.trim();
     if (!trimmed) return null;
-
-    // If it's a number, use as id
     if (/^\d+$/.test(trimmed)) return Number(trimmed);
-
-    // Otherwise attempt to search by utorid/name
-    try {
-      const res = await fetch(`${BACKEND_URL}/users?name=${encodeURIComponent(trimmed)}&limit=1`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
-
-      if (!res.ok) return null;
-      const data = await res.json();
-      if (Array.isArray(data.results) && data.results.length > 0) {
-        return data.results[0].id;
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
+    return null;
   }
 
   const handleSubmit = async (e) => {
@@ -79,11 +60,11 @@ export default function Transfers() {
 
     setLoading(true);
 
-    // Resolve recipient id
-    const recipientId = await resolveRecipientId(toId, token);
+    // Resolve recipient id (must be numeric user id)
+    const recipientId = resolveRecipientId(toId);
     if (!recipientId) {
       setLoading(false);
-      setError("Could not find recipient. Try entering their numeric user id or ensure backend lookup is available.");
+      setError("Invalid recipient. Transfers require a numeric user id");
       return;
     }
 
@@ -100,13 +81,6 @@ export default function Transfers() {
 
       const data = await res.json();
       if (!res.ok) {
-        // Fallback: demo behavior if backend not available or token missing
-        if (!token) {
-          setSuccess({ demo: true, to: toId, amount: amountInt });
-          setLoading(false);
-          return;
-        }
-
         setError(data.error || data.message || "Transfer failed");
         setLoading(false);
         return;
@@ -119,6 +93,11 @@ export default function Transfers() {
           stored.points = stored.points - amountInt;
           localStorage.setItem("user", JSON.stringify(stored));
         }
+      } catch (_) {}
+
+      // Refresh context user from backend so UI updates immediately
+      try {
+        await refreshUser();
       } catch (_) {}
 
       setSuccess({ id: data.id, recipient: data.recipient ?? data.recipient, amount: amountInt });
@@ -135,12 +114,12 @@ export default function Transfers() {
 
       <form onSubmit={handleSubmit} style={{ maxWidth: 520 }}>
         <div className="mb-3">
-          <label className="form-label">Transfer to (user id or utorid)</label>
+          <label className="form-label">Transfer to (user id)</label>
           <input
             className="form-control"
             value={toId}
             onChange={(e) => setToId(e.target.value)}
-            placeholder="Numeric id (e.g. 12) or utorid (e.g. jdoe)"
+            placeholder="Numeric id (e.g. 12)"
             required
             aria-label="recipient"
           />
@@ -163,11 +142,7 @@ export default function Transfers() {
 
         {success && (
           <div className="alert alert-success" role="alert">
-            {success.demo ? (
-              <>Demo: Transfer to <strong>{success.to}</strong> for <strong>{success.amount}</strong> points.</>
-            ) : (
-              <>Transfer successful (id: {success.id}) — sent <strong>{success.amount}</strong> points.</>
-            )}
+            <>Transfer successful — sent <strong>{success.amount}</strong> points.</>
           </div>
         )}
 

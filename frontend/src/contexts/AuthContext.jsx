@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
         // DEV shortcut: when running locally we support bootstrapping from
         // `localStorage.user` either when there's no token or when the token
         // is a dev token of the form `dev:<utorid>`.
-        if (import.meta.env.DEV && (!token || token?.startsWith('dev:'))) {
+        if (import.meta.env.DEV && !token) {
             const stored = localStorage.getItem("user");
             if (stored) {
                 try {
@@ -69,6 +69,35 @@ export const AuthProvider = ({ children }) => {
         navigate("/");
     };
 
+    // ---------------- REFRESH USER ----------------
+    const refreshUser = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setUser(null);
+            localStorage.removeItem("user");
+            return null;
+        }
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/users/me`, {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (!res.ok) {
+                localStorage.removeItem("token");
+                setUser(null);
+                localStorage.removeItem("user");
+                return null;
+            }
+            const data = await res.json();
+            setUser(data);
+            localStorage.setItem("user", JSON.stringify(data));
+            return data;
+        } catch (e) {
+            return null;
+        }
+    };
+
     // ---------------- LOGIN ----------------
     const login = async (utorid, password) => {
         try {
@@ -106,7 +135,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, initialized }}>
+        <AuthContext.Provider value={{ user, login, logout, initialized, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );
