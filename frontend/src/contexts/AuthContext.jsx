@@ -130,7 +130,7 @@ export const AuthProvider = ({ children }) => {
             return null;
 
         } catch (e) {
-            return "Network error during login.";
+            return "Network error during login." + e.message;
         }
     };
 
