@@ -1,4 +1,4 @@
-// TODO: Design seperate home pages for different user roles (regular, cashier, manager, superuser)
+// TODO: Create different landing pages for each role based on the rubric.
 
 import { useEffect, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
