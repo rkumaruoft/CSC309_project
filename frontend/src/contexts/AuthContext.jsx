@@ -123,7 +123,6 @@ export const AuthProvider = ({ children }) => {
 
             // ----------- ERROR HANDLING -----------
             if (!res.ok) {
-                // NEW: Detect unverified accounts
                 if (res.status === 403 && data.error === "Account not verified") {
                     return { unverified: true, utorid };
                 }

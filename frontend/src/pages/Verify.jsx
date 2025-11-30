@@ -3,42 +3,67 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Verify() {
-    const { state } = useLocation();
     const navigate = useNavigate();
     const { login } = useAuth();
-
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-    const utorid = state?.utorid;
+    // --- get utorid from URL ---
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const utorid = params.get("utorid");
+
     const [code, setCode] = useState("");
     const [error, setError] = useState("");
+    const [info, setInfo] = useState("");
+    const [sending, setSending] = useState(false);
+    const [verifying, setVerifying] = useState(false);
 
+    // ---------------- VERIFY CODE ----------------
     const handleVerify = async (e) => {
         e.preventDefault();
         setError("");
+        setInfo("");
+        setVerifying(true);
 
-        // Step 1: verify code
-        const res = await fetch(`${BACKEND_URL}/auth/verify/confirm`, {
+        const res = await fetch(`${BACKEND_URL}/auth/verify`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ utorid, code }),
         });
 
         const data = await res.json();
+        setVerifying(false);
+
         if (!res.ok) {
             setError(data.error || "Invalid code");
             return;
         }
 
-        // Step 2: auto-login user after verification
-        const loginErr = await login(utorid, state?.password);
-        if (loginErr) {
-            setError("Account verified, but login failed. Please log in manually.");
+        // Go to login with success banner
+        navigate("/login?verified=1");
+    };
+
+    // ---------------- RESEND CODE ----------------
+    const handleResend = async () => {
+        setError("");
+        setInfo("");
+        setSending(true);
+
+        const res = await fetch(`${BACKEND_URL}/auth/verify/resend`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ utorid }),
+        });
+
+        const data = await res.json();
+        setSending(false);
+
+        if (!res.ok) {
+            setError(data.error || "Unable to resend verification code.");
             return;
         }
 
-        // Step 3: go to dashboard
-        navigate("/dashboard");
+        setInfo("A new verification code has been sent to your email.");
     };
 
     return (
@@ -46,9 +71,14 @@ export default function Verify() {
             <h2 className="text-center mb-3">Verify Your Account</h2>
 
             {error && <div className="alert alert-danger">{error}</div>}
+            {info && <div className="alert alert-info">{info}</div>}
+
+            <p className="text-center">
+                Enter the verification code sent to your UofT email.
+            </p>
 
             <form onSubmit={handleVerify}>
-                <label className="form-label">Enter verification code</label>
+                <label className="form-label">Verification Code</label>
                 <input
                     type="text"
                     className="form-control mb-3"
@@ -57,8 +87,20 @@ export default function Verify() {
                     required
                 />
 
-                <button className="btn btn-primary w-100">Verify</button>
+                <button className="btn btn-primary w-100" disabled={verifying}>
+                    {verifying ? "Verifying..." : "Verify"}
+                </button>
             </form>
+
+            <hr />
+
+            <button
+                onClick={handleResend}
+                className="btn btn-outline-secondary w-100"
+                disabled={sending}
+            >
+                {sending ? "Sending..." : "Resend Verification Code"}
+            </button>
         </div>
     );
 }

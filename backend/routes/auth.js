@@ -13,6 +13,8 @@ const prisma = new PrismaClient();
 // Keep these maps inside auth only
 const resetRateLimit = new Map();
 const resetTokens = new Map();
+const verificationCodes = new Map();
+const verifyRateLimit = new Map();
 
 // ---------------- /auth/tokens (POST) ----------------
 router.post("/tokens", async (req, res) => {
@@ -253,6 +255,18 @@ router.post("/register", async (req, res) => {
             }
         });
 
+        // Generate verification code
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = Date.now() + 10 * 60 * 1000;
+
+        verificationCodes.set(utorid, { code, expiresAt });
+        // DEV ONLY: print code for manual testing
+        console.log(`🔐 Verification code for ${utorid}: ${code}`);
+
+
+        // TODO: Replace with real email send
+        console.log("VERIFICATION CODE:", code);
+
         return res.status(201).json({ message: "User created" });
 
     } catch (err) {
@@ -260,6 +274,94 @@ router.post("/register", async (req, res) => {
         return res.status(500).json({ error: "Server error" });
     }
 });
+
+// ---------------- /auth/verify (POST) ----------------
+router.post("/verify", async (req, res) => {
+    try {
+        const { utorid, code } = req.body;
+
+        if (!utorid || !code) {
+            return res.status(400).json({ error: "Missing utorid or code" });
+        }
+
+        const user = await prisma.user.findUnique({ where: { utorid } });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        if (user.verified) {
+            return res.status(400).json({ error: "Account already verified" });
+        }
+
+        const entry = verificationCodes.get(utorid);
+        if (!entry) {
+            return res.status(400).json({ error: "No verification code found" });
+        }
+
+        // expired?
+        if (Date.now() > entry.expiresAt) {
+            verificationCodes.delete(utorid);
+            return res.status(400).json({ error: "Verification code expired" });
+        }
+
+        if (entry.code !== code) {
+            return res.status(400).json({ error: "Incorrect verification code" });
+        }
+
+        // mark verified
+        await prisma.user.update({
+            where: { utorid },
+            data: { verified: true }
+        });
+
+        verificationCodes.delete(utorid);
+
+        return res.status(200).json({ message: "Account verified" });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Server error" });
+    }
+});
+
+
+// ---------------- /auth/verify/resend (POST) ----------------
+router.post("/verify/resend", async (req, res) => {
+    try {
+        const { utorid } = req.body;
+        if (!utorid) return res.status(400).json({ error: "Missing utorid" });
+
+        const user = await prisma.user.findUnique({ where: { utorid } });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        if (user.verified) {
+            return res.status(400).json({ error: "Account already verified" });
+        }
+
+        // rate limit: 1 email per minute
+        const last = verifyRateLimit.get(utorid);
+        if (last && Date.now() - last < 60 * 1000) {
+            return res.status(429).json({ error: "Too many requests" });
+        }
+        verifyRateLimit.set(utorid, Date.now());
+
+        // generate code
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = Date.now() + 10 * 60 * 1000;
+
+        verificationCodes.set(utorid, { code, expiresAt });
+
+        console.log("RESEND VERIFICATION CODE:", code);
+
+        return res.status(200).json({ message: "Verification code resent" });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Server error" });
+    }
+});
+
+
 
 
 export default router;
