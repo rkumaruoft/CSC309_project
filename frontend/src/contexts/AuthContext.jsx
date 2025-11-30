@@ -7,6 +7,8 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
+    const [currentRole, setCurrentRole] = useState(null);
+    const [showQr, setShowQr] = useState(false);
     const [initialized, setInitialized] = useState(false);
 
     useEffect(() => {
@@ -50,6 +52,10 @@ export const AuthProvider = ({ children }) => {
                 }
                 const data = await res.json();
                 setUser(data);
+                // initialize currentRole from persisted value or from backend role
+                const persisted = localStorage.getItem('currentRole');
+                if (persisted) setCurrentRole(persisted);
+                else setCurrentRole(data.role || 'regular');
                 localStorage.setItem("user", JSON.stringify(data));
             })
             .catch(() => {
@@ -65,7 +71,10 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        localStorage.removeItem("currentRole");
         setUser(null);
+        setCurrentRole(null);
+        setShowQr(false);
         navigate("/");
     };
 
@@ -91,6 +100,9 @@ export const AuthProvider = ({ children }) => {
             }
             const data = await res.json();
             setUser(data);
+            // keep currentRole in sync (don't override if user previously switched)
+            const persisted = localStorage.getItem('currentRole');
+            if (!persisted) setCurrentRole(data.role || 'regular');
             localStorage.setItem("user", JSON.stringify(data));
             return data;
         } catch (e) {
@@ -124,6 +136,9 @@ export const AuthProvider = ({ children }) => {
             const userData = await meRes.json();
 
             setUser(userData);
+            // set default current role on login
+            setCurrentRole(userData.role || 'regular');
+            localStorage.setItem('currentRole', userData.role || 'regular');
             localStorage.setItem("user", JSON.stringify(userData));
 
             navigate("/dashboard");
@@ -134,8 +149,31 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    // compute available roles the user may switch to based on their backend role
+    const computeAvailableRoles = (u) => {
+        if (!u) return ['regular'];
+        const hasOrganizer = u.organizer || u.isEventOrganizer || u.role === 'organizer';
+        if (u.role === 'superuser') return ['regular', 'cashier', 'manager', 'superuser', ...(hasOrganizer ? ['organizer'] : [])];
+        if (u.role === 'manager') return ['regular', 'cashier', 'manager', ...(hasOrganizer ? ['organizer'] : [])];
+        if (u.role === 'cashier') return ['regular', 'cashier'];
+        if (u.role === 'organizer') return ['regular', 'organizer'];
+        return ['regular'];
+    };
+
+    const availableRoles = computeAvailableRoles(user || {});
+
+    const switchRole = (role) => {
+        if (!role) return;
+        if (!availableRoles.includes(role)) return;
+        setCurrentRole(role);
+        try { localStorage.setItem('currentRole', role); } catch (e) { }
+    };
+
+    const showQrModal = () => setShowQr(true);
+    const hideQrModal = () => setShowQr(false);
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, initialized, refreshUser }}>
+        <AuthContext.Provider value={{ user, login, logout, initialized, refreshUser, currentRole, availableRoles, switchRole, showQr, showQrModal, hideQrModal }}>
             {children}
         </AuthContext.Provider>
     );
