@@ -9,5 +9,5 @@ export default function Regular_User_Header() {
         { to: '/redemption', label: 'Redeem' },
         { to: '/transfers', label: 'Transfers' },
     ];
-    return <HeaderBase brand="CSSU Rewards" links={links} />;
+    return <HeaderBase brand="BananaCreds" links={links} />;
 }

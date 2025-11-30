@@ -190,7 +190,6 @@ router.post("/resets/:resetToken", async (req, res) => {
 
 // ---------------- /auth/register (POST) ----------------
 router.post("/register", async (req, res) => {
-    console.log(req.body)
     try {
         const allowed = ["utorid", "name", "email", "birthday", "password"];
         if (Object.keys(req.body).some(k => !allowed.includes(k))) {

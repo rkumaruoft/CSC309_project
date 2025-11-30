@@ -1,11 +1,25 @@
-import { Resend } from "resend";
-import { RESEND_API_KEY, EMAIL_FROM } from "../config/env.js";
+import nodemailer from "nodemailer";
+import {
+    EMAIL_HOST,
+    EMAIL_PORT,
+    EMAIL_USER,
+    EMAIL_PASS,
+    EMAIL_FROM
+} from "../config/env.js";
 
-const resend = new Resend(RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+    host: EMAIL_HOST,
+    port: EMAIL_PORT,
+    secure: false, // TLS on 587
+    auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS
+    }
+});
 
 export async function sendEmail(to, subject, html) {
     try {
-        await resend.emails.send({
+        await transporter.sendMail({
             from: EMAIL_FROM,
             to,
             subject,
@@ -13,7 +27,7 @@ export async function sendEmail(to, subject, html) {
         });
         return true;
     } catch (err) {
-        console.error("Email sending failed:", err);
+        console.error("Email send failed:", err);
         return false;
     }
 }
