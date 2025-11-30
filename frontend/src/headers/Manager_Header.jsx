@@ -2,8 +2,7 @@ import HeaderBase from './HeaderBase';
 
 export default function Manager_Header() {
     const links = [
-        { to: '/dashboard', label: 'Home' },
-        { to: '/manage', label: 'Manage' },
+        { to: '/manage', label: 'Manage Users' },
         { to: '/transactions', label: 'Transactions' },
         { to: '/promotions', label: 'Promotions' },
         { to: '/events', label: 'Events' },
