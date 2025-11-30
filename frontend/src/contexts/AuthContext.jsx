@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }) => {
             if (!persisted) setCurrentRole(data.role || 'regular');
             localStorage.setItem("user", JSON.stringify(data));
             return data;
-        } catch (e) {
+        } catch {
             return null;
         }
     };

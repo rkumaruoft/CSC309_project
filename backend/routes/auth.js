@@ -180,4 +180,80 @@ router.post("/resets/:resetToken", async (req, res) => {
     }
 });
 
+// ---------------- /auth/register (POST) ----------------
+router.post("/register", async (req, res) => {
+    try {
+        const allowed = ["utorid", "name", "email", "birthday", "password"];
+        if (Object.keys(req.body).some(k => !allowed.includes(k))) {
+            return res.status(400).json({ error: "Invalid fields in request" });
+        }
+
+        const { utorid, name, email, birthday, password } = req.body;
+
+        // Required fields
+        if (!utorid || !name || !email || !password) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        // UTORid format
+        if (!/^[A-Za-z0-9]{7,8}$/.test(utorid)) {
+            return res.status(400).json({ error: "Invalid UTORid format" });
+        }
+
+        // UofT email required
+        if (!/^[A-Za-z0-9._%+-]+@mail\.utoronto\.ca$/.test(email)) {
+            return res.status(400).json({ error: "Invalid UofT email" });
+        }
+
+        // Password strength
+        const strong =
+            password.length >= 8 &&
+            password.length <= 20 &&
+            /[A-Z]/.test(password) &&
+            /[a-z]/.test(password) &&
+            /[0-9]/.test(password) &&
+            /[^A-Za-z0-9]/.test(password);
+
+        if (!strong) {
+            return res.status(400).json({ error: "Weak password" });
+        }
+
+        // Check if UTORid/email already exist
+        const existing = await prisma.user.findFirst({
+            where: { OR: [{ utorid }, { email }] }
+        });
+
+        if (existing) {
+            return res.status(409).json({
+                error: "This UTORid or email cannot be used"
+            });
+        }
+
+        // Hash password
+        const hashed = await bcrypt.hash(password, 10);
+
+        // Create the new user
+        await prisma.user.create({
+            data: {
+                utorid,
+                name,
+                email,
+                password: hashed,
+                birthday: birthday ? new Date(birthday) : null,
+                role: "regular",
+                points: 0,
+                verified: false,
+                suspicious: false
+            }
+        });
+
+        return res.status(201).json({ message: "User created" });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Server error" });
+    }
+});
+
+
 export default router;
