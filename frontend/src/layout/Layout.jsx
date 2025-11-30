@@ -27,6 +27,7 @@ export default function Layout({ children }) {
         else if (role === "superuser") HeaderComponent = Superuser_Header;
         else HeaderComponent = Regular_User_Header;
     }
+    
     //TODO:You can add more conditions here for different headers based on the route
     return (
         <div className="d-flex flex-column min-vh-100">
@@ -36,7 +37,7 @@ export default function Layout({ children }) {
             <ProfileQrModal />
 
             {/* children are responsible for their own layout */}
-            <main className="flex-grow-1">
+            <main className="flex-grow-1 pb-3">
                 {children}
             </main>
 
