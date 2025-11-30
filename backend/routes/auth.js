@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { JWT_SECRET } from "../config/env.js";
+import { sendEmail } from "./email_helper.js";
 
 
 const router = express.Router();
@@ -262,8 +263,16 @@ router.post("/register", async (req, res) => {
         verificationCodes.set(utorid, { code, expiresAt });
 
 
-        // TODO: Replace with real email send
-        console.log("VERIFICATION CODE:", code);
+        await sendEmail(
+            email,
+            "Your BANANACreds Verification Code",
+            `
+        <p>Hello ${name},</p>
+        <p>Your BANANACreds verification code is:</p>
+        <h2>${code}</h2>
+        <p>This code expires in 10 minutes.</p>
+    `
+        );
 
         return res.status(201).json({ message: "User created" });
 
@@ -349,7 +358,16 @@ router.post("/verify/resend", async (req, res) => {
 
         verificationCodes.set(utorid, { code, expiresAt });
 
-        console.log("RESEND VERIFICATION CODE:", code);
+        await sendEmail(
+            user.email,
+            "Your BANANACreds Verification Code (Resent)",
+            `
+        <p>Hello ${user.name},</p>
+        <p>Your new BANANACreds verification code is:</p>
+        <h2>${code}</h2>
+        <p>This code expires in 10 minutes.</p>
+    `
+        );
 
         return res.status(200).json({ message: "Verification code resent" });
 

@@ -11,14 +11,13 @@ export default function Login() {
     const params = new URLSearchParams(location.search);
     const justRegistered = params.get("registered") === "1";
     const justVerified = params.get("verified") === "1";
-
-    if (user) {
-        return <Navigate to="/dashboard" replace />;
-    }
-
     const [utorid, setUtorid] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    
+    if (user) {
+        return <Navigate to="/dashboard" replace />;
+    }
 
     const handleLogin = async (e) => {
         e.preventDefault();
