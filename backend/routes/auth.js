@@ -260,8 +260,6 @@ router.post("/register", async (req, res) => {
         const expiresAt = Date.now() + 10 * 60 * 1000;
 
         verificationCodes.set(utorid, { code, expiresAt });
-        // DEV ONLY: print code for manual testing
-        console.log(`🔐 Verification code for ${utorid}: ${code}`);
 
 
         // TODO: Replace with real email send
