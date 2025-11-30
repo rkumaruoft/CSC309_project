@@ -12,7 +12,6 @@ import ProfileQrModal from "../components/ProfileQrModal";
 export default function Layout({ children }) {
     const { pathname } = useLocation();
     const { user, currentRole, showQr } = useAuth();
-
     // Default to regular user header;
     let HeaderComponent = Regular_User_Header;
 

@@ -12,7 +12,7 @@ export default function Home() {
 
     const [promos, setPromos] = useState([]);
     const [recentTxs, setRecentTxs] = useState([]);
-
+    
     useEffect(() => {
         const token = localStorage.getItem("token");
         const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
