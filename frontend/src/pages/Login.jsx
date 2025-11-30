@@ -1,20 +1,24 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
-import { Form, Button, Card } from "react-bootstrap";
+import { Form, Button, Card, Alert } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
-    const { login, user, currentRole } = useAuth();
+    const { login, user } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
+    // Read URL query params
     const params = new URLSearchParams(location.search);
     const justRegistered = params.get("registered") === "1";
     const justVerified = params.get("verified") === "1";
+    const resetSuccess = params.get("reset") === "success";
+
     const [utorid, setUtorid] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
+    // If the user is already logged in → redirect away
     if (user) {
         return <Navigate to="/dashboard" replace />;
     }
@@ -25,13 +29,13 @@ export default function Login() {
 
         const result = await login(utorid, password);
 
-        // --- UNVERIFIED DETECTED ---
+        // Unverified case
         if (result?.unverified) {
             navigate(`/verify?utorid=${result.utorid}`);
             return;
         }
 
-        // --- NORMAL LOGIN ERROR ---
+        // Normal login error
         if (typeof result === "string") {
             setError(result);
         }
@@ -47,19 +51,25 @@ export default function Login() {
 
                 {/* SUCCESS ALERTS */}
                 {justRegistered && (
-                    <div className="alert alert-success">
+                    <Alert variant="success">
                         Account created! Please check your email for the verification code.
-                    </div>
+                    </Alert>
                 )}
 
                 {justVerified && (
-                    <div className="alert alert-success">
+                    <Alert variant="success">
                         Your account has been verified! You can now log in.
-                    </div>
+                    </Alert>
+                )}
+
+                {resetSuccess && (
+                    <Alert variant="success" className="text-center">
+                        Password reset successful — please log in.
+                    </Alert>
                 )}
 
                 {/* ERROR ALERT */}
-                {error && <div className="alert alert-danger">{error}</div>}
+                {error && <Alert variant="danger">{error}</Alert>}
 
                 <Form onSubmit={handleLogin}>
                     <Form.Group className="mb-3">
@@ -88,7 +98,7 @@ export default function Login() {
                         Login
                     </Button>
                 </Form>
-                
+
                 <div className="text-center mt-3">
                     <Link to="/forgot-password">Forgot your password?</Link>
                 </div>

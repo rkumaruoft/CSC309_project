@@ -1,12 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import "bootswatch/dist/quartz/bootstrap.min.css";
 
-import './index.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootswatch/dist/united/bootstrap.min.css";
 import App from './App.jsx';
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
-
+// import './index.css';
 createRoot(document.getElementById('root')).render(
     <StrictMode>
         <BrowserRouter>
