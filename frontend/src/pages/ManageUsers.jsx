@@ -447,10 +447,20 @@ export default function ManageUsers() {
                             {/* Header info */}
                             <div className="d-flex gap-3 mb-3">
                                 <div
-                                    className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                    className="rounded-circle overflow-hidden bg-secondary d-flex align-items-center justify-content-center"
                                     style={{ width: "80px", height: "80px" }}
                                 >
-                                    {(selectedUser.name || selectedUser.utorid)[0].toUpperCase()}
+                                    <img
+                                        src={
+                                            selectedUser?.avatarUrl
+                                                ? `${import.meta.env.VITE_BACKEND_URL}/avatars/${selectedUser.avatarUrl}`
+                                                : "/defaultAvatar.svg"
+                                        }
+                                        onError={(e) => (e.currentTarget.src = "/defaultAvatar.svg")}
+                                        alt="User Avatar"
+                                        className="w-100 h-100"
+                                        style={{ objectFit: "cover" }}
+                                    />
                                 </div>
 
                                 <div>
