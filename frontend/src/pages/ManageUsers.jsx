@@ -122,6 +122,15 @@ export default function ManageUsers() {
         loadUsers(1, search);
     }, [reloadFlag]);
 
+    // whenever search changes, reload after 300ms
+    useEffect(() => {
+        const delay = setTimeout(() => {
+            setReloadFlag(p => !p);
+        }, 200);
+
+        return () => clearTimeout(delay);
+    }, [search]);
+
     /* ==========================================================
        BACKEND ACTIONS
        ========================================================== */
@@ -268,11 +277,7 @@ export default function ManageUsers() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
-                <button className="btn btn-secondary" onClick={() => setReloadFlag(p => !p)}>
-                    Search
-                </button>
             </div>
-
             {/* TABLE */}
             {loading ? (
                 <div>Loading…</div>

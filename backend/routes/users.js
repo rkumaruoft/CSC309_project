@@ -213,17 +213,9 @@ router.get(
         try {
             let {
                 search,
-                name,    
-                role,
-                verified,
-                activated,
                 page = "1",
                 limit = "10"
             } = req.query;
-
-            // normalize search input
-            if (!name && search) name = search;
-            name = typeof name === "string" ? name.trim() : "";
 
             // ------------------ VALIDATE PAGINATION ------------------
             page = Number(page);
@@ -239,50 +231,13 @@ router.get(
             // ------------------ BUILD FILTERS ------------------
             const filters = {};
 
-            // 🔍 TEXT SEARCH (name + utorid + email)
-            if (name !== "") {
-                const query = name.toLowerCase();
+            if (typeof search === "string" && search.trim() !== "") {
+                const query = search.trim();
 
-                // role search support (manual match)
-                const possibleRoles = ["regular", "cashier", "manager", "superuser"];
-                const matchedRoles = possibleRoles.filter(r => r.includes(query));
-
-                const ORfilters = [
-                    { name: { contains: query } },
-                    { utorid: { contains: query } },
-                    { email: { contains: query } },
+                filters.OR = [
+                    { name: { contains: query} },
+                    { utorid: { contains: query} }
                 ];
-
-                if (matchedRoles.length > 0) {
-                    ORfilters.push({ role: { in: matchedRoles } });
-                }
-
-                filters.OR = ORfilters;
-            }
-
-            // 🔹 ROLE FILTER (strict enum)
-            if (typeof role === "string" && role.trim() !== "") {
-                filters.role = role;
-            }
-
-            // 🔹 VERIFIED FILTER
-            if (verified !== undefined) {
-                if (![true, false, "true", "false"].includes(verified)) {
-                    return res.status(400).json({ error: "Invalid verified value" });
-                }
-                filters.verified = (verified === true || verified === "true");
-            }
-
-            // 🔹 ACTIVATED FILTER (based on lastLogin)
-            if (activated !== undefined) {
-                if (activated !== "true" && activated !== "false") {
-                    return res.status(400).json({ error: "Invalid activated value" });
-                }
-
-                filters.lastLogin =
-                    activated === "true"
-                        ? { not: null }
-                        : { equals: null };
             }
 
             // ------------------ QUERY DATABASE ------------------
