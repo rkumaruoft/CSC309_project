@@ -13,6 +13,7 @@ import CashierTransactions from "./pages/CashierTransactions.jsx";
 import Verify from "./pages/Verify.jsx";
 import CashierRedemptions from "./pages/CashierRedemptions.jsx";
 import Profile from "./pages/Profile.jsx";
+import ManageUsers from "./pages/ManageUsers.jsx";
 
 export default function App() {
     const { initialized } = useAuth();
@@ -123,6 +124,18 @@ export default function App() {
                     </Layout>
                 }
             />
+
+            {/* MANAGE USERS (Manager or Superuser) */}
+            <Route element={<RequireRole allowedRoles={["manager", "superuser"]} />}>
+                <Route
+                    path="/manageUsers"
+                    element={
+                        <Layout>
+                            <ManageUsers />
+                        </Layout>
+                    }
+                />
+            </Route>
 
             <Route
                 path="/profile"

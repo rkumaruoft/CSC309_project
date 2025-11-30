@@ -4,7 +4,7 @@ import { Form, Button, Card } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
-    const { login, user } = useAuth();
+    const { login, user, currentRole } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -14,7 +14,6 @@ export default function Login() {
     const [utorid, setUtorid] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    
     if (user) {
         return <Navigate to="/dashboard" replace />;
     }
