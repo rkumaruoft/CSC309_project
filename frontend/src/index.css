@@ -1,73 +1,67 @@
-/* ========== GLOBAL RESET (light + safe) ========== */
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* ============================================================
+   GLOBAL TYPOGRAPHY — CONSISTENT ACROSS ALL PAGES
+   ============================================================ */
 
+/* Smooth rendering everywhere */
+:root {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Slightly improved default font (system stack) */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+               Helvetica, Arial, sans-serif;
 }
 
-/* ========== BODY ========== */
+/* Base text */
 body {
-  margin: 0;
-  background: #f8f9fa; /* optional light neutral bg */
+  font-size: 16px;
+  line-height: 1.6;
+  color: #212529;           /* clean readable grey */
 }
 
-/* ========== UTILITY HELPERS ========== */
-.vertical-center {
-  min-height: 75vh;
+/* Headings (better contrast + clean weight) */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;         /* semi-bold */
+  letter-spacing: -0.25px;
+  color: #111;              /* deep grey, not harsh black */
+  margin-bottom: 0.75rem;
 }
 
-.rounded-lg {
-  border-radius: 16px;
+/* Subheadings & muted text */
+.text-muted {
+  color: rgba(0, 0, 0, 0.55) !important;
 }
 
-.shadow-soft {
-  box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.08);
+/* Paragraphs */
+p {
+  margin-bottom: 0.8rem;
 }
 
-/* ========== PROFILE ========== */
-.profile-table {
-    table-layout: fixed;
+/* Links */
+a {
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.15s ease;
 }
 
-.profile-key {
-    width: 20%;
-    min-width: 220px;
+a:hover {
+  opacity: 0.75;
 }
 
-.profile-data {
-    width: 60%;
+th {
+  font-weight: 600;
+  color: #444 !important;
 }
 
-.profile-edit {
-    width: 20%;
+/* Buttons feel cleaner */
+.btn, button {
+  transition: all 0.15s ease;
 }
 
-.profile-avatar {
-    width: 15vw;
-    height: 15vw;
-    object-fit: cover;
-    object-position: center;
-}
-
-.profile-avatar-container {
-    border-radius: 50%;
-    border: 4px solid black;
-    background-color: #e0e0e0;
-}
-
-/* Solid black background to hide the weird lines around the QR code that I don't know how to fix.
-*/
-.qr-full-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: #000000;
-  opacity: 1;
-  z-index: 1040;
-}
-
-.modal {
-  z-index: 1050 !important;
+/* Optional: readable text when inside gradient cards */
+.card,
+.table,
+.col,
+.row {
+  color: inherit;
 }

@@ -4,7 +4,7 @@ import { Form, Button, Card } from "react-bootstrap";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
-    const { login, user } = useAuth();
+    const { login, user, currentRole } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 

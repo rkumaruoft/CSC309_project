@@ -66,7 +66,7 @@ export default function HeaderBase({ brand, links = [] }) {
                             </button>
 
                             {/* Dropdown menu */}
-                            <ul className="dropdown-menu dropdown-menu-end mt-2">
+                            <ul className="dropdown-menu bg-primary text-light dropdown-menu-end mt-2">
 
                                 <li>
                                     <Link className="dropdown-item" to="/profile">
@@ -84,7 +84,7 @@ export default function HeaderBase({ brand, links = [] }) {
                                 {availableRoles && availableRoles.length > 1 && (
                                     <>
                                         <li><hr className="dropdown-divider" /></li>
-                                        <li><h6 className="dropdown-header">Interface</h6></li>
+                                        <li><h6 className="dropdown-header text-light bold unselectable">Interface</h6></li>
                                         {availableRoles.map(r => (
                                             <li key={r}>
                                                 <button
