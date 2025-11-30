@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { findAvatar } from "./Profile";
 import { useAuth } from "../contexts/AuthContext";
 
 
 export default function Home() {
-  const { user } = useAuth();
-  const [showQr, setShowQr] = useState(false);
+  const { user, showQrModal } = useAuth();
   const [showInfo, setShowInfo] = useState(false);
   const navigate = useNavigate();
   const [promos, setPromos] = useState([]);
@@ -161,32 +160,13 @@ export default function Home() {
         </div>
 
         <div className="mt-3 d-flex gap-2">
-          <Button className="btn-qr" onClick={() => setShowQr(true)}>My QR code</Button>
+          <Button className="btn-qr" onClick={() => showQrModal()}>My QR code</Button>
           <Button variant="outline-primary" onClick={() => navigate('/redemption')}>Redeem</Button>
           <Button variant="outline-secondary" onClick={() => navigate('/transfers')}>Transfers</Button>
         </div>
 
 
-        {/* QR Code Modal */}
-        <Modal show={showQr} onHide={() => setShowQr(false)}>
-          <Modal.Header closeButton>
-            <Modal.Title>My QR Code</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p className="mb-1"><strong>Name:</strong> {displayUser.name}</p>
-            <p className="text-muted small">Scan this QR at the cashier to identify this user.</p>
-            <div style={{ width: 220, height: 220, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e9e9e9' }}>
-              <img
-                alt="qr-user"
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(`user:${displayUser.id ?? displayUser.utorid}`)}`}
-                style={{ width: 220, height: 220 }}
-              />
-            </div>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowQr(false)}>Close</Button>
-          </Modal.Footer>
-        </Modal>
+        {/* QR modal is provided globally in Layout */}
 
         {/* Previews: Promotions and Recent Transactions */}
         <div className="mt-4">
