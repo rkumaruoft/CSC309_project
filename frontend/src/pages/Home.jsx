@@ -166,16 +166,21 @@ export default function Home() {
           <Button variant="outline-secondary" onClick={() => navigate('/transfers')}>Transfers</Button>
         </div>
 
+
+        {/* QR Code Modal */}
         <Modal show={showQr} onHide={() => setShowQr(false)}>
           <Modal.Header closeButton>
             <Modal.Title>My QR Code</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <p className="mb-1"><strong>Utorid:</strong> {displayUser.utorid}</p>
             <p className="mb-1"><strong>Name:</strong> {displayUser.name}</p>
-            <p className="text-muted small">(QR code placeholder)</p>
-            <div style={{ width: 220, height: 220, background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div className="text-muted">QR</div>
+            <p className="text-muted small">Scan this QR at the cashier to identify this user.</p>
+            <div style={{ width: 220, height: 220, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e9e9e9' }}>
+              <img
+                alt="qr-user"
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(`user:${displayUser.id ?? displayUser.utorid}`)}`}
+                style={{ width: 220, height: 220 }}
+              />
             </div>
           </Modal.Body>
           <Modal.Footer>
