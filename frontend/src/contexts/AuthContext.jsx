@@ -14,9 +14,7 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const token = localStorage.getItem("token");
 
-        // DEV shortcut: when running locally we support bootstrapping from
-        // `localStorage.user` either when there's no token or when the token
-        // is a dev token of the form `dev:<utorid>`.
+        // DEV shortcut: when running locally in dev mode.
         if (import.meta.env.DEV && !token) {
             const stored = localStorage.getItem("user");
             if (stored) {
@@ -30,7 +28,7 @@ export const AuthProvider = ({ children }) => {
             }
         }
 
-        // Non-DEV + no token => unauthenticated (finish bootstrap)
+        // Non-DEV + no token => unauthenticated
         if (!token) {
             setUser(null);
             setInitialized(true);

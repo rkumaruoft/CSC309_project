@@ -11,6 +11,7 @@ import Redemption from "./pages/Redemption.jsx";
 import RequireRole from "./components/RequireRole.jsx";
 import CashierTransactions from "./pages/CashierTransactions.jsx";
 import Verify from "./pages/Verify.jsx";
+import CashierRedemptions from "./pages/CashierRedemptions.jsx";
 import Profile from "./pages/Profile.jsx";
 
 export default function App() {
@@ -90,6 +91,14 @@ export default function App() {
                     element={
                         <Layout>
                             <CashierTransactions />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/cashier/redemption"
+                    element={
+                        <Layout>
+                            <CashierRedemptions />
                         </Layout>
                     }
                 />

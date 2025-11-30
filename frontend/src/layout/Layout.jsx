@@ -11,7 +11,7 @@ import ProfileQrModal from "../components/ProfileQrModal";
 
 export default function Layout({ children }) {
     const { pathname } = useLocation();
-    const { user, currentRole } = useAuth();
+    const { user, currentRole, showQr } = useAuth();
 
     // Default to regular user header;
     let HeaderComponent = Regular_User_Header;
@@ -32,6 +32,7 @@ export default function Layout({ children }) {
         <div className="d-flex flex-column min-vh-100">
 
             {HeaderComponent && <HeaderComponent />}
+            {showQr && <div className="qr-full-overlay" />}
             <ProfileQrModal />
 
             {/* children are responsible for their own layout */}
