@@ -9,7 +9,7 @@ export default function ProfileQrModal() {
   const src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`user:${id}`)}`;
 
   return (
-    <Modal show={!!showQr} onHide={hideQrModal} centered>
+    <Modal show={!!showQr} onHide={hideQrModal} centered backdrop={false}>
       <Modal.Header closeButton>
         <Modal.Title>My QR Code</Modal.Title>
       </Modal.Header>
