@@ -14,7 +14,7 @@ export default function Login() {
     const [utorid, setUtorid] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    
+
     if (user) {
         return <Navigate to="/dashboard" replace />;
     }
@@ -88,6 +88,10 @@ export default function Login() {
                         Login
                     </Button>
                 </Form>
+                
+                <div className="text-center mt-3">
+                    <Link to="/forgot-password">Forgot your password?</Link>
+                </div>
 
                 <div className="text-center mt-3">
                     <small>Don't have an account?</small>

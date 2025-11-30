@@ -13,6 +13,7 @@ import CashierTransactions from "./pages/CashierTransactions.jsx";
 import Verify from "./pages/Verify.jsx";
 import CashierRedemptions from "./pages/CashierRedemptions.jsx";
 import Profile from "./pages/Profile.jsx";
+import ForgotPassword from "./pages/ForgotPassword";
 
 export default function App() {
     const { initialized } = useAuth();
@@ -42,6 +43,15 @@ export default function App() {
                     </Layout>
                 }
             />
+
+            <Route
+                path="/forgot-password" 
+                element={
+                <Layout>
+                    <ForgotPassword />
+                </Layout>
+            } />
+
 
             {/* Verify email */}
             <Route
