@@ -8,5 +8,5 @@ export default function Manager_Header() {
         { to: '/promotions', label: 'Promotions' },
         { to: '/events', label: 'Events' },
     ];
-    return <HeaderBase brand="CSSU Rewards — Manager" links={links} />;
+    return <HeaderBase brand="BananaCreds — Manager" links={links} />;
 }

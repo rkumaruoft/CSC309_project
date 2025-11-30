@@ -3,7 +3,6 @@ import Layout from "./layout/Layout.jsx";
 import { useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import Transfers from "./pages/Transfers";
 import Promotions from "./pages/Promotions.jsx";
@@ -11,6 +10,7 @@ import Transactions from "./pages/Transactions.jsx";
 import Redemption from "./pages/Redemption.jsx";
 import RequireRole from "./components/RequireRole.jsx";
 import CashierTransactions from "./pages/CashierTransactions.jsx";
+import Verify from "./pages/Verify.jsx";
 import CashierRedemptions from "./pages/CashierRedemptions.jsx";
 import Profile from "./pages/Profile.jsx";
 
@@ -39,6 +39,16 @@ export default function App() {
                 element={
                     <Layout>
                         <Register />
+                    </Layout>
+                }
+            />
+
+            {/* Verify email */}
+            <Route
+                path="/verify"
+                element={
+                    <Layout>
+                        <Verify />
                     </Layout>
                 }
             />

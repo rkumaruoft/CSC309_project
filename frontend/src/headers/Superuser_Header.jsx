@@ -5,5 +5,5 @@ export default function Superuser_Header() {
         { to: '/dashboard', label: 'Home' },
         { to: '/admin', label: 'Admin' },
     ];
-    return <HeaderBase brand="CSSU Rewards — Admin" links={links} />;
+    return <HeaderBase brand="BananaCreds — Admin" links={links} />;
 }
