@@ -1,67 +1,107 @@
 /* ============================================================
-   GLOBAL TYPOGRAPHY — CONSISTENT ACROSS ALL PAGES
+   GLOBAL THEME OVERRIDES — APPLIES THROUGHOUT WHOLE APP
    ============================================================ */
 
-/* Smooth rendering everywhere */
+/* ------------------------------------------------------------
+   COLOR VARIABLES — override Bootswatch / Bootstrap variables
+   ------------------------------------------------------------ */
 :root {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --bs-primary: #7b69a7a2 !important;
+  --bs-secondary: #4895ef !important;
 
-  /* Slightly improved default font (system stack) */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
-               Helvetica, Arial, sans-serif;
+  /* Optional cleaner greys */
+  --bs-body-color: #cedae6 !important;
+  --bs-heading-color: #111 !important;
 }
 
-/* Base text */
+/* Primary background override */
+.bg-primary {
+  background-color: var(--bs-primary) !important;
+}
+
+/* ------------------------------------------------------------
+   TYPOGRAPHY
+   ------------------------------------------------------------ */
 body {
   font-size: 16px;
   line-height: 1.6;
-  color: #212529;           /* clean readable grey */
+  color: var(--bs-body-color);
+  background-color: #f8f9fa; /* Optional softer background */
 }
 
-/* Headings (better contrast + clean weight) */
+/* Headings */
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;         /* semi-bold */
+  font-weight: 600;
   letter-spacing: -0.25px;
-  color: #111;              /* deep grey, not harsh black */
+  color: var(--bs-heading-color);
   margin-bottom: 0.75rem;
 }
 
-/* Subheadings & muted text */
+/* Subtle muted text */
 .text-muted {
   color: rgba(0, 0, 0, 0.55) !important;
 }
 
-/* Paragraphs */
+/* Paragraph spacing */
 p {
   margin-bottom: 0.8rem;
 }
 
-/* Links */
+/* ------------------------------------------------------------
+   LINKS
+   ------------------------------------------------------------ */
 a {
   text-decoration: none;
   font-weight: 500;
   transition: opacity 0.15s ease;
+  color: inherit; /* prevents Bootstrap forcing link blue */
 }
 
 a:hover {
   opacity: 0.75;
 }
 
+/* ------------------------------------------------------------
+   TABLE HEADERS
+   ------------------------------------------------------------ */
 th {
   font-weight: 600;
+  text-align: center; /* If you want centered headers */
   color: #444 !important;
 }
 
-/* Buttons feel cleaner */
-.btn, button {
-  transition: all 0.15s ease;
+/* ------------------------------------------------------------
+   BUTTONS — global hover + animation
+   ------------------------------------------------------------ */
+button,
+.btn {
+  transition: all 0.18s ease;
 }
 
-/* Optional: readable text when inside gradient cards */
-.card,
-.table,
-.col,
-.row {
+/* ------------------------------------------------------------
+   CARD, ROW, COL — inherit text color if inside dark section
+   ------------------------------------------------------------ */
+.card, .table, .col, .row {
   color: inherit;
+}
+
+/* ============================================================
+   GRADIENT / DARK SECTIONS — force light text for contrast
+   ============================================================ */
+.gradient-section,
+.gradient-card {
+  color: #ffffff !important;
+}
+
+.gradient-section h1,
+.gradient-section h2,
+.gradient-section h3,
+.gradient-card h1,
+.gradient-card h2,
+.gradient-card h3 {
+  color: #ffffff !important;
+}
+
+.gradient-card .text-muted {
+  color: rgba(255, 255, 255, 0.7) !important;
 }

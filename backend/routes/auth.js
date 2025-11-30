@@ -76,7 +76,6 @@ router.post("/tokens", async (req, res) => {
 // ---------------- /auth/resets (POST) ----------------
 router.post("/resets", async (req, res) => {
     try {
-        // ------------------ PAYLOAD VALIDATION ------------------
         const allowed = ["utorid"];
         if (Object.keys(req.body).some(k => !allowed.includes(k))) {
             return res.status(400).json({ error: "Invalid fields in request" });
@@ -87,34 +86,43 @@ router.post("/resets", async (req, res) => {
             return res.status(400).json({ error: "Missing utorid" });
         }
 
-        // ------------------ RATE LIMIT PER UTORID ------------------
+        // RATE LIMIT: Only 1 request per minute
         const now = Date.now();
         const last = resetRateLimit.get(utorid);
         if (last && now - last < 60 * 1000) {
             return res.status(429).json({ error: "Too Many Requests" });
         }
-
         resetRateLimit.set(utorid, now);
 
-        // ------------------ GENERATE TOKEN ------------------
-        const resetToken = randomUUID();
-        const expiresAt = new Date(Date.now() + 3600000);
-
-        // ------------------ CHECK USER EXISTS ------------------
+        // Check if user exists
         const user = await prisma.user.findUnique({ where: { utorid } });
-
-        if (user) {
-            resetTokens.set(resetToken, { utorid, expiresAt });
-        } else {
-            // If user does not exist, do not create token
-            // return 404
+        if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // ------------------ ALWAYS RETURN STRING TOKEN ------------------
+        // Generate reset token
+        const resetToken = randomUUID();
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        resetTokens.set(resetToken, { utorid, expiresAt });
+
+        // ---------------- SEND EMAIL USING HELPER ----------------
+        await sendEmail(
+            user.email,
+            "Your Bananacreds Password Reset Token",
+            `
+                <p>Hello ${user.name},</p>
+                <p>You requested a password reset for your BananaCreds account.</p>
+                <p>Your reset token is:</p>
+                <h2>${resetToken}</h2>
+                <p>This token expires in 1 hour.</p>
+                <p>If you did not request this, you can ignore this email.</p>
+            `
+        );
+
+        // Return only expiration timestamp (NOT the token)
         return res.status(202).json({
-            expiresAt: expiresAt.toISOString(),
-            resetToken
+            expiresAt: expiresAt.toISOString()
         });
 
     } catch (err) {
@@ -122,6 +130,7 @@ router.post("/resets", async (req, res) => {
         return res.status(500).json({ error: "Server error" });
     }
 });
+
 
 
 // ---------------- /auth/resets/:resetToken (POST) ----------------
@@ -375,8 +384,5 @@ router.post("/verify/resend", async (req, res) => {
         return res.status(500).json({ error: "Server error" });
     }
 });
-
-
-
 
 export default router;

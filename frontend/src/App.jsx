@@ -15,7 +15,8 @@ import CashierRedemptions from "./pages/CashierRedemptions.jsx";
 import Profile from "./pages/Profile.jsx";
 import ManageUsers from "./pages/ManageUsers.jsx";
 import ProfileQrModal from "./components/ProfileQrModal.jsx";
-
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 export default function App() {
     const { initialized } = useAuth();
@@ -48,6 +49,24 @@ export default function App() {
                         </Layout>
                     }
                 />
+
+                {/* FORGOT PASSWORD */}
+                <Route
+                    path="/forgot-password"
+                    element={
+                        <Layout>
+                            <ForgotPassword />
+                        </Layout>
+                    } />
+
+                {/* RESET PASSWORD */}
+                <Route
+                    path="/reset-password"
+                    element={
+                        <Layout>
+                            <ResetPassword />
+                        </Layout>
+                    } />
 
                 {/* Verify email */}
                 <Route

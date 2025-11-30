@@ -16,7 +16,7 @@ export default function Layout({ children }) {
     let HeaderComponent = Regular_User_Header;
 
     // Use login header on auth routes
-    if (pathname === "/login" || pathname === "/register" || pathname === "/verify") {
+    if (pathname === "/login" || pathname === "/register" || pathname === "/verify" || pathname === "/forgot-password") {
         HeaderComponent = Login_Header;
     } else if (user) {
         // Pick a header based on the currently selected interface (switched role)
