@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 export default function ProfileQrModal() {
   const { user, showQr, hideQrModal } = useAuth();
   if (!user) return null;
-  const id = user.id ?? user.utorid ?? '';
+  const id = user.utorid ?? user.id ?? '';
   const src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`user:${id}`)}`;
 
   return (
