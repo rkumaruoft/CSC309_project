@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
-import { findAvatar } from "./Profile";
 import { useAuth } from "../contexts/AuthContext";
+import findAvatar from "../utils/findAvatar";
+
 
 export default function Home() {
     const { user, showQrModal } = useAuth();
@@ -12,6 +13,8 @@ export default function Home() {
 
     const [promos, setPromos] = useState([]);
     const [recentTxs, setRecentTxs] = useState([]);
+
+  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
     /* ============================================================
        LOAD DATA
@@ -98,7 +101,7 @@ export default function Home() {
                             style={{ width: 80, height: 80 }}
                         >
                             <img
-                                src={findAvatar(displayUser)}
+                                src={findAvatar(displayUser, VITE_BACKEND_URL)}
                                 alt="avatar"
                                 className="w-100 h-100"
                                 style={{ objectFit: "cover" }}
