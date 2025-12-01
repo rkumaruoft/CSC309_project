@@ -101,7 +101,7 @@ export default function Home() {
                             style={{ width: 80, height: 80 }}
                         >
                             <img
-                                src={findAvatar(displayUser)}
+                                src={findAvatar(displayUser, VITE_BACKEND_URL)}
                                 alt="avatar"
                                 className="w-100 h-100"
                                 style={{ objectFit: "cover" }}
