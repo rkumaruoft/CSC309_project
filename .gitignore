@@ -2,6 +2,7 @@ node_modules/
 backend/node_modules/
 frontend/node_modules/
 .vscode/settings.json
+frontend/.env
 backend/prisma/migrations/20251125212927_migration1/migration.sql
 .gitignore
 .gitignore

@@ -1,59 +1,107 @@
-/* ========== GLOBAL RESET (light + safe) ========== */
+/* ============================================================
+   GLOBAL THEME OVERRIDES — APPLIES THROUGHOUT WHOLE APP
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   COLOR VARIABLES — override Bootswatch / Bootstrap variables
+   ------------------------------------------------------------ */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --bs-primary: #7b69a7a2 !important;
+  --bs-secondary: #4895ef !important;
 
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Optional cleaner greys */
+  --bs-body-color: #cedae6 !important;
+  --bs-heading-color: #111 !important;
 }
 
-/* ========== BODY ========== */
+/* Primary background override */
+.bg-primary {
+  background-color: var(--bs-primary) !important;
+}
+
+/* ------------------------------------------------------------
+   TYPOGRAPHY
+   ------------------------------------------------------------ */
 body {
-  margin: 0;
-  background: #f8f9fa; /* optional light neutral bg */
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--bs-body-color);
+  background-color: #f8f9fa; /* Optional softer background */
 }
 
-/* ========== UTILITY HELPERS ========== */
-.vertical-center {
-  min-height: 75vh;
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.25px;
+  color: var(--bs-heading-color);
+  margin-bottom: 0.75rem;
 }
 
-.rounded-lg {
-  border-radius: 16px;
+/* Subtle muted text */
+.text-muted {
+  color: rgba(0, 0, 0, 0.55) !important;
 }
 
-.shadow-soft {
-  box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.08);
+/* Paragraph spacing */
+p {
+  margin-bottom: 0.8rem;
 }
 
-/* ========== PROFILE ========== */
-.profile-table {
-    table-layout: fixed;
+/* ------------------------------------------------------------
+   LINKS
+   ------------------------------------------------------------ */
+a {
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.15s ease;
+  color: inherit; /* prevents Bootstrap forcing link blue */
 }
 
-.profile-key {
-    width: 20%;
-    min-width: 220px;
+a:hover {
+  opacity: 0.75;
 }
 
-.profile-data {
-    width: 60%;
+/* ------------------------------------------------------------
+   TABLE HEADERS
+   ------------------------------------------------------------ */
+th {
+  font-weight: 600;
+  text-align: center; /* If you want centered headers */
+  color: #444 !important;
 }
 
-.profile-edit {
-    width: 20%;
+/* ------------------------------------------------------------
+   BUTTONS — global hover + animation
+   ------------------------------------------------------------ */
+button,
+.btn {
+  transition: all 0.18s ease;
 }
 
-.profile-avatar {
-    width: 15vw;
-    height: 15vw;
-    object-fit: cover;
-    object-position: center;
+/* ------------------------------------------------------------
+   CARD, ROW, COL — inherit text color if inside dark section
+   ------------------------------------------------------------ */
+.card, .table, .col, .row {
+  color: inherit;
 }
 
-.profile-avatar-container {
-    border-radius: 50%;
-    border: 4px solid black;
-    background-color: #e0e0e0;
+/* ============================================================
+   GRADIENT / DARK SECTIONS — force light text for contrast
+   ============================================================ */
+.gradient-section,
+.gradient-card {
+  color: #ffffff !important;
+}
+
+.gradient-section h1,
+.gradient-section h2,
+.gradient-section h3,
+.gradient-card h1,
+.gradient-card h2,
+.gradient-card h3 {
+  color: #ffffff !important;
+}
+
+.gradient-card .text-muted {
+  color: rgba(255, 255, 255, 0.7) !important;
 }

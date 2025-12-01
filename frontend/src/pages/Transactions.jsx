@@ -77,7 +77,7 @@ export default function Transactions() {
               <li key={t.id} className="list-group-item d-flex justify-content-between align-items-start">
                 <div>
                   <div className="fw-bold">{t.type}</div>
-                  <div className="small text-muted">{t.relatedId ?? t.relatedUtorid ?? ''} — {t.time ? new Date(t.time).toLocaleString() : ''}</div>
+                  <div className="small text-muted">{t.relatedId ?? t.relatedUtorid ?? ''} — {t.createdAt ? new Date(t.createdAt).toLocaleString() : ''}</div>
                 </div>
                 <div className="text-end">
                   <div className="fw-semibold">{t.amount} pts</div>
