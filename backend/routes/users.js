@@ -857,12 +857,6 @@ router.post(
                 return res.status(400).json({ error: "Insufficient points" });
             }
 
-            // ---- Deduct points ----
-            await prisma.user.update({
-                where: { id: user.id },
-                data: { points: user.points - amount }
-            });
-
             // ---- Create redemption transaction ----
             const tx = await prisma.transaction.create({
                 data: {

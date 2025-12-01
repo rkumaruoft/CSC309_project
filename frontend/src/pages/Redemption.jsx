@@ -162,8 +162,13 @@ function Redemption() {
                     <Modal.Body className="d-flex flex-column justify-content-center align-items-center">
                         <p className="mb-1">Redeeming <strong>{transaction.amount}</strong> points</p>
                         {/* Placeholder for QR code */}
-                        <div style={{ width: 220, height: 220, background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div className="text-muted">QR</div>
+                        <div className="d-flex justify-content-center">
+                            <img
+                                alt="qr-user"
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`transaction:${transaction.id}`)}`}
+                                style={{ width: 260, height: 260 }}
+                                className="img-fluid rounded"
+                            />
                         </div>
                     </Modal.Body>
                     <Modal.Footer className="bg-light">
