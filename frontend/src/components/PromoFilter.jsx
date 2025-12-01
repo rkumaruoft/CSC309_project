@@ -32,7 +32,6 @@ function PromoFilter({ setFilters, setShowFilter }) {
                         type="text"
                         placeholder="Promotion name"
                         size="sm"
-                        className="bg-secondary"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
@@ -41,7 +40,6 @@ function PromoFilter({ setFilters, setShowFilter }) {
                 <Form.Group className="me-2">
                     <Form.Label>Type:</Form.Label>
                     <Form.Select
-                        className="bg-secondary"
                         size="sm"
                         value={type}
                         onChange={(e) => setType(e.target.value)}>
@@ -56,7 +54,6 @@ function PromoFilter({ setFilters, setShowFilter }) {
                     <Form.Group className="me-2">
                         <Form.Label>Started:</Form.Label>
                         <Form.Select
-                            className="bg-secondary"
                             size="sm"
                             value={started}
                             onChange={(e) => setStarted(e.target.value)}>
@@ -69,7 +66,6 @@ function PromoFilter({ setFilters, setShowFilter }) {
                     <Form.Group className="me-2">
                         <Form.Label>Ended:</Form.Label>
                         <Form.Select
-                            className="bg-secondary"
                             size="sm"
                             value={ended}
                             onChange={(e) => setEnded(e.target.value)}>

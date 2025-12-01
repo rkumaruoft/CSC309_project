@@ -1,0 +1,17 @@
+/* ========== PROFILE ========== */
+.profile-table {
+    table-layout: fixed;
+}
+
+.profile-key {
+    width: 20%;
+    min-width: 220px;
+}
+
+.profile-data {
+    width: 60%;
+}
+
+.profile-edit {
+    width: 20%;
+}

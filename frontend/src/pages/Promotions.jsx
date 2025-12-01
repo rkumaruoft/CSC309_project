@@ -8,6 +8,7 @@ import AppliedFilters from "../components/PromoAppliedFilters.jsx";
 import { capitalize } from "../utils/format/string.js";
 import { floatToCurrency, formatRate } from "../utils/format/number.js";
 import { formatTime } from "../utils/format/date.js";
+import "./Promotions.css"
 
 
 function Promotions() {
@@ -43,6 +44,11 @@ function Promotions() {
         setPromos(data.results);
         setPageNum(page);
         setTotalPages(Math.max(1, Math.ceil(data.count / 10)))
+    }
+
+    function closeCurrPromo() {
+        setCurrPromo(null);
+        setClicked(null);
     }
 
     // ---------- On navigation to promotions page, fetch promotions ----------
@@ -145,7 +151,7 @@ function Promotions() {
         <Row>
             <Col>
             
-                <Modal show={clicked} onHide={() => setClicked(null)}>
+                <Modal show={clicked} onHide={closeCurrPromo}>
                     <Modal.Header closeButton className="bg-light">
                         <Modal.Title>Promotion Details</Modal.Title>
                     </Modal.Header>
@@ -192,7 +198,7 @@ function Promotions() {
 
                     </Modal.Body>
                     <Modal.Footer className="bg-light">
-                        <Button variant="warning" onClick={() => setClicked(null)}>Close</Button>
+                        <Button variant="warning" onClick={closeCurrPromo}>Close</Button>
                     </Modal.Footer>
                 </Modal>
 

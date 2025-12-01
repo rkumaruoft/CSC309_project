@@ -22,7 +22,7 @@ function PromoTable({ promos, setClicked }) {
         return new_promos;
     }
     
-    return <Table bordered responsive hover>
+    return <Table className="shadow-sm" bordered responsive hover>
         <thead className="table-primary">
             <tr>
                 <th>Name</th>

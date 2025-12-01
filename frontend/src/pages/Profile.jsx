@@ -110,7 +110,7 @@ function Profile() {
         <Row className="justify-content-center align-items-center mt-5">
             <Col>
                 <Form.Label id="profile-label" className="d-block mb-3">
-                    <h1>{currUser ? `${currUser.name}'s` : "Your"} Profile</h1>
+                    <h1>{currUser ? `${capitalize(currUser.name)}'s` : "Your"} Profile</h1>
                 </Form.Label>
             </Col>
         </Row>
@@ -121,7 +121,7 @@ function Profile() {
 
                 <Card>
                     {currUser &&
-                        <Table className="profile-table" aria-labelledby="profile-label" responsive>
+                        <Table className="profile-table" aria-labelledby="profile-label" borderless responsive>
                             <colgroup>
                                 <col className="profile-key" />
                                 <col className="profile-data" />

@@ -63,7 +63,8 @@ function Redemption() {
         const res = await fetch(`${VITE_BACKEND_URL}/users/me/transactions`, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
                 type: "redemption",
@@ -74,18 +75,8 @@ function Redemption() {
 
         // Handle request failure
         if (!res.ok) {
-            // setTransaction(null);
-            // setError(`Something went wrong: ${data.error}`);
-            // return;
-
-            // TODO: test on valid data
-            // If invalid token, use demo for testing
-            const demoTransaction = {
-                id: 1,
-                amount: redeemInt
-            };
-            setTransaction(demoTransaction);
-            setError("");
+            setTransaction(null);
+            setError(`Something went wrong: ${data.error}`);
             return;
         }
 
@@ -119,12 +110,12 @@ function Redemption() {
             <Col>
 
                 <Form onSubmit={submitRedemption} aria-labelledby="redemption-label">
-                    <Card bg="light">
+                    <Card className="shadow-sm">
                         <Form.Group className="m-3">
                             <Form.Label>
                                 <span className="fs-4">Your Balance:</span> {" "}
                                 <Badge
-                                    bg="secondary"
+                                    bg="light"
                                     text="dark"
                                     className="fs-6">
                                         {points} <span className="fw-normal">points</span>
@@ -133,7 +124,7 @@ function Redemption() {
                             
                             {/* TODO: add remarks! */}
                             <Form.Control
-                                className="bg-secondary"
+                                className="bg-light"
                                 ref={inputRef}
                                 type="number"
                                 required
@@ -143,7 +134,7 @@ function Redemption() {
                         </Form.Group>
                     </Card>
 
-                    <Button variant="warning" className="mt-4"
+                    <Button className="mt-4"
                         type="submit">Generate QR Code</Button>
                 </Form>
 
@@ -176,7 +167,7 @@ function Redemption() {
                         </div>
                     </Modal.Body>
                     <Modal.Footer className="bg-light">
-                        <Button variant="warning" onClick={cancelRedemption}>Cancel</Button>
+                        <Button onClick={cancelRedemption}>Cancel</Button>
                     </Modal.Footer>
                 </Modal>
             </Col>

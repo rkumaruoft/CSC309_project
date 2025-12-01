@@ -105,15 +105,3 @@ button,
 .gradient-card .text-muted {
   color: rgba(255, 255, 255, 0.7) !important;
 }
-
-/* ========== IMAGE BUTTON STYLING ========== */
-.filter {
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-}
-
-/* ========== PROMOTIONS TABLE STYLING ========== */
-.promo-table-body {
-    cursor: pointer;
-}

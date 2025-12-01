@@ -32,6 +32,144 @@ function isValidUtorid(id) {
     return /^[A-Za-z0-9]{7,8}$/.test(id);
 }
 
+// ---------------- /users/me (PATCH) ----------------
+// Clearance: Regular+
+router.patch(
+    "/me",
+    authenticate,
+    upload.single("avatarUrl"),
+    async (req, res) => {
+        try {
+            const userId = req.user.id;
+
+            // ----------------------------
+            // STRICT ALLOWED FIELDS
+            // ----------------------------
+            const allowed = ["name", "email", "birthday", "avatar"];
+            const bodyKeys = Object.keys(req.body);
+
+            if (bodyKeys.length === 0 && !req.file) {
+                return res.status(400).json({ error: "Missing fields in request 1" });
+            }
+
+            for (const key of bodyKeys) {
+                if (!allowed.includes(key)) {
+                    return res.status(400).json({ error: "Invalid fields in request" });
+                }
+            }
+
+            const allEmpty = bodyKeys.every(key => {
+                const value = req.body[key];
+                return value === null || value === undefined || value === "";
+            });
+
+            if (allEmpty && !req.file) {
+                return res.status(400).json({ error: "Missing fields in request 2" });
+            }
+
+            // ----------------------------
+            // BUILD UPDATE DATA
+            // ----------------------------
+            const data = {};
+
+            // -------- NAME --------
+            if ("name" in req.body && req.body.name !== null) {
+                const name = req.body.name.trim();
+                if (name.length < 1 || name.length > 50) {
+                    return res.status(400).json({ error: "Invalid name" });
+                }
+                data.name = name;
+            }
+
+            // -------- EMAIL --------
+            if ("email" in req.body && req.body.email !== null) {
+                const email = req.body.email.trim();
+                const emailRegex = /^[A-Za-z0-9._%+-]+@mail\.utoronto\.ca$/;
+
+                if (!emailRegex.test(email)) {
+                    return res.status(400).json({ error: "Invalid UofT email" });
+                }
+
+                data.email = email;
+            }
+
+            // -------- BIRTHDAY --------
+            if ("birthday" in req.body) {
+                const raw = req.body.birthday;
+
+                // If null → do NOT update birthday (skip)
+                if (raw === null) {
+                    // do nothing (don't put anything in data)
+                } else {
+                    // Must be string
+                    if (typeof raw !== "string" || raw.trim() === "") {
+                        return res.status(400).json({ error: "Invalid birthday format" });
+                    }
+
+                    // Must match YYYY-MM-DD
+                    const regex = /^\d{4}-\d{2}-\d{2}$/;
+                    if (!regex.test(raw)) {
+                        return res.status(400).json({ error: "Invalid birthday format" });
+                    }
+
+                    const d = new Date(raw);
+
+                    // Reject invalid date (e.g. Feb 30)
+                    if (isNaN(d.getTime())) {
+                        return res.status(400).json({ error: "Invalid birthday format" });
+                    }
+
+                    // Round-trip check: ensure date is real
+                    const iso = d.toISOString().split("T")[0];
+                    if (iso !== raw) {
+                        return res.status(400).json({ error: "Invalid birthday format" });
+                    }
+
+                    // Valid → update the date
+                    data.birthday = d.toISOString();
+                }
+            }
+            // -------- AVATAR UPLOAD --------
+            if (req.file) {
+                data.avatarUrl = req.file.filename;
+            }
+
+            // ----------------------------
+            // UPDATE USER SAFELY
+            // ----------------------------
+            const updated = await prisma.user.update({
+                where: { id: userId },
+                data,
+                select: {
+                    id: true,
+                    utorid: true,
+                    name: true,
+                    email: true,
+                    birthday: true,
+                    role: true,
+                    points: true,
+                    createdAt: true,
+                    lastLogin: true,
+                    verified: true,
+                    suspicious: true,
+                    avatarUrl: true
+                }
+            });
+
+            // Convert from 1987-06-05T00:00:00.000Z → 1987-06-05
+            if (updated.birthday) {
+                updated.birthday = updated.birthday.toISOString().split("T")[0];
+            }
+            return res.status(200).json(updated);
+        
+
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Server error" });
+        }
+    }
+);
+
 // ---------------- /users (POST) -------------------
 // Clearance: Cashier+  (manager, superuser)
 router.post(
@@ -692,6 +830,8 @@ router.post(
             const { type, amount, remark = "" } = req.body;
 
             // Must be redemption only
+            console.log(`body is: ${JSON.stringify(req.body)}`);
+            console.log(`type is: ${type}`);
             if (type !== "redemption") {
                 return res.status(400).json({ error: "Invalid transaction type" });
             }
