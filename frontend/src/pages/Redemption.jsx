@@ -6,7 +6,6 @@ import { useLocation } from "react-router-dom";
 // Setting up backend URL (TODO: how are we doing this?)
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
-// TODO: make points a user state/context that comes from "outside"
 function Redemption() {
     const [points, setPoints] = useState(0);
     const [redeem, setRedeem] = useState("");  // points in the redeem field
@@ -28,7 +27,6 @@ function Redemption() {
                 const userObj = JSON.parse(userStr);
                 currPoints = userObj.points || 0;
             } catch (e) {
-                // Optionally log error or set error state
                 currPoints = 0;
             }
         }

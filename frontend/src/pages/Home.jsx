@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
-import { findAvatar } from "./Profile";
 import { useAuth } from "../contexts/AuthContext";
+import findAvatar from "../utils/findAvatar";
 
 
 export default function Home() {
@@ -14,9 +14,10 @@ export default function Home() {
   const [promos, setPromos] = useState([]);
   const [recentTxs, setRecentTxs] = useState([]);
 
+  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+
   // Dev helper: attempt real backend login for seeded users
   async function bootstrapDevUser(u) {
-    const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
     try {
       const res = await fetch(`${VITE_BACKEND_URL}/auth/tokens`, {
         method: 'POST',
@@ -130,7 +131,7 @@ export default function Home() {
       <div className="mt-3 home-card">
         <div className="d-flex align-items-center">
           <div style={{ width: 96, height: 96, borderRadius: 8, overflow: 'hidden', background: '#eee' }}>
-            <img src={findAvatar(displayUser)} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={findAvatar(displayUser, VITE_BACKEND_URL)} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div className="ms-3">
             <h4 className="mb-0">{displayUser.name || displayUser.utorid}</h4>
