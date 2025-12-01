@@ -43,7 +43,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
-
+app.use(express.json());
 
 // ---------------- Routes ----------------
 import path from "path";
@@ -55,7 +55,6 @@ app.use("/avatars", express.static(avatarsPath));  // expose avatars under an en
 
 import userRoutes from "./routes/users.js";
 app.use("/users", userRoutes);
-app.use(express.json());  // one route in userRoutes does not want JSON
 import authRoutes from "./routes/auth.js";
 app.use("/auth", authRoutes);
 import transactionRoutes from "./routes/transactions.js";

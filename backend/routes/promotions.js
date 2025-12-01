@@ -208,7 +208,7 @@ router.get(
             // ------------------ Fetch matching promotions ------------------
             const rawPromos = await prisma.promotion.findMany({
                 where: filters,
-                orderBy: { id: "asc" }
+                orderBy: { endTime: "asc" }
             });
 
             let visiblePromos = rawPromos;

@@ -73,7 +73,7 @@ function Profile() {
             setError(`Failed to save changes: ${data.error}`);
             return;
         }
-        
+
         // Handle successful request
         setUser(data);
         setChanges(null);
@@ -121,20 +121,20 @@ function Profile() {
 
                 <Card>
                     {currUser &&
-                    <Table className="profile-table" aria-labelledby="profile-label" responsive>
-                        <colgroup>
-                            <col className="profile-key" />
-                            <col className="profile-data" />
-                            <col className="profile-edit" />
-                        </colgroup>
+                        <Table className="profile-table" aria-labelledby="profile-label" responsive>
+                            <colgroup>
+                                <col className="profile-key" />
+                                <col className="profile-data" />
+                                <col className="profile-edit" />
+                            </colgroup>
 
-                        <tbody>
-                            <tr>
-                                <th>UTORid:</th>
-                                <td className="text-truncate">{currUser.utorid}</td>
-                            </tr>
-                            <tr onMouseEnter={() => setHovering("name")}
-                                onMouseLeave={() => setHovering("")}>
+                            <tbody>
+                                <tr>
+                                    <th>UTORid:</th>
+                                    <td className="text-truncate">{currUser.utorid}</td>
+                                </tr>
+                                <tr onMouseEnter={() => setHovering("name")}
+                                    onMouseLeave={() => setHovering("")}>
                                     <th>Name:</th>
                                     <td className="text-truncate">{capitalize(currUser.name)}</td>
                                     <td>
@@ -142,12 +142,12 @@ function Profile() {
                                             onClick={() => setEdit("name")}
                                             className={hovering === "name" ? "visible" : "invisible"}
                                             size="sm">
-                                                Edit
+                                            Edit
                                         </Button>
                                     </td>
-                            </tr>
-                            <tr onMouseEnter={() => setHovering("email")}
-                                onMouseLeave={() =>setHovering("")}>
+                                </tr>
+                                <tr onMouseEnter={() => setHovering("email")}
+                                    onMouseLeave={() => setHovering("")}>
                                     <th>Email:</th>
                                     <td className="text-truncate">{currUser.email}</td>
                                     <td>
@@ -155,16 +155,16 @@ function Profile() {
                                             onClick={() => setEdit("email")}
                                             className={hovering === "email" ? "visible" : "invisible"}
                                             size="sm">
-                                                Edit
+                                            Edit
                                         </Button>
                                     </td>
-                            </tr>
-                            <tr>
-                                <th>Verified:</th>
-                                <td className="text-truncate">{formatVerified(currUser.verified)}</td>
-                            </tr>
-                            <tr onMouseEnter={() => setHovering("birthday")}
-                                onMouseLeave={() =>setHovering("")}>
+                                </tr>
+                                <tr>
+                                    <th>Verified:</th>
+                                    <td className="text-truncate">{formatVerified(currUser.verified)}</td>
+                                </tr>
+                                <tr onMouseEnter={() => setHovering("birthday")}
+                                    onMouseLeave={() => setHovering("")}>
                                     <th>Birthday:</th>
                                     <td className="text-truncate">{formatBirthday(currUser.birthday)}</td>
                                     <td>
@@ -172,48 +172,54 @@ function Profile() {
                                             onClick={() => setEdit("birthday")}
                                             className={hovering === "birthday" ? "visible" : "invisible"}
                                             size="sm">
-                                                Edit
+                                            Edit
                                         </Button>
                                     </td>
-                            </tr>
-                            <tr>
-                                <th>Points:</th>
-                                <td className="text-truncate">{currUser.points}</td>
-                            </tr>
-                        </tbody>
-                    </Table>}
+                                </tr>
+                                <tr>
+                                    <th>Points:</th>
+                                    <td className="text-truncate">{currUser.points}</td>
+                                </tr>
+                            </tbody>
+                        </Table>}
                 </Card>
 
             </Col>
-            
+
             {/* Change avatar */}
             <Col>
                 {currUser &&
-                <div className="d-flex flex-column justify-content-center align-items-center mt-5">
-                    <div className="profile-avatar-container">
+                    <div className="d-flex flex-column justify-content-center align-items-center mt-5">
                         <Image
                             className="profile-avatar"
                             src={findAvatar(currUser, VITE_BACKEND_URL)}
                             roundedCircle
-                            fluid
+                            style={{
+                                width: "150px",
+                                height: "150px",
+                                objectFit: "cover",
+                                border: "4px solid #ffffff",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                                background: "white"
+                            }}
                         />
-                    </div>
 
-                    <div>
-                        <Button className="mt-3" onClick={() => setEdit("avatarUrl")}>Edit Avatar</Button>
-                    </div>
-                </div>}
+
+                        <div>
+                            <Button className="mt-3" onClick={() => setEdit("avatarUrl")}>Edit Avatar</Button>
+                        </div>
+                    </div>}
             </Col>
         </Row>
 
         {/* Save and clear buttons */}
         {changes &&
-        <Row className="mt-2">
-            <Col>
-                <Button className="me-2" onClick={updateUser}>Save Changes</Button>
-                <Button variant="secondary" onClick={clearChanges}>Clear</Button>
-            </Col>
-        </Row>}
+            <Row className="mt-2">
+                <Col>
+                    <Button className="me-2" onClick={updateUser}>Save Changes</Button>
+                    <Button variant="secondary" onClick={clearChanges}>Clear</Button>
+                </Col>
+            </Row>}
 
         {/* The edit field */}
         <Row>
@@ -224,11 +230,11 @@ function Profile() {
 
         {/* Show error */}
         {error &&
-        <Row>
-            <Col>
-                <div className="m-2">{error}</div>
-            </Col>    
-        </Row>}
+            <Row>
+                <Col>
+                    <div className="m-2">{error}</div>
+                </Col>
+            </Row>}
 
 
 

@@ -1,0 +1,60 @@
+/* Beautiful glass/gradient table styling */
+.manage-table-wrapper {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.manage-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #fff;
+}
+
+.manage-table thead tr {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.manage-table thead th {
+  padding: 14px 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.manage-table tbody tr {
+  transition: background 0.18s ease-in-out;
+}
+
+.manage-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.manage-table td {
+  padding: 12px 10px;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Col badge style improvements */
+.role-badge {
+  padding: 5px 10px;
+  border-radius: 12px;
+  text-transform: capitalize;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.role-regular { background: #6c63ff; }
+.role-cashier { background: #28a745; }
+.role-manager { background: #ff9800; }
+.role-superuser { background: #e91e63; }
+
+/* Button spacing fix */
+.action-buttons button {
+  margin-right: 8px;
+}
