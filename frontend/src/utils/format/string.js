@@ -12,4 +12,8 @@ function capitalize(str) {
     return new_str.trim();
 }
 
-export { capitalize };
+function optional(str, func = arg => arg) {
+    return !str ? "N/A" : func(str);
+}
+
+export { capitalize, optional };

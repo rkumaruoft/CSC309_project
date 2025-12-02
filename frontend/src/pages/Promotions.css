@@ -9,3 +9,21 @@
 .promo-table-body {
     cursor: pointer;
 }
+
+/* ========== EDITING PROMOTION ========== */
+.edit-table {
+    table-layout: fixed;
+}
+
+.edit-key {
+    width: 20%;
+    min-width: 180px;
+}
+
+.edit-data {
+    width: 60%;
+}
+
+.edit-buttons {
+    width: 20%;
+}

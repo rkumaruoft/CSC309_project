@@ -347,7 +347,8 @@ router.patch(
             const allowed = [
                 "name", "description",
                 "startTime", "endTime",
-                "minSpending", "rate", "points"
+                "minSpending", "rate",
+                "points", "type"
             ];
             const keys = Object.keys(req.body);
 
@@ -371,6 +372,15 @@ router.patch(
                     return res.status(400).json({ error: "Invalid description" });
                 }
                 updates.description = req.body.description;
+            }
+
+            // ---------- type ----------
+            if (req.body.type !== undefined) {
+                const types = ["automatic, onetime"];
+                if (types.includes(req.body.type)) {
+                    return res.status(400).json({ error: "Invalid type" });
+                }
+                updates.type = req.body.type;
             }
 
             // ---------- startTime ----------

@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { Button, Col, Container, Row, Image, Modal, Table } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 import { getAllPromos, getPromoId } from "../utils/api/fetchPromos"
-import PromoTable from "../components/PromoTable";
-import PromoFilter from "../components/PromoFilter";
-import AppliedFilters from "../components/PromoAppliedFilters.jsx";
-import { capitalize } from "../utils/format/string.js";
+import PromoTable from "../components/promotions/PromoTable.jsx";
+import PromoFilter from "../components/promotions/PromoFilter.jsx";
+import AppliedFilters from "../components/promotions/PromoAppliedFilters.jsx";
+import { capitalize, optional } from "../utils/format/string.js";
 import { floatToCurrency, formatRate } from "../utils/format/number.js";
 import { formatTime } from "../utils/format/date.js";
-import "./Promotions.css"
+import "./Promotions.css";
 
 
 function Promotions() {
@@ -66,6 +66,7 @@ function Promotions() {
         if (!currPromo && clicked) {
             async function loadPromoId() {
                 const data = await getPromoId(clicked);
+                console.log(data);
                 setCurrPromo(data);
             }
 
@@ -153,7 +154,7 @@ function Promotions() {
             
                 <Modal show={clicked} onHide={closeCurrPromo}>
                     <Modal.Header closeButton className="bg-light">
-                        <Modal.Title>Promotion Details</Modal.Title>
+                        <Modal.Title><strong>Promotion Details</strong></Modal.Title>
                     </Modal.Header>
                     <Modal.Body className="d-flex flex-column justify-content-center align-items-center">
                         
@@ -175,30 +176,35 @@ function Promotions() {
                                 </tr>
 
                                 <tr>
+                                    <th>Starts at:</th>
+                                    <td>{formatTime(currPromo.startTime)}</td>
+                                </tr>
+
+                                <tr>
                                     <th>Ends at:</th>
                                     <td>{formatTime(currPromo.endTime)}</td>
                                 </tr>
 
                                 <tr>
                                     <th>Minimum Spending:</th>
-                                    <td>{currPromo.minSpending === null ? "N/A" : floatToCurrency(currPromo.minSpending)}</td>
+                                    <td>{optional(currPromo.minSpending, floatToCurrency)}</td>
                                 </tr>
 
                                 <tr>
                                     <th>Rate:</th>
-                                    <td>{currPromo.rate === null ? "N/A" : formatRate(currPromo.rate)}</td>
+                                    <td>{optional(currPromo.rate, formatRate)}</td>
                                 </tr>
 
                                 <tr>
                                     <th>Bonus Points:</th>
-                                    <td>{currPromo.points === null ? "N/A" : currPromo.points}</td>
+                                    <td>{optional(currPromo.points)}</td>
                                 </tr>
                             </tbody>
                         </Table>
 
                     </Modal.Body>
                     <Modal.Footer className="bg-light">
-                        <Button variant="warning" onClick={closeCurrPromo}>Close</Button>
+                        <Button onClick={closeCurrPromo}>Close</Button>
                     </Modal.Footer>
                 </Modal>
 
