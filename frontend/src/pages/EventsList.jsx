@@ -4,82 +4,386 @@ import { Button, Form, Col, Container, Row, Table, Modal} from "react-bootstrap"
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
+function ShowNormalModal({ selectedEvent, rsvp, rsvp_user, error, setError, setShowModal }) {
+    return (
+        <>
+            <Modal.Body>
+                <p><strong>Location:</strong> {selectedEvent?.location}</p>
+                <p><strong>Description:</strong> {selectedEvent?.description}</p>
+                <p><strong>Starts:</strong> {formatDateTime(selectedEvent?.startTime)}</p>
+                <p><strong>Ends:</strong> {formatDateTime(selectedEvent?.endTime)}</p>
+                <p><strong>Available seats:</strong> {selectedEvent?.availableSeats}</p>
+                {error && <div className="alert alert-danger">{error}</div>}
+            </Modal.Body>
+
+            <Modal.Footer>
+                {!rsvp &&
+                    (<Button variant="success" onClick={() => rsvp_user(selectedEvent)}>
+                        RSVP
+                    </Button>)
+                }
+                <Button variant="danger" onClick={() => {setShowModal(false); setError(null);}}>
+                    Close
+                </Button>
+            </Modal.Footer>
+        </>
+    );
+}
+
+function ShowOrganizerModal({
+    
+    selectedEvent, // THE EVENT BEIND EDITED,
+    setSelectedEvent, // TO UPDATE THE SELECTED EVENT
+    isEditing,     // BOOLEAN TO FLAG WHETHER EVENT INFO IS BEING EDITED
+    setIsEditing,  // SETTER FOR THE BOOLEAN ABOVE
+    editedEvent,   // THE EDITED VERSION OF THE EVENT
+    setEditedEvent,// SETTING THE EDITED EVENT TO THIS VERSION
+    saveEdits,     // FUNCTION BEING PASSED TO SAVE THE EDITS OF THIS EVENT
+    rewardGuest,   // FUNCTION BEING USED TO REWARD THE GUEST(S)
+    setShowModal,  // BOOLEAN TO SHOW THE MODAL
+    // LINES BELOW IS FOR REWARDING
+    awardMode,
+    setAwardMode,
+    guestId, 
+    // LINES BELOW IS THE SETTERS FOR THE LINES ABOVE
+    setGuestId,
+    rewardAmount,
+    setRewardAmount,
+    // THE LINES BELOW IS FOR THE TRANSACTION INFO MODEL
+    rewardModel,
+    setRewardModel,
+    // HANDLES ERRORS
+    error,
+    setError,
+    // FUNCTION TO HANDLE EVENT PUBLISHING
+    publish_event,
+    // FUNCTION AND VARIABLE FOR ORGANIZERS
+    organizer,
+    setOrganizer,
+    addOrganizer
+}) {
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setError(null);
+        setEditedEvent(prev => ({ ...prev, [name]: value }));
+    };
+    const published = (selectedEvent.published ? "yes" : "no");
+    return (
+        <>
+            <Modal.Body>
+                {isEditing ? (
+                    <>
+                        {error && <div className="alert alert-danger">{error}</div>}
+                        <div className="mb-2">
+                            <label>Name</label>
+                            <input
+                                className="form-control"
+                                name="name"
+                                value={editedEvent.name}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="mb-2">
+                            <label>Description</label>
+                            <textarea
+                                className="form-control"
+                                name="description"
+                                value={editedEvent.description}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="mb-2">
+                            <label>Location</label>
+                            <input
+                                className="form-control"
+                                name="location"
+                                value={editedEvent.location}
+                                onChange={handleChange}
+                            />
+                        </div>
+                
+                        <div className="mb-2">
+                            <label>Start Time</label>
+                            <input
+                                type="datetime-local"
+                                className="form-control"
+                                name="startTime"
+                                value={toDateTimeLocalString(editedEvent.startTime)}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="mb-2">
+                            <label>End Time</label>
+                            <input
+                                type="datetime-local"
+                                className="form-control"
+                                name="endTime"
+                                value={toDateTimeLocalString(editedEvent.endTime)}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div className="d-flex flex-row gap-2">
+                        <div className="mb-2">
+                            <label>Capacity</label>
+                            <input
+                                type="number"
+                                className="form-control"
+                                name="capacity"
+                                value={editedEvent.capacity}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div className="mb-2">
+                            <label>Total points</label>
+                            <input
+                                type="number"
+                                className="form-control"
+                                name="points"
+                                value={editedEvent.points}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <p><strong>Name:</strong> {selectedEvent.name}</p>
+                        <p><strong>Description:</strong> {selectedEvent.description}</p>
+                        <p><strong>Location:</strong> {selectedEvent.location}</p>
+                        <p><strong>Starts:</strong> {formatDateTime(selectedEvent.startTime)}</p>
+                        <p><strong>Ends:</strong> {formatDateTime(selectedEvent.endTime)}</p>
+                        <p><strong>Seats:</strong> {selectedEvent.availableSeats}</p>
+                        <p><strong>Published: </strong> {published}</p>
+                        <h5 style={{fontWeight: "bold"}}>Award points</h5>
+                        {awardMode === null && (
+                        <div className="d-flex flex-column w-55 mb-3">
+                            <div className="d-flex flex-row gap-1">
+                                <Button variant="outline-dark p-1" onClick={() => setAwardMode('single')}>Award a guest</Button>
+                                <Button variant="outline-dark p-1" onClick={() => setAwardMode('all')}>Award all guests</Button>
+                                </div>
+                        </div>
+                        )}
+                        {awardMode === null && (
+                            <>
+                            <h5 className="mb-1" style={{fontWeight: "bold"}}>Add organizer</h5>
+                            {error && <div className="alert alert-danger">{error}</div>}
+                            <div className="d-flex flex-column w-50 mb-2">
+                                <input
+                                    name="organizerName"
+                                    placeholder="organizer UTORid"
+                                    value={organizer}
+                                    onChange={(e) => {setOrganizer(e.target.value); setError(null);}}
+                                />
+                            </div>
+                            <Button variant="success" onClick={addOrganizer}>Add organizer</Button>
+                            </>
+                            )
+                        }
+                        {awardMode === 'single' && (
+                            <>
+                                {error && <div className="alert alert-danger">{error}</div>}
+                                <div className="d-flex flex-row mb-3">
+                                    <div className="w-100">
+                                        <label><strong style={{fontWeight: "bolder"}}>Recipient</strong></label>
+                                        <input placeholder="Guest UTORid" value={guestId} onChange={(e) => {setGuestId(e.target.value); setRewardModel(prev => ({...prev, utorid: e.target.value})); setError(null);}} />
+                                    </div>
+                                    <div className="w-100">
+                                        <label><strong style={{fontWeight: "bolder"}}>Amount</strong></label>
+                                        <input placeholder="Amount" value={rewardAmount} onChange={(e) => 
+                                            {
+                                                setRewardAmount(e.target.value); 
+                                                setRewardModel(prev => ({...prev, amount: parseInt(e.target.value) || 0}));
+                                                setError(null);
+                                            }} />
+                                    </div>
+                                </div>
+                                <div className="d-flex flex-row gap-2 w-50">
+                                    <Button className="w-50" variant="success" onClick={rewardGuest}>Send</Button>
+                                    <Button className="w-50" variant="danger" onClick={() => {setAwardMode(null); setError(null);}}>Cancel</Button>
+                                </div>
+                            </>
+                        )}
+
+                        {awardMode === 'all' && (
+                            <>
+                                {error && <div className="alert alert-danger">{error}</div>}
+                                <div className="d-flex flex-column gap-2 w-50">
+                                    <input placeholder="Amount per guest" value={rewardAmount} onChange={(e) => 
+                                    {
+                                        setRewardAmount(e.target.value); 
+                                        setRewardModel(prev => ({
+                                        ...prev,
+                                        amount: parseInt(e.target.value) || 0}));
+                                         setError(null);
+                                    }} />
+                                    <div className="d-flex flex-row gap-2">
+                                        <Button variant="success" className="w-50" onClick={rewardGuest}>Submit</Button>
+                                        <Button variant="danger" className="w-50" onClick={() => {setAwardMode(null); setError(null);}}>Cancel</Button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </>
+                )}
+            </Modal.Body>
+
+            <Modal.Footer>
+                {awardMode === null && 
+                (isEditing ? (
+                    <div className="d-flex flex-column">
+                        <div className="d-flex flex-row gap-2">
+                        <Button variant="success" onClick={saveEdits}>Save</Button>
+                        <Button variant="danger" onClick={() => {setIsEditing(false); setError(null); setEditedEvent(selectedEvent)}}>Cancel</Button>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        { !selectedEvent.published && (<Button variant="success" onClick={() =>
+                                {setSelectedEvent(prev => ({ ...prev, published: true })); publish_event;}
+                            }>publish</Button>)}
+                        <Button variant="info" onClick={() => {setIsEditing(true); setError(null);}}>Edit Info</Button>
+                        <Button variant="danger" onClick={() => {setShowModal(false); setError(null);}}>Close</Button>
+                    </>
+                )) }
+            </Modal.Footer>
+        </>
+    );
+}
+
+function toDateTimeLocalString(dateStr) {
+    const d = new Date(dateStr);
+    return d.toISOString().slice(0, 16);  // drop seconds + Z
+}
+
+
+function formatDateTime(dateInput) {
+    const date = new Date(dateInput);
+    if (isNaN(date.getTime())) return "";
+
+    return date.toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+    });
+}
+
+
+
 export default function EventsList() {
     const location = useLocation();
     const token = localStorage.getItem("token");
-    const user_info = localStorage.getItem("")
     const [isEditing, setIsEditing] = useState(false);
-    const [editData, setEditData] = useState({});
+    const [editEvent, setEditEvent] = useState({
+        name: "",
+        description: "",
+        location: "",
+        startTime: "",
+        endTime: "",
+        capacity: 0,
+    });
     const [events, setEvents] = useState([]);
     const [pageNum, setPageNum] = useState(1);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [totalPages, setTotalPages] = useState(1);
     const [rsvp, setRSVP] = useState(false)
+    const [awardMode, setAwardMode] = useState(null); // null, 'single', or 'all'
+    const [guestId, setGuestId] = useState("");
+    const [rewardAmount, setRewardAmount] = useState("");
+    const [error, setError] = useState("");
+    const [organizer, setOrganizer] = useState("")
+
+    // THIS IS THE MAIN CONSTANT FOR EVENTS
+    const [rewardModel, setRewardModel] = useState({
+        utorid: null,
+        type: "event",
+        amount: 0
+    });
 
     const handleRowClick = async (event) => {
         const url = `${BACKEND_URL}/events/${event.id}`;
         const ev = await fetch(url, {method: "GET", headers: {Authorization: `Bearer ${token}`}});
         const data = await ev.json();
         let formatted_event = formatEvents([data]);
-        formatted_event = formatted_event[0]; 
+        formatted_event = formatted_event[0];
         setSelectedEvent(formatted_event);
-        setEditData(formatted_event);
+        setEditEvent({
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            location: data.location,
+            startTime: data.startTime, // raw ISO string
+            endTime: data.endTime,     // raw ISO string
+            capacity: data.capacity,
+            points: data.pointsRemain + data.pointsAwarded,
+            published: data.published
+        });
         setIsEditing(false);
         setShowModal(true);
     };
 
-    function renderEditForm() {
-        return (
-            <Form>
-                <Form.Group className="mb-3">
-                    <Form.Label>Name</Form.Label>
-                    <Form.Control
-                        type="text"
-                        value={editData.name}
-                        onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                    />
-                </Form.Group>
+    async function addOrganizer(){
+        const url = `${BACKEND_URL}/events/${selectedEvent.id}/organizers`;
+        const payload = { utorid: organizer };
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Description</Form.Label>
-                    <Form.Control
-                        as="textarea"
-                        rows={3}
-                        value={editData.description}
-                        onChange={(e) =>
-                            setEditData({ ...editData, description: e.target.value })
-                        }
-                    />
-                </Form.Group>
+        const res = await fetch(url, 
+            {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            }
+        )
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Location</Form.Label>
-                    <Form.Control
-                        type="text"
-                        value={editData.location}
-                        onChange={(e) =>
-                            setEditData({ ...editData, location: e.target.value })
-                        }
-                    />
-                </Form.Group>
+        const data = await res.json();
+        if (!res.ok){
+            setError(data.error);
+            return;
+        }
+    }
 
-                <Form.Group className="mb-3">
-                    <Form.Label>End Time</Form.Label>
-                    <Form.Control
-                        type="datetime-local"
-                        value={editData.endTime}
-                        onChange={(e) =>
-                            setEditData({ ...editData, endTime: e.target.value })
-                        }
-                    />
-                </Form.Group>
-            </Form>
-        );
+    async function rewardGuest(){
+        const url = `${BACKEND_URL}/events/${selectedEvent.id}/transactions`;
+        const res = await fetch(url, 
+            {method: "POST",
+            headers: {
+                "Content-type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(rewardModel)
+            });
+        setRewardModel({
+            utorid: null,
+            type: "event",
+            amount: 0
+        });
+        const data = await res.json();
+        setGuestId("");
+        setRewardAmount("");
+        if (!res.ok){
+            setError(data.error);
+            return;
+        }
+        setAwardMode(null);
     }
 
     async function saveEdits() {
         const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
+        const update_body = {};
+        for (const key of ["name", "description", "location", "startTime", "endTime", "capacity", "points", "published"]) {
+            if (editEvent[key] !== selectedEvent[key]) {
+                update_body[key] = editEvent[key];
+            }
+        }
 
         const res = await fetch(url, {
             method: "PATCH",
@@ -87,87 +391,61 @@ export default function EventsList() {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify(editData)
+            body: JSON.stringify(update_body)
         });
 
-        if (!res.ok) {
-            console.error("Failed to update event");
-            return;
-        }
+            const data = await res.json();
+            if (!res.ok) {
+                setError(data.error);
+                return;
+            }
 
-        // update UI
-        setSelectedEvent(editData);
-        setIsEditing(false);
-        fetchEvents(pageNum);
+            // update UI
+            setSelectedEvent(prev => ({ ...prev, ...editEvent }));
+            setIsEditing(false);
+            fetchEvents(pageNum);
     }
 
-
-
-    function showNormalModal({ selectedEvent }){
-        return (
-            <>
-                <Modal.Body>
-                    <p><strong>Location:</strong> {selectedEvent?.location}</p>
-                    <p><strong>Description</strong> {selectedEvent?.description}</p>
-                    <p><strong>Starts:</strong> {selectedEvent.startTime}  <strong>Ends:</strong> {selectedEvent?.endTime}</p>
-                    <p><strong>Seats:</strong> {selectedEvent?.availableSeats}</p>
-                </Modal.Body>
-
-                <Modal.Footer>
-                    <Button variant="primary" onClick={() => rsvp_user(selectedEvent)}>RSVP</Button>
-                    <Button variant="secondary" onClick={() => setShowModal(false)}>
-                        Close
-                    </Button>
-                </Modal.Footer>
-            </>
-        );
-    }
-
-    function showOrganizerModal({ selectedEvent }){
-        return(
-            <>
-                <Modal.Body>
-                    {isEditing ? (
-                        renderEditForm()
-                    ) : (
-                        showOrganizerModal({ selectedEvent })
-                    )}
-                </Modal.Body>
-                <Modal.Footer>
-                    {isEditing ? (
-                        <>
-                            <Button variant="success" onClick={saveEdits}>Save</Button>
-                            <Button variant="secondary" onClick={() => setIsEditing(false)}>Cancel</Button>
-                        </>
-                    ) : (
-                        <>
-                            <Button variant="primary" onClick={() => setIsEditing(true)}>Edit Info</Button>
-                            <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
-                        </>
-                    )}
-                </Modal.Footer>
-            </>
-        )
-    }
 
     function formatEvents(events) {
         let new_events = [];
         for (const event of events) {
-            const num_guests = event.guests.length;
-            const remaining_seats = event.capacity - num_guests;
+            const remaining_seats = event.capacity - event.guests.length;
+            const points = event.pointsRemain + event.pointsAwarded;
             const new_event = {};
             new_event.id = event.id;
             new_event.name = event.name;
-            new_event.location = event.location;
             new_event.description = event.description;
-            new_event.startTime = new Date(event.startTime).toDateString() || null;
-            new_event.endTime = new Date(event.endTime).toDateString();  
+            new_event.location = event.location;
+            new_event.startTime = event.startTime;
+            new_event.endTime = event.endTime;  
+            new_event.capacity = event.capacity;
             new_event.availableSeats = remaining_seats;
-            new_event.pointsRemain = event.pointsRemain || null;
-            new_event.pointsAwarded = event.pointsAwarded || null;
+            new_event.pointsRemain = event.pointsRemain || "-1";
+            new_event.points = points;
+            new_event.published = event.published;
+            new_event.organizers = event.organizers;
+            new_event.guests = event.guests;
+            
             new_events.push(new_event);
         }
         return new_events;
+    }
+
+    async function publish_event(){
+        const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
+        const publish_data = { publish: true };
+        const res = await fetch(url, {
+            method: "PATCH",
+            headers: {"Content-Type": "application/json", Authorization: `Bearer ${token}`},
+            body: JSON.stringify(publish_data)
+        });
+
+        const data = await res.json();
+        if (!res.ok){
+            setError(data.error);
+            return;
+        }
     }
 
     async function rsvp_user(event){
@@ -180,10 +458,9 @@ export default function EventsList() {
 
         if (!res.ok){
             const data = await res.json();
-            console.log(data.error);
+            setError(data.error);
             return;
         }
-        console.log("RSVP'd\n");
         setRSVP(true);
     }
 
@@ -248,12 +525,12 @@ export default function EventsList() {
             <Col xs={12} md={10} lg={8}>
 
                 <Table bordered responsive>
-                    <thead>
+                    <thead className="table-primary">
                         <tr>
-                            <th style={{ backgroundColor: "#FFF9C4" }}>Name</th>
-                            <th style={{ backgroundColor: "#FFF9C4" }}>Location</th>
-                            <th style={{ backgroundColor: "#FFF9C4" }}>Ends At</th>
-                            <th style={{ backgroundColor: "#FFF9C4" }}>Available slots</th>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Ends at</th>
+                            <th>Available seats</th>
                         </tr>
                     </thead>
 
@@ -269,8 +546,8 @@ export default function EventsList() {
                                 <tr key={item.id} onClick={() => handleRowClick(item)} style={{cursor: "pointer"}}>
                                     <td>{item.name}</td>
                                     <td>{item.location}</td>
-                                    <td>{item.endTime}</td>
-                                    <td>{item.avilableSeats}</td>
+                                    <td>{formatDateTime(item.endTime)}</td>
+                                    <td>{item.availableSeats}</td>
                                 </tr>
                             ))
                         )}
@@ -285,7 +562,7 @@ export default function EventsList() {
             {/* Back button */}
             <Col xs="auto">
                 <Button
-                    variant="warning"
+                    variant="primary"
                     onClick={() => fetchEvents(pageNum - 1)}
                     disabled={pageNum === 1}>
                         Back
@@ -302,7 +579,7 @@ export default function EventsList() {
             {/* Forward Button */}
             <Col xs="auto">
                 <Button
-                    variant="warning"
+                    variant="primary"
                     onClick={() => fetchEvents(pageNum + 1)}
                     disabled={pageNum === totalPages}>
                         Next
@@ -313,8 +590,35 @@ export default function EventsList() {
             <Modal.Header closeButton>
                 <Modal.Title>{selectedEvent?.name}</Modal.Title>
             </Modal.Header>
-
-            
+            { selectedEvent && selectedEvent.pointsRemain != "-1" ? (
+                <ShowOrganizerModal
+                    selectedEvent={selectedEvent}
+                    setSelectedEvent={setSelectedEvent}
+                    isEditing={isEditing}
+                    setIsEditing={setIsEditing}
+                    editedEvent={editEvent}
+                    setEditedEvent={setEditEvent}
+                    saveEdits={saveEdits}
+                    setShowModal={setShowModal}
+                    awardMode={awardMode}
+                    guestId={guestId}
+                    rewardAmount={rewardAmount}
+                    setAwardMode={setAwardMode}
+                    setGuestId={setGuestId}
+                    setRewardAmount={setRewardAmount}
+                    rewardModel={rewardModel}
+                    setRewardModel={setRewardModel}
+                    rewardGuest={rewardGuest}
+                    error={error}
+                    setError={setError}
+                    publish_event={publish_event}
+                    organizer={organizer}
+                    setOrganizer={setOrganizer}
+                    addOrganizer={addOrganizer}
+                />
+            ) : (
+                <ShowNormalModal selectedEvent={selectedEvent} rsvp={rsvp} rsvp_user={rsvp_user} error={error} setError={setError} setShowModal={setShowModal}/>
+            )}
         </Modal>
         </Container>
     );
