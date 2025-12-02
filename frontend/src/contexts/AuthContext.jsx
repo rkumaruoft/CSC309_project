@@ -2,74 +2,99 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext(null);
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+// Always fallback to local backend when env is missing
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
-    const [user, setUser] = useState(null);
-    const [initialized, setInitialized] = useState(false);
 
+    const [user, setUser] = useState(null);
+    const [currentRole, setCurrentRole] = useState(null);
+    const [initialized, setInitialized] = useState(false);
+    const [showQr, setShowQr] = useState(false);
+    const showQrModal = () => setShowQr(true);
+    const hideQrModal = () => setShowQr(false);
+
+
+    // ----------------------------------------------------
+    // FAST, SAFE AUTO-LOGIN ON PAGE LOAD
+    // ----------------------------------------------------
     useEffect(() => {
         const token = localStorage.getItem("token");
 
-        // DEV shortcut: when running locally we support bootstrapping from
-        // `localStorage.user` either when there's no token or when the token
-        // is a dev token of the form `dev:<utorid>`.
-        if (import.meta.env.DEV && (!token || token?.startsWith('dev:'))) {
-            const stored = localStorage.getItem("user");
-            if (stored) {
-                try {
-                    setUser(JSON.parse(stored));
-                    setInitialized(true);
-                    return;
-                } catch (e) {
-
-                }
-            }
-        }
-
-        // Non-DEV + no token => unauthenticated (finish bootstrap)
+        // No token = unauthenticated
         if (!token) {
             setUser(null);
             setInitialized(true);
             return;
         }
 
-        fetch(`${BACKEND_URL}/users/me`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-            },
-        })
-            .then(async (res) => {
+        // Fetch /users/me to validate token
+        (async () => {
+            try {
+                const res = await fetch(`${BACKEND_URL}/users/me`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
                 if (!res.ok) {
-                    // Token invalid or expired
+                    // Token invalid
                     localStorage.removeItem("token");
+                    localStorage.removeItem("user");
+                    localStorage.removeItem("currentRole");
                     setUser(null);
+                    setInitialized(true);
                     return;
                 }
+
                 const data = await res.json();
                 setUser(data);
+
+                // role initialization
+                const persistent = localStorage.getItem("currentRole");
+                const roleToUse = persistent || data.role || "regular";
+
+                setCurrentRole(roleToUse);
+                localStorage.setItem("currentRole", roleToUse);
                 localStorage.setItem("user", JSON.stringify(data));
-            })
-            .catch(() => {
-                setUser(null);
+            } catch {
+                // Network issue → logout for safety
                 localStorage.removeItem("token");
-            })
-            .finally(() => {
-                setInitialized(true);
-            });
+            }
+
+            setInitialized(true);
+        })();
     }, []);
 
-    // ---------------- LOGOUT ----------------
-    const logout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        setUser(null);
-        navigate("/");
+    // ----------------------------------------------------
+    // REFRESH PROFILE (after updates)
+    // ----------------------------------------------------
+    const refreshUser = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return null;
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/users/me`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!res.ok) {
+                logout();
+                return null;
+            }
+
+            const data = await res.json();
+            setUser(data);
+            localStorage.setItem("user", JSON.stringify(data));
+            return data;
+        } catch {
+            return null;
+        }
     };
 
-    // ---------------- LOGIN ----------------
+    // ----------------------------------------------------
+    // LOGIN
+    // ----------------------------------------------------
     const login = async (utorid, password) => {
         try {
             const res = await fetch(`${BACKEND_URL}/auth/tokens`, {
@@ -79,34 +104,106 @@ export const AuthProvider = ({ children }) => {
             });
 
             const data = await res.json();
-            if (!res.ok) return data.message || data.error;
 
+            // ACCOUNT NOT VERIFIED
+            if (
+                res.status === 403 &&
+                (data.error === "Account not verified" || data.message === "Account not verified")
+            ) {
+                return { unverified: true, utorid };
+            }
+
+            // OTHER LOGIN ERRORS
+            if (!res.ok) {
+                return data.message || data.error || "Login failed.";
+            }
+
+            // SAVE TOKEN
             localStorage.setItem("token", data.token);
 
-            // Fetch user profile
+            // FETCH PROFILE
             const meRes = await fetch(`${BACKEND_URL}/users/me`, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${data.token}`,
-                },
+                headers: { Authorization: `Bearer ${data.token}` },
             });
 
             if (!meRes.ok) return "Failed to retrieve user profile.";
-            const userData = await meRes.json();
 
+            const userData = await meRes.json();
             setUser(userData);
+
+            // Initialize role
+            setCurrentRole(userData.role || "regular");
+            localStorage.setItem("currentRole", userData.role || "regular");
             localStorage.setItem("user", JSON.stringify(userData));
 
             navigate("/dashboard");
             return null;
-
         } catch (e) {
-            return "Network error during login.";
+            return "Network error: " + e.message;
         }
     };
 
+    // ----------------------------------------------------
+    // LOGOUT
+    // ----------------------------------------------------
+    const logout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("currentRole");
+
+        setUser(null);
+        setCurrentRole(null);
+        setShowQr(false);
+
+        navigate("/");
+    };
+
+    // ----------------------------------------------------
+    // COMPUTE ALLOWED INTERFACE ROLES
+    // ----------------------------------------------------
+    const computeAvailableRoles = (u) => {
+        if (!u) return ["regular"];
+
+        const organizer = u.organizer || u.isEventOrganizer;
+
+        if (u.role === "superuser")
+            return ["regular", "cashier", "manager", "superuser", ...(organizer ? ["organizer"] : [])];
+
+        if (u.role === "manager")
+            return ["regular", "cashier", "manager", ...(organizer ? ["organizer"] : [])];
+
+        if (u.role === "cashier") return ["regular", "cashier"];
+
+        if (u.role === "organizer") return ["regular", "organizer"];
+
+        return ["regular"];
+    };
+
+    const availableRoles = computeAvailableRoles(user || {});
+
+    const switchRole = (role) => {
+        if (!availableRoles.includes(role)) return;
+        setCurrentRole(role);
+        localStorage.setItem("currentRole", role);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, initialized }}>
+        <AuthContext.Provider
+            value={{
+                user,
+                initialized,
+                login,
+                logout,
+                refreshUser,
+                currentRole,
+                availableRoles,
+                switchRole,
+                showQr,
+                setShowQr,
+                showQrModal,
+                hideQrModal,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );

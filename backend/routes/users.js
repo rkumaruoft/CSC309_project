@@ -170,7 +170,114 @@ router.patch(
     }
 );
 
-router.use(express.json());
+// ---------------- /users (POST) -------------------
+// Clearance: Cashier+  (manager, superuser)
+router.post(
+    "/",
+    authenticate,
+    requireClearance(["manager", "superuser"]),
+    async (req, res) => {
+        try {
+            let { utorid, name, email, role, password } = req.body;
+
+            // ---------- Required Fields ----------
+            if (!utorid)
+                return res.status(400).json({ message: "Utorid is required" });
+            if (!name)
+                return res.status(400).json({ message: "Name is required" });
+            if (!email)
+                return res.status(400).json({ message: "Email is required" });
+
+            // ---------- Validation ----------
+            if (!isValidUtorid(utorid))
+                return res.status(400).json({ message: "Invalid utorid format" });
+
+            if (name.length < 1 || name.length > 50)
+                return res.status(400).json({ message: "Invalid name length" });
+
+            if (!isValidUofTEmail(email))
+                return res.status(400).json({ message: "Invalid UofT email" });
+
+            // ---------- Unique Check ----------
+            const existing = await prisma.user.findFirst({
+                where: { OR: [{ utorid }, { email }] },
+            });
+            if (existing)
+                return res.status(409).json({ error: "User already exists" });
+
+            // ---------- ROLE ASSIGNMENT ----------
+            // Default: regular
+            let finalRole = "regular";
+
+            // Managers can create: regular, cashier
+            if (req.user.role === "manager") {
+                if (role === "cashier") finalRole = "cashier";
+            }
+
+            // Superusers can create ANY role
+            if (req.user.role === "superuser") {
+                if (["regular", "cashier", "manager", "superuser"].includes(role)) {
+                    finalRole = role;
+                }
+            }
+
+            // ---------- PASSWORD HANDLING ----------
+            let hashedPassword = null;
+            if (password) {
+                // Accept immediate password (super useful for admin-created accounts)
+                hashedPassword = bcrypt.hashSync(password, 10);
+            }
+
+            // ---------- If no password → use resetToken workflow ----------
+            let resetToken = null;
+            let expiresAt = null;
+
+            if (!hashedPassword) {
+                resetToken = randomUUID();
+                expiresAt = new Date();
+                expiresAt.setDate(expiresAt.getDate() + 7);
+                resetTokens.set(resetToken, { utorid, expiresAt });
+            }
+
+            // ---------- CREATE USER ----------
+            const user = await prisma.user.create({
+                data: {
+                    utorid,
+                    name,
+                    email,
+                    role: finalRole,
+                    password: hashedPassword, // may be null
+                    verified: !!hashedPassword, // auto-verified if password was set
+                },
+                select: {
+                    id: true,
+                    utorid: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    verified: true,
+                },
+            });
+
+            // ---------- RESPONSE ----------
+            if (hashedPassword) {
+                // No need for reset token, user is ready
+                return res.status(201).json(user);
+            }
+
+            // Otherwise return resetToken
+            return res.status(201).json({
+                ...user,
+                resetToken,
+                expiresAt: expiresAt.toISOString(),
+            });
+
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Server error" });
+        }
+    }
+);
 
 // ---------------- /User (POST) -------------------
 // Clearance: Cashier+
@@ -242,7 +349,11 @@ router.get(
     requireClearance(["manager", "superuser"]),
     async (req, res) => {
         try {
-            let { name, role, verified, activated, page = "1", limit = "10" } = req.query;
+            let {
+                search,
+                page = "1",
+                limit = "10"
+            } = req.query;
 
             // ------------------ VALIDATE PAGINATION ------------------
             page = Number(page);
@@ -255,65 +366,26 @@ router.get(
                 return res.status(400).json({ error: "Invalid pagination" });
             }
 
-            // ------------------ BUILD FILTERS SAFELY ------------------
+            // ------------------ BUILD FILTERS ------------------
             const filters = {};
 
-            // NAME filter
-            if (typeof name === "string" && name.trim() !== "") {
-                const query = name.trim();
+            if (typeof search === "string" && search.trim() !== "") {
+                const query = search.trim();
+
                 filters.OR = [
-                    { name: { contains: query } },
-                    { utorid: { contains: query } }
+                    { name: { contains: query} },
+                    { utorid: { contains: query} }
                 ];
-            }
-
-            // ROLE filter
-            if (typeof role === "string" && role.trim() !== "") {
-                filters.role = role;
-            }
-
-            // VERIFIED filter
-            if (verified !== undefined) {
-
-                // accept booleans OR strings
-                if (
-                    verified !== true &&
-                    verified !== false &&
-                    verified !== "true" &&
-                    verified !== "false"
-                ) {
-                    return res.status(400).json({ error: "Invalid verified value" });
-                }
-
-                // normalize to boolean
-                const v =
-                    verified === true ||
-                    verified === "true";
-
-                filters.verified = v;
-            }
-
-
-            // ACTIVATED filter
-            if (activated !== undefined) {
-                if (activated !== "true" && activated !== "false") {
-                    return res.status(400).json({ error: "Invalid activated value" });
-                }
-
-                filters.lastLogin =
-                    activated === "true"
-                        ? { not: null }
-                        : { equals: null };
             }
 
             // ------------------ QUERY DATABASE ------------------
             const count = await prisma.user.count({ where: filters });
+
             const users = await prisma.user.findMany({
                 where: filters,
                 skip: (page - 1) * limit,
                 take: limit,
                 orderBy: { id: "asc" },
-                // EXPLICITLY exclude password fields
                 select: {
                     id: true,
                     utorid: true,
@@ -338,6 +410,7 @@ router.get(
         }
     }
 );
+
 
 // --------------- /users/me (GET) ----------------
 router.get(
@@ -603,7 +676,6 @@ router.patch(
     async (req, res) => {
         try {
             const id = Number(req.params.userId);
-            console.log(req.user.role);
             // Validate userId
             if (!req.params.userId || isNaN(id) || id <= 0) {
                 return res.status(400).json({ error: "Invalid userId" });
@@ -748,8 +820,6 @@ router.post(
     authenticate,
     async (req, res) => {
         try {
-            console.log("POST /users/me/transactions body:", req.body);
-
             // ---- Validate body ----
             const allowed = ["type", "amount", "remark"];
             const keys = Object.keys(req.body);
@@ -760,6 +830,8 @@ router.post(
             const { type, amount, remark = "" } = req.body;
 
             // Must be redemption only
+            console.log(`body is: ${JSON.stringify(req.body)}`);
+            console.log(`type is: ${type}`);
             if (type !== "redemption") {
                 return res.status(400).json({ error: "Invalid transaction type" });
             }
@@ -784,12 +856,6 @@ router.post(
             if (user.points < amount) {
                 return res.status(400).json({ error: "Insufficient points" });
             }
-
-            // ---- Deduct points ----
-            await prisma.user.update({
-                where: { id: user.id },
-                data: { points: user.points - amount }
-            });
 
             // ---- Create redemption transaction ----
             const tx = await prisma.transaction.create({
@@ -822,8 +888,6 @@ router.post(
         }
     }
 );
-
-
 
 // ---------------- /users/me/transactions (GET) ----------------
 // Clearance: Regular+
@@ -901,7 +965,8 @@ router.get(
                 relatedId: t.relatedId ?? undefined,
                 promotionIds: t.promotions.map(p => p.id),
                 remark: t.remark ?? "",
-                createdBy: t.createdBy
+                createdBy: t.createdBy,
+                createdAt: t.createdAt
             }));
 
             return res.json({ count, results });
