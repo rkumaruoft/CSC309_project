@@ -6,6 +6,7 @@ import DeleteConfirmModal from "../components/DeleteEventModal";
 import EventGuestModal from "../components/EventGuestModal";
 import EventOrganizerModal from "../components/EventOrganizerModal";
 import EventsFilter from "../components/EventsFilter";
+import fetchEventsFull from "../utils/api/fetchEvents";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -370,40 +371,41 @@ async function refreshEventDetails() {
     }
 
     async function fetchEvents(page){
-        if (page < 1 || page > totalPages) {
-            return;
-        }
+        // if (page < 1 || page > totalPages) {
+        //     return;
+        // }
 
-        const params = { page: page };
-        const url = `${BACKEND_URL}/events?${new URLSearchParams(params).toString()}`;
+        // const params = { page: page };
+        // const url = `${BACKEND_URL}/events?${new URLSearchParams(params).toString()}`;
 
-        const res = await fetch(url, {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        const data = await res.json();
+        // const res = await fetch(url, {
+        //     method: "GET",
+        //     headers: {
+        //         Authorization: `Bearer ${token}`
+        //     }
+        // });
+        // const data = await res.json();
+        const data = fetchEventsFull(page, filters, setError);
 
-        if (!res.ok) {
-            const numDemos = 10;
-            const numPages = 2;
-            const demoEvents = [];
-            for (let i = 0; i < numDemos; i++) {
-                demoEvents.push({
-                    id: i,
-                    name: `Event ${i + 1}`,
-                    location: `Location ${i + 1}`,
-                    pointsRemain: 100 + i,
-                    startTime: new Date(Date.now() - (1000 * 60 * 60 * 24 * (i+1))),
-                    endTime: new Date(Date.now() + (1000 * 60 * 60 * 24 * (i+1))),
-                    capacity: i + 20,
-                    guests: ["a", "b", "c"]
-                });
-            }
-            setEvents(demoEvents);
-            setPageNum(page);
-            setTotalPages(numPages);
+        if (data === null) {
+            // const numDemos = 10;
+            // const numPages = 2;
+            // const demoEvents = [];
+            // for (let i = 0; i < numDemos; i++) {
+            //     demoEvents.push({
+            //         id: i,
+            //         name: `Event ${i + 1}`,
+            //         location: `Location ${i + 1}`,
+            //         pointsRemain: 100 + i,
+            //         startTime: new Date(Date.now() - (1000 * 60 * 60 * 24 * (i+1))),
+            //         endTime: new Date(Date.now() + (1000 * 60 * 60 * 24 * (i+1))),
+            //         capacity: i + 20,
+            //         guests: ["a", "b", "c"]
+            //     });
+            // }
+            // setEvents(demoEvents);
+            // setPageNum(page);
+            // setTotalPages(numPages);
             return;
         }
         setEvents(formatEvents(data.results));
