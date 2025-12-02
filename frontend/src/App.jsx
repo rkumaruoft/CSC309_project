@@ -8,6 +8,7 @@ import Transfers from "./pages/Transfers";
 import Promotions from "./pages/Promotions.jsx";
 import Transactions from "./pages/Transactions.jsx";
 import Redemption from "./pages/Redemption.jsx";
+import EventsList from "./pages/EventsList.jsx";
 import RequireRole from "./components/RequireRole.jsx";
 import CashierTransactions from "./pages/CashierTransactions.jsx";
 import Verify from "./pages/Verify.jsx";
@@ -97,6 +98,16 @@ export default function App() {
                     }
                 />
 
+                {/*Displaying events, displays different popups depending on organizer or attendee*/}
+                <Route
+                  path="/events"
+                  element={
+                    <Layout>
+                      <EventsList />
+                    </Layout>
+                  }
+                />
+
                 {/* Regular user transactions */}
                 <Route element={<RequireRole allowedRoles={["regular"]} />}>
                     <Route
@@ -179,4 +190,4 @@ export default function App() {
             <ProfileQrModal />
         </>
     );
-}
+  }
