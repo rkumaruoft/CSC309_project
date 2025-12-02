@@ -29,7 +29,7 @@ export default function EventsList() {
     const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user"));
     const [isEditing, setIsEditing] = useState(false);
-    const [editEvent, setEditEvent] = useState({
+    const [editedEvent, setEditedEvent] = useState({
         name: "",
         description: "",
         location: "",
@@ -43,23 +43,11 @@ export default function EventsList() {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [totalPages, setTotalPages] = useState(1);
-    const [rsvp, setRSVP] = useState(false)
-    const [awardMode, setAwardMode] = useState(null); // null, 'single', or 'all'
-    const [recipientId, setRecipientId] = useState("");
-    const [guestId, setGuestId] = useState("");
-    const [rewardAmount, setRewardAmount] = useState("");
+    const [rsvp, setRSVP] = useState(false);
     const [error, setError] = useState("");
-    const [organizer, setOrganizer] = useState("");
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [filters, setFilters] = useState({});
     const [showFilter, setShowFilter] = useState(false);
-
-    // THIS IS THE MAIN CONSTANT FOR EVENTS
-    const [rewardModel, setRewardModel] = useState({
-        utorid: null,
-        type: "event",
-        amount: 0
-    });
 
     useEffect(() => {
         fetchEvents(pageNum);
@@ -113,14 +101,14 @@ export default function EventsList() {
         fetchEvents(pageNum);
     }
 
-    const handleRowClick = async (event) => {
+    async function handleRowClick(event){
         const url = `${BACKEND_URL}/events/${event.id}`;
         const ev = await fetch(url, {method: "GET", headers: {Authorization: `Bearer ${token}`}});
         const data = await ev.json();
         let formatted_event = formatEvents([data]);
         formatted_event = formatted_event[0];
         setSelectedEvent(formatted_event);
-        setEditEvent({
+        setEditedEvent({
             id: data.id,
             name: data.name,
             description: data.description,
@@ -135,9 +123,9 @@ export default function EventsList() {
         setRSVP(isRSVP);
         setIsEditing(false);
         setShowModal(true);
-    };
+    }
 
-    async function addOrganizer(){
+    async function addOrganizer(organizer, setOrganizer){
         const url = `${BACKEND_URL}/events/${selectedEvent.id}/organizers`;
         const payload = { utorid: organizer };
 
@@ -157,9 +145,10 @@ export default function EventsList() {
             setError(data.error);
             return;
         }
+        setOrganizer(null);
     }
 
-    async function rewardGuest(){
+    async function rewardGuest(rewardModel, setRewardModel, setRecipientId, setSubmitted){
         const url = `${BACKEND_URL}/events/${selectedEvent.id}/transactions`;
         const res = await fetch(url, 
             {method: "POST",
@@ -169,31 +158,31 @@ export default function EventsList() {
             },
             body: JSON.stringify(rewardModel)
             });
+        const data = await res.json();
+        if (!res.ok){
+            setError(data.error);
+            return;
+        }
         setRewardModel({
             utorid: null,
             type: "event",
             amount: 0
         });
-        const data = await res.json();
+        setSubmitted(true);
         setRecipientId("");
-        setRewardAmount("");
-        if (!res.ok){
-            setError(data.error);
-            return;
-        }
-        setAwardMode(null);
+        setError(null);
     }
 
-    async function saveEdits() {
+    async function saveEdits(editedEvent) {
         const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
         const update_body = {};
         for (const key of ["name", "description", "location", "startTime", "endTime", "capacity", "points", "published"]) {
-            if (editEvent[key] !== selectedEvent[key]) {
+            if (editedEvent[key] !== selectedEvent[key]) {
                 // Convert capacity and points to numbers
                 if (key === "capacity" || key === "points") {
-                    update_body[key] = Number(editEvent[key]);
+                    update_body[key] = Number(editedEvent[key]);
                 } else {
-                    update_body[key] = editEvent[key];
+                    update_body[key] = editedEvent[key];
                 }
             }
         }
@@ -214,7 +203,7 @@ export default function EventsList() {
         }
 
         // update UI
-        setSelectedEvent(prev => ({ ...prev, ...editEvent }));
+        setSelectedEvent(prev => ({ ...prev, ...editedEvent }));
         setIsEditing(false);
         fetchEvents(pageNum);
     }
@@ -244,44 +233,44 @@ export default function EventsList() {
         return new_events;
     }
 
-    async function addGuest(){
-    const url = `${BACKEND_URL}/events/${selectedEvent.id}/guests`;
-    const params = { utorid: guestId};
-    const res = await fetch(url, {
-        method: "POST",
-        headers: {"Content-Type": "application/json", Authorization: `Bearer ${token}`},
-        body: JSON.stringify(params)
-    });
+    async function addGuest(guestId, setGuestId){
+        const url = `${BACKEND_URL}/events/${selectedEvent.id}/guests`;
+        const params = { utorid: guestId};
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {"Content-Type": "application/json", Authorization: `Bearer ${token}`},
+            body: JSON.stringify(params)
+        });
 
-    const data = await res.json();
-    if (!res.ok){
-        setError(data.error);
-        return;
-    }
-
-    // Success - refresh the event details
-    await refreshEventDetails();
-    setGuestId(""); // Clear the input
-}
-
-// Replace your remGuest function with this:
-async function remGuest(){
-    const url = `${BACKEND_URL}/events/${selectedEvent.id}/guests/${guestId}`;
-    const res = await fetch(url, {
-        method: "DELETE",
-        headers: {Authorization: `Bearer ${token}`}
-    });
-
-    if (!res.ok){
         const data = await res.json();
-        setError(data.error);
-        return;
+        if (!res.ok){
+            setError(data.error);
+            return;
+        }
+
+        // Success - refresh the event details
+        await refreshEventDetails();
+        setGuestId(""); // Clear the input
     }
 
-    // Success - refresh the event details
-    await refreshEventDetails();
-    setGuestId(""); // Clear the input
-}
+    // Replace your remGuest function with this:
+    async function remGuest(guestId, setGuestId){
+        const url = `${BACKEND_URL}/events/${selectedEvent.id}/guests/${guestId}`;
+        const res = await fetch(url, {
+            method: "DELETE",
+            headers: {Authorization: `Bearer ${token}`}
+        });
+
+        if (!res.ok){
+            const data = await res.json();
+            setError(data.error);
+            return;
+        }
+
+        // Success - refresh the event details
+        await refreshEventDetails();
+        setGuestId(""); // Clear the input
+    }
 
 // Add this new helper function to refresh event details:
 async function refreshEventDetails() {
@@ -302,7 +291,7 @@ async function refreshEventDetails() {
     
     // Update both the modal view and the table
     setSelectedEvent(formatted_event);
-    setEditEvent({
+    setEditedEvent({
         id: data.id,
         name: data.name,
         description: data.description,
@@ -371,41 +360,8 @@ async function refreshEventDetails() {
     }
 
     async function fetchEvents(page){
-        // if (page < 1 || page > totalPages) {
-        //     return;
-        // }
-
-        // const params = { page: page };
-        // const url = `${BACKEND_URL}/events?${new URLSearchParams(params).toString()}`;
-
-        // const res = await fetch(url, {
-        //     method: "GET",
-        //     headers: {
-        //         Authorization: `Bearer ${token}`
-        //     }
-        // });
-        // const data = await res.json();
-        const data = fetchEventsFull(page, filters, setError);
-
+        const data = await fetchEventsFull(page, filters, setError, totalPages);
         if (data === null) {
-            // const numDemos = 10;
-            // const numPages = 2;
-            // const demoEvents = [];
-            // for (let i = 0; i < numDemos; i++) {
-            //     demoEvents.push({
-            //         id: i,
-            //         name: `Event ${i + 1}`,
-            //         location: `Location ${i + 1}`,
-            //         pointsRemain: 100 + i,
-            //         startTime: new Date(Date.now() - (1000 * 60 * 60 * 24 * (i+1))),
-            //         endTime: new Date(Date.now() + (1000 * 60 * 60 * 24 * (i+1))),
-            //         capacity: i + 20,
-            //         guests: ["a", "b", "c"]
-            //     });
-            // }
-            // setEvents(demoEvents);
-            // setPageNum(page);
-            // setTotalPages(numPages);
             return;
         }
         setEvents(formatEvents(data.results));
@@ -533,34 +489,28 @@ async function refreshEventDetails() {
                 <EventOrganizerModal
                     selectedEvent={selectedEvent}
                     setSelectedEvent={setSelectedEvent}
+
                     isEditing={isEditing}
                     setIsEditing={setIsEditing}
-                    editedEvent={editEvent}
-                    setEditedEvent={setEditEvent}
-                    saveEdits={saveEdits}
-                    setShowModal={setShowModal}
-                    awardMode={awardMode}
-                    recipientId={recipientId}
-                    rewardAmount={rewardAmount}
-                    setAwardMode={setAwardMode}
-                    setRecipientId={setRecipientId}
-                    setRewardAmount={setRewardAmount}
-                    rewardModel={rewardModel}
-                    setRewardModel={setRewardModel}
-                    rewardGuest={rewardGuest}
+
+                    editedEvent={editedEvent}
+                    setEditedEvent={setEditedEvent}
+
                     error={error}
                     setError={setError}
-                    publish_event={publish_event}
-                    organizer={organizer}
-                    setOrganizer={setOrganizer}
+                    
+                    setShowModal={setShowModal}
+                    
+                    setShowDeleteConfirm={setShowDeleteConfirm}
+                    
                     addOrganizer={addOrganizer}
-                    role={user.role}
-                    guestId={guestId}
-                    setGuestId={setGuestId}
+                    
+                    saveEdits={saveEdits}
+                    rewardGuest={rewardGuest}
+                    publish_event={publish_event}
+
                     addGuest={addGuest}
                     remGuest={remGuest}
-                    setShowDeleteConfirm={setShowDeleteConfirm}
-                    deleteEvent={deleteEvent} 
                 />
             ) : (
                 <EventGuestModal selectedEvent={selectedEvent} rsvp={rsvp} setRSVP={setRSVP} rsvp_user={rsvp_user} error={error} setError={setError} setShowModal={setShowModal}/>

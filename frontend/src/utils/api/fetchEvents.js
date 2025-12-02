@@ -1,4 +1,6 @@
-export default async function fetchEventsFull(page, filters, setError){
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+
+export default async function fetchEventsFull(page, filters, setError, totalPages){
     const token = localStorage.getItem("token");
 
     if (page < 1 || page > totalPages) {
