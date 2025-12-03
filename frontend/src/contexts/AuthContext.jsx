@@ -112,7 +112,7 @@ export const AuthProvider = ({ children }) => {
             ) {
                 return { unverified: true, utorid };
             }
-
+                            
             // OTHER LOGIN ERRORS
             if (!res.ok) {
                 return data.message || data.error || "Login failed.";
@@ -132,11 +132,18 @@ export const AuthProvider = ({ children }) => {
             setUser(userData);
 
             // Initialize role
-            setCurrentRole(userData.role || "regular");
-            localStorage.setItem("currentRole", userData.role || "regular");
+            const role = userData.role || "regular";
+            setCurrentRole(role);
+            localStorage.setItem("currentRole", role);
             localStorage.setItem("user", JSON.stringify(userData));
 
-            navigate("/dashboard");
+            // role-based navigation
+            if (role === "manager" || role === "superuser") {
+                navigate("/managerDashboard");
+            } else {
+                navigate("/dashboard");
+            }
+
             return null;
         } catch (e) {
             return "Network error: " + e.message;
