@@ -86,6 +86,7 @@ function Promotions() {
                             <h1 className="m-0">Promotions</h1>
 
                             <Image
+                                draggable={false}
                                 src="../../filter.svg"
                                 alt="Filter"
                                 className="filter opacity-75"
@@ -157,8 +158,8 @@ function Promotions() {
             <Col>
             
                 <Modal show={clicked} onHide={closeCurrPromo}>
-                    <Modal.Header closeButton className="bg-light">
-                        <Modal.Title><strong>Promotion Details</strong></Modal.Title>
+                    <Modal.Header closeButton className="bg-primary text-light">
+                        <Modal.Title>Promotion Details</Modal.Title>
                     </Modal.Header>
                     <Modal.Body className="d-flex flex-column justify-content-center align-items-center">
                         

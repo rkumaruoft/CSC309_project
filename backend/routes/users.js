@@ -508,7 +508,7 @@ router.patch(
 
             const match = await bcrypt.compare(old, user.password);
             if (!match) {
-                return res.status(403).json({ error: "Incorrect password" });
+                return res.status(403).json({ error: "Old password does not match" });
             }
 
             // Validate new password strength

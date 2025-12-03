@@ -239,6 +239,7 @@ function ManagePromotions() {
                             <h1 className="m-0">Manage Promotions</h1>
 
                             <Image
+                                draggable={false}
                                 src="../../filter.svg"
                                 alt="Filter"
                                 className="filter opacity-75"
@@ -314,8 +315,8 @@ function ManagePromotions() {
             <Col>
             
                 <Modal show={clicked} onHide={closeCurrPromo} size="lg">
-                    <Modal.Header closeButton className="bg-light">
-                        <Modal.Title><strong>Promotion Details:</strong> Click to Edit</Modal.Title>
+                    <Modal.Header closeButton className="bg-primary text-light">
+                        <Modal.Title>Promotion Details: Click to Edit</Modal.Title>
                     </Modal.Header>
                     <Modal.Body className="d-flex flex-column justify-content-center align-items-center">
                         
@@ -560,7 +561,7 @@ function ManagePromotions() {
         {/* Creating a new promotion */}
         {creating &&
         <Modal show={creating} onHide={() => setCreating(false)}>
-            <Modal.Header closeButton className="bg-light">
+            <Modal.Header closeButton className="bg-primary text-light">
                 <Modal.Title>Create a New Promotion</Modal.Title>
             </Modal.Header>
             <Modal.Body className="d-flex flex-column justify-content-center align-items-center">
