@@ -1096,4 +1096,24 @@ router.post(
     }
 );
 
+// ---------------- /users/me/events (GET) ----------------
+// Clearance: Regular+
+router.get(
+    "/me/events", 
+    authenticate, 
+    requireClearance(["regular", "cashier", "manager", "superuser"]),
+    async(req, res) => {
+        try{
+            const userId = req.user.id;
+            const organizedEvents = await prisma.user.findUnique({where: {id: userId}, select: {organizedEvents: {select: {event: true}}}}); // HAS THE KEY "ORGANIZED EVENTS"
+            const organizedEventsCleaned = organizedEvents.organizedEvents.map(oe => oe.event); // LIST OF ORGANIZED EVENTS
+            return res.status(200).json({organizedEventsCleaned});
+        }
+        catch (err){
+            console.error(err);
+            return res.status(500).json({error: "Server error"});
+        }
+    }
+)
+
 export default router;
