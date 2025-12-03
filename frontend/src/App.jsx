@@ -51,7 +51,6 @@ export default function App() {
                     <Route path="/transfers" element={<Layout><Transfers /></Layout>} />
                     <Route path="/events" element={<Layout><EventsList /></Layout>} />
                     <Route path="/promotions" element={<Layout><Promotions /></Layout>} />
-                    <Route path="/redemption" element={<Layout><Redemption /></Layout>} />
                     <Route path="/profile" element={<Layout><Profile /></Layout>} />
                 </Route>
 
@@ -60,6 +59,7 @@ export default function App() {
                 --------------------------------------------------------- */}
                 <Route element={<RequireRole allowedRoles={["regular"]} />}>
                     <Route path="/transactions" element={<Layout><Transactions /></Layout>} />
+                    <Route path="/redemption" element={<Layout><Redemption /></Layout>} />
                 </Route>
 
                 {/* --------------------------------------------------------
