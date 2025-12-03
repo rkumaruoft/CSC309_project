@@ -19,6 +19,7 @@ import ManageUsers from "./pages/ManageUsers.jsx";
 import ProfileQrModal from "./components/ProfileQrModal.jsx";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ManagePromotions from "./pages/ManagePromotions.jsx";
 
 export default function App() {
     const { initialized } = useAuth();
@@ -48,6 +49,22 @@ export default function App() {
                 {/* Regular User Only */}
                 <Route element={<RequireRole allowedRoles={["regular"]} />}>
                     <Route path="/transactions" element={<Layout><Transactions /></Layout>} />
+                    <Route
+                        path="/redemption"
+                        element={
+                            <Layout>
+                                <Redemption />
+                            </Layout>
+                        }
+                    />
+                    <Route
+                        path="/promotions"
+                        element={
+                            <Layout>
+                                <Promotions />
+                            </Layout>
+                        }
+                    />
                 </Route>
 
                 {/* Cashier Only */}
@@ -59,6 +76,14 @@ export default function App() {
                 {/* Manager / Superuser Only */}
                 <Route element={<RequireRole allowedRoles={["manager", "superuser"]} />}>
                     <Route path="/manageUsers" element={<Layout><ManageUsers /></Layout>} />
+                    <Route
+                        path="/managePromotions"
+                        element={
+                            <Layout>
+                                <ManagePromotions />
+                            </Layout>
+                        }
+                    />
                 </Route>
 
                 {/* Default */}

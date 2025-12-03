@@ -15,6 +15,9 @@
     "bootswatch": "^5.3.8",
     "react": "^19.2.0",
     "react-bootstrap": "^2.10.10",
+    "react-calendar": "^6.0.0",
+    "react-clock": "^6.0.0",
+    "react-datetime-picker": "^7.0.1",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.6"
   },

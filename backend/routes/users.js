@@ -830,8 +830,6 @@ router.post(
             const { type, amount, remark = "" } = req.body;
 
             // Must be redemption only
-            console.log(`body is: ${JSON.stringify(req.body)}`);
-            console.log(`type is: ${type}`);
             if (type !== "redemption") {
                 return res.status(400).json({ error: "Invalid transaction type" });
             }
