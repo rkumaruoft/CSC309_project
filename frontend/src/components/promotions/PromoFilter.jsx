@@ -8,8 +8,7 @@ function PromoFilter({ setFilters, setShowFilter }) {
     const [started, setStarted] = useState("");
     const [ended, setEnded] = useState("");
 
-    const currUser = localStorage.getItem("user");
-    const userRole = typeof currUser === "string" ? JSON.parse(currUser).role : currUser.role;
+    const userRole = localStorage.getItem("currentRole");
 
     function handleFilters(e) {
         e.preventDefault();
@@ -24,7 +23,7 @@ function PromoFilter({ setFilters, setShowFilter }) {
         setShowFilter(false);
     }
 
-    return <Card bg="light">
+    return <Card bg="light" className="shadow-sm">
             <Form className="d-flex m-2" onSubmit={handleFilters}>
                 <Form.Group className="me-2">
                     <Form.Label>Name:</Form.Label>
