@@ -5,6 +5,7 @@ export default function Regular_User_Header() {
         { to: '/transactions', label: 'Transactions' },
         { to: '/promotions', label: 'Promotions' },
         { to: '/events', label: 'Events' },
+        { to: '/manageEvents', label: 'Manage Events'},
         { to: '/redemption', label: 'Redeem' },
         { to: '/transfers', label: 'Transfers' },
     ];
