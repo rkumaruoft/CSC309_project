@@ -132,11 +132,18 @@ export const AuthProvider = ({ children }) => {
             setUser(userData);
 
             // Initialize role
-            setCurrentRole(userData.role || "regular");
-            localStorage.setItem("currentRole", userData.role || "regular");
+            const role = userData.role || "regular";
+            setCurrentRole(role);
+            localStorage.setItem("currentRole", role);
             localStorage.setItem("user", JSON.stringify(userData));
 
-            navigate("/dashboard");
+            // role-based navigation
+            if (role === "manager" || role === "superuser") {
+                navigate("/managerDashboard");
+            } else {
+                navigate("/dashboard");
+            }
+
             return null;
         } catch (e) {
             return "Network error: " + e.message;
@@ -181,11 +188,25 @@ export const AuthProvider = ({ children }) => {
 
     const availableRoles = computeAvailableRoles(user || {});
 
+    // ----------------------------------------------------
+    // SWITCH INTERFACE ROLE
+    // ----------------------------------------------------
     const switchRole = (role) => {
         if (!availableRoles.includes(role)) return;
+
+        // Save new interface role
         setCurrentRole(role);
         localStorage.setItem("currentRole", role);
+
+        // Redirect ONLY when user intentionally switches interface
+        if (role === "manager" || role === "superuser") {
+            navigate("/managerDashboard");
+        } else {
+
+            navigate("/dashboard");
+        }
     };
+
 
     return (
         <AuthContext.Provider

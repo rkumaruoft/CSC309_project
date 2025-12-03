@@ -18,8 +18,14 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
-    // If the user is already logged in → redirect away
     if (user) {
+        // Use currentRole or fallback to user.role
+        const role = user.role;
+
+        if (role === "manager" || role === "superuser") {
+            return <Navigate to="/managerDashboard" replace />;
+        }
+
         return <Navigate to="/dashboard" replace />;
     }
 
