@@ -13,6 +13,7 @@ import PromoEditField from "../components/promotions/promoEdit/PromoEditField.js
 import PromoEditDropdown from "../components/promotions/promoEdit/PromoEditDropdown.jsx";
 import PromoEditDate from "../components/promotions/promoEdit/PromoEditDate.jsx";
 import PromoEditNumber from "../components/promotions/promoEdit/PromoEditNumber.jsx";
+import PaginationControls from "../components/PaginationControls";
 import DateTimePicker from "react-datetime-picker";
 import NumberControl from "../components/promotions/NumberControl.jsx";
 import NewDatePicker from "../components/promotions/NewDatePicker.jsx";
@@ -278,31 +279,10 @@ function ManagePromotions() {
                     </Col>
                 </Row>
 
-                {/* Pagination and page display (TODO: add better page scrolling as an option) */}
+                {/* Pagination and page display*/}
                 <Row className="justify-content-center align-items-center mb-2">
-                    {/* Back button */}
                     <Col xs="auto">
-                        <Button
-                            onClick={() => getPromos(pageNum - 1)}
-                            disabled={pageNum === 1}>
-                                Back
-                        </Button>
-                    </Col>
-
-                    {/* Page Number */}
-                    <Col xs="auto">
-                        <span>
-                            Page: <strong>{pageNum}/{totalPages}</strong>
-                        </span>
-                    </Col>
-
-                    {/* Forward Button */}
-                    <Col xs="auto">
-                        <Button
-                            onClick={() => getPromos(pageNum + 1)}
-                            disabled={pageNum === totalPages}>
-                                Next
-                        </Button>
+                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => getPromos(p)} disabled={false} />
                     </Col>
                 </Row>
             </Card.Body>
