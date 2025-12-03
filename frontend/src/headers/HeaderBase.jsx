@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function HeaderBase({ brand, links = [] }) {
     const {
@@ -12,21 +12,8 @@ export default function HeaderBase({ brand, links = [] }) {
         switchRole,
         showQrModal
     } = useAuth();
-    const navigate = useNavigate();
 
     const [expanded, setExpanded] = useState(false);
-
-    useEffect(() => {
-        if (!currentRole) return;
-
-        // Redirect user to correct dashboard after switching roles
-        if (currentRole === "manager" || currentRole === "superuser") {
-            navigate("/managerDashboard");
-        } else {
-            navigate("/dashboard");
-        }
-    }, [currentRole]);
-
 
     var homePage = "/dashboard";
 

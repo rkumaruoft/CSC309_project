@@ -112,7 +112,7 @@ export const AuthProvider = ({ children }) => {
             ) {
                 return { unverified: true, utorid };
             }
-                            
+
             // OTHER LOGIN ERRORS
             if (!res.ok) {
                 return data.message || data.error || "Login failed.";
@@ -188,11 +188,25 @@ export const AuthProvider = ({ children }) => {
 
     const availableRoles = computeAvailableRoles(user || {});
 
+    // ----------------------------------------------------
+    // SWITCH INTERFACE ROLE
+    // ----------------------------------------------------
     const switchRole = (role) => {
         if (!availableRoles.includes(role)) return;
+
+        // Save new interface role
         setCurrentRole(role);
         localStorage.setItem("currentRole", role);
+
+        // Redirect ONLY when user intentionally switches interface
+        if (role === "manager" || role === "superuser") {
+            navigate("/managerDashboard");
+        } else {
+
+            navigate("/dashboard");
+        }
     };
+
 
     return (
         <AuthContext.Provider
