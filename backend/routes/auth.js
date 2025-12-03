@@ -20,6 +20,7 @@ const verifyRateLimit = new Map();
 // ---------------- /auth/tokens (POST) ----------------
 router.post("/tokens", async (req, res) => {
     try {
+        console.log(req.body);
         const { utorid, password } = req.body;
 
         if (!utorid || !password) {
