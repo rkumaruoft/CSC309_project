@@ -1,6 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
+import { useEffect, useRef } from "react";
 
 export default function HeaderBase({ brand, links = [] }) {
     const {
@@ -14,13 +15,19 @@ export default function HeaderBase({ brand, links = [] }) {
 
     const [expanded, setExpanded] = useState(false);
 
+    var homePage = "/dashboard";
+
+    if (currentRole === "manager" || currentRole === "superuser") {
+        homePage = "/managerDashboard";
+    }
+
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-primary mb-3">
             <div className="container">
 
                 {/* BRAND */}
-                <Link className="navbar-brand" to="/dashboard">
-                    {brand || "CSSU Rewards"}
+                <Link className="navbar-brand" to={homePage}>
+                    {brand || "BananaCreds"}
                 </Link>
 
                 {/* MOBILE TOGGLER */}
@@ -102,9 +109,8 @@ export default function HeaderBase({ brand, links = [] }) {
                                             return (
                                                 <li key={r}>
                                                     <button
-                                                        className={`dropdown-item d-flex justify-content-between align-items-center ${
-                                                            isActive ? "active" : ""
-                                                        }`}
+                                                        className={`dropdown-item d-flex justify-content-between align-items-center ${isActive ? "active" : ""
+                                                            }`}
                                                         onClick={() => switchRole(r)}
                                                     >
                                                         <span>{r[0].toUpperCase() + r.slice(1)}</span>

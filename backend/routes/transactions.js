@@ -367,6 +367,94 @@ router.get(
 );
 
 
+// ---------------- /transactions/processed (GET) ----------------
+// Clearance: Cashier+
+router.get(
+    "/processed",
+    authenticate,
+    requireClearance(["cashier", "manager", "superuser"]),
+    async (req, res) => {
+        try {
+            const {
+                name,
+                type,
+                processed,
+                page = 1,
+                limit = 10
+            } = req.query;
+
+            const filters = {};
+
+            // ---------------- FILTER: name ----------------
+            // Filter by utorid OR name (SQLite: case-sensitive only)
+            if (name) {
+                filters.user = {
+                    OR: [
+                        { utorid: { contains: name } },
+                        { name: { contains: name } }
+                    ]
+                };
+            }
+
+            // ---------------- FILTER: type ----------------
+            if (type) {
+                filters.type = type;
+            }
+            
+            // ---------------- FILTER: processed ----------------
+            filters.processed = processed === "true" ? true : false;
+
+            // ---------------- COUNT ----------------
+            const count = await prisma.transaction.count({ where: filters });
+
+            // ---------------- RESULTS ----------------
+            const results = await prisma.transaction.findMany({
+                where: filters,
+                skip: (page - 1) * limit,
+                take: Number(limit),
+                orderBy: { id: "asc" },
+                include: {
+                    user: true,
+                    promotions: true
+                }
+            });
+
+            // ---------------- FORMAT RESPONSE ----------------
+            const formatted = results.map(t => {
+                const obj = {
+                    id: t.id,
+                    utorid: t.user.utorid,
+                    amount: t.amount,
+                    spent: t.spent ?? undefined,
+                    type: t.type,
+                    relatedId: t.relatedId ?? undefined,
+                    promotionIds: t.promotions.map(p => p.id),
+                    suspicious: t.suspicious ?? false,
+                    remark: t.remark ?? "",
+                    createdBy: t.createdBy
+                };
+
+                // Show 'redeemed' for redemption transactions
+                if (t.type === "redemption") {
+                    obj.redeemed = Math.abs(t.amount);
+                }
+
+                return obj;
+            });
+
+            return res.json({
+                count,
+                results: formatted
+            });
+
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Server error" });
+        }
+    }
+);
+
+
 // ---------------- /transactions/:transactionId (GET) ----------------
 // Clearance: Manager+
 router.get(

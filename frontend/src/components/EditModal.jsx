@@ -145,7 +145,7 @@ function EditModal({ edit, setEdit, addChange }) {
                 {error && <div className="text-center alert alert-danger mt-4">{error}</div>}
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="warning" onClick={handleChange}>Confirm</Button>
+                <Button variant="warning" onClick={handleChange} disabled={!field}>Confirm</Button>
                 <Button variant="secondary" onClick={handleCancel}>Cancel</Button>
             </Modal.Footer>
         </Modal>
