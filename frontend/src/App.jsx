@@ -21,11 +21,21 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ManagePromotions from "./pages/ManagePromotions.jsx";
 import ManagerDashboard from "./pages/ManagerDashboard.jsx";
+import { useEffect } from "react";
+
+function NotFound() {
+    useEffect(() => {
+        document.title = "Page Not Found";
+    }, []);
+
+    return <h2 className="container mt-4">Page Not Found</h2>
+}
 
 export default function App() {
     const { initialized } = useAuth();
 
     if (!initialized) {
+        document.title = "Loading...";
         return <div className="container mt-4">Loading...</div>;
     }
 
@@ -36,9 +46,9 @@ export default function App() {
                 {/* --------------------------------------------------------
                    PUBLIC ROUTES (No Auth Required)
                 --------------------------------------------------------- */}
-                <Route path="/login" element={<Layout><Login /></Layout>} />
-                <Route path="/register" element={<Layout><Register /></Layout>} />
-                <Route path="/forgot-password" element={<Layout><ForgotPassword /></Layout>} />
+                <Route path="/login" element={<Layout title="Login"><Login /></Layout>} />
+                <Route path="/register" element={<Layout title="Register"><Register /></Layout>} />
+                <Route path="/forgot-password" element={<Layout title="Forgot Password"><ForgotPassword /></Layout>} />
                 <Route path="/reset-password" element={<Layout><ResetPassword /></Layout>} />
                 <Route path="/verify" element={<Layout><Verify /></Layout>} />
 
@@ -47,43 +57,43 @@ export default function App() {
                    Roles: regular, cashier, manager, superuser
                 --------------------------------------------------------- */}
                 <Route element={<RequireRole allowedRoles={["regular", "cashier", "manager", "superuser"]} />}>
-                    <Route path="/dashboard" element={<Layout><Home /></Layout>} />
-                    <Route path="/transfers" element={<Layout><Transfers /></Layout>} />
-                    <Route path="/events" element={<Layout><EventsList /></Layout>} />
-                    <Route path="/promotions" element={<Layout><Promotions /></Layout>} />
-                    <Route path="/profile" element={<Layout><Profile /></Layout>} />
+                    <Route path="/dashboard" element={<Layout title="Home"><Home /></Layout>} />
+                    <Route path="/transfers" element={<Layout title="Transfers"><Transfers /></Layout>} />
+                    <Route path="/events" element={<Layout title="Events"><EventsList /></Layout>} />
+                    <Route path="/promotions" element={<Layout title="Promotions"><Promotions /></Layout>} />
+                    <Route path="/profile" element={<Layout title="Profile"><Profile /></Layout>} />
                 </Route>
 
                 {/* --------------------------------------------------------
                    REGULAR USERS ONLY
                 --------------------------------------------------------- */}
                 <Route element={<RequireRole allowedRoles={["regular"]} />}>
-                    <Route path="/transactions" element={<Layout><Transactions /></Layout>} />
-                    <Route path="/redemption" element={<Layout><Redemption /></Layout>} />
+                    <Route path="/transactions" element={<Layout title="Transactions"><Transactions /></Layout>} />
+                    <Route path="/redemption" element={<Layout title="Redemptions"><Redemption /></Layout>} />
                 </Route>
 
                 {/* --------------------------------------------------------
                    CASHIERS ONLY
                 --------------------------------------------------------- */}
                 <Route element={<RequireRole allowedRoles={["cashier"]} />}>
-                    <Route path="/cashier/transactions" element={<Layout><CashierTransactions /></Layout>} />
-                    <Route path="/cashier/redemption" element={<Layout><CashierRedemptions /></Layout>} />
+                    <Route path="/cashier/transactions" element={<Layout title="Transactions - Cashier"><CashierTransactions /></Layout>} />
+                    <Route path="/cashier/redemption" element={<Layout title="Redemptions - Cashier"><CashierRedemptions /></Layout>} />
                 </Route>
 
                 {/* --------------------------------------------------------
                    MANAGERS + SUPERUSERS ONLY
                 --------------------------------------------------------- */}
                 <Route element={<RequireRole allowedRoles={["manager", "superuser"]} />}>
-                    <Route path="/managerDashboard" element={<Layout><ManagerDashboard /></Layout>} />
-                    <Route path="/manageUsers" element={<Layout><ManageUsers /></Layout>} />
-                    <Route path="/managePromotions" element={<Layout><ManagePromotions /></Layout>} />
+                    <Route path="/managerDashboard" element={<Layout title="Home"><ManagerDashboard /></Layout>} />
+                    <Route path="/manageUsers" element={<Layout title="Manage Users"><ManageUsers /></Layout>} />
+                    <Route path="/managePromotions" element={<Layout title="Manage Promotions"><ManagePromotions /></Layout>} />
                 </Route>
 
                 {/* --------------------------------------------------------
                    DEFAULT ROUTES
                 --------------------------------------------------------- */}
                 <Route path="/" element={<Navigate to="/login" replace />} />
-                <Route path="*" element={<h2 className="container mt-4">Page Not Found</h2>} />
+                <Route path="*" element={<NotFound />} />
 
             </Routes>
 
