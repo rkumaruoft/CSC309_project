@@ -2,26 +2,25 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
-// Utility helpers
+const prisma = new PrismaClient();
 const hash = (pw) => bcrypt.hashSync(pw, 10);
 
+// Helper: random weighted timestamps
 function randomDateInLastYearWeighted() {
     const now = new Date();
     const past = new Date(now);
-    past.setFullYear(past.getFullYear() - 1);
+    past.setFullYear(now.getFullYear() - 1);
 
-    // seasonal weighting spikes
     const spikes = [
-        { month: 8, weight: 4 },  // Frosh week (Sept)
-        { month: 11, weight: 3 }, // Holidays (Dec)
-        { month: 3, weight: 2 },  // April midterms
+        { month: 8, weight: 4 },  // Sept (frosh)
+        { month: 11, weight: 3 }, // December
+        { month: 3, weight: 2 }   // April
     ];
 
     if (Math.random() < 0.25) {
         const s = spikes[Math.floor(Math.random() * spikes.length)];
         return new Date(
-            now.getFullYear(),
-            s.month,
+            now.getFullYear(), s.month,
             Math.floor(Math.random() * 28) + 1,
             Math.floor(Math.random() * 24),
             Math.floor(Math.random() * 60)
@@ -43,7 +42,7 @@ function maybeSuspicious(amount) {
 async function main() {
     console.log("🌱 Seeding BananaCreds database...");
 
-    // Reset DB in correct order
+    // Reset DB (safe order)
     await prisma.eventGuest.deleteMany();
     await prisma.eventOrganizer.deleteMany();
     await prisma.transaction.deleteMany();
@@ -51,89 +50,44 @@ async function main() {
     await prisma.event.deleteMany();
     await prisma.user.deleteMany();
 
-    // ============================================================
+    // ========================
     // USERS (50)
-    // ============================================================
-
+    // ========================
     const staticUsers = [
-        // default admin roles
-        {
-            utorid: "super01",
-            name: "Super Admin",
-            email: "superuser@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "superuser",
-            verified: true
-        },
-        {
-            utorid: "manag01",
-            name: "Manager Jane",
-            email: "manager@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "manager",
-            verified: true
-        },
-        {
-            utorid: "cash001",
-            name: "Cashier Bob",
-            email: "cashier@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "cashier",
-            verified: true
-        },
-        // a few regulars
-        {
-            utorid: "regular1",
-            name: "Regular One",
-            email: "regular1@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "regular",
-            verified: true,
-            points: 120
-        },
-        {
-            utorid: "regular2",
-            name: "Regular Two",
-            email: "regular2@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "regular",
-            verified: true,
-            points: 80
-        },
+        { utorid: "super01", name: "Super Admin", email: "superuser@mail.utoronto.ca", password: hash("Password123!"), role: "superuser", verified: true },
+        { utorid: "manag01", name: "Manager Jane", email: "manager@mail.utoronto.ca", password: hash("Password123!"), role: "manager", verified: true },
+        { utorid: "cash001", name: "Cashier Bob", email: "cashier@mail.utoronto.ca", password: hash("Password123!"), role: "cashier", verified: true },
+        { utorid: "regular1", name: "Regular One", email: "regular1@mail.utoronto.ca", password: hash("Password123!"), role: "regular", verified: true, points: 120 },
+        { utorid: "regular2", name: "Regular Two", email: "regular2@mail.utoronto.ca", password: hash("Password123!"), role: "regular", verified: true, points: 80 },
     ];
 
-    const autoUsers = [];
-    for (let i = 1; i <= 45; i++) {
-        autoUsers.push({
-            utorid: `u${i.toString().padStart(3, "0")}`,
-            name: `User ${i}`,
-            email: `user${i}@mail.utoronto.ca`,
-            password: hash("Password123!"),
-            role: "regular",
-            verified: true,
-            points: Math.floor(Math.random() * 200)
-        });
-    }
+    const autoUsers = Array.from({ length: 45 }, (_, i) => ({
+        utorid: `u${String(i + 1).padStart(3, "0")}`,
+        name: `User ${i + 1}`,
+        email: `user${i + 1}@mail.utoronto.ca`,
+        password: hash("Password123!"),
+        role: "regular",
+        verified: true,
+        points: Math.floor(Math.random() * 200)
+    }));
 
     const usersData = [...staticUsers, ...autoUsers];
 
     await prisma.user.createMany({ data: usersData });
-    console.log("✔ 50 users created");
+    console.log("✔ Users created");
 
-    // Fetch users map
     const users = {};
     for (const u of usersData) {
-        users[u.utorid] = await prisma.user.findUnique({ where: { utorid: u.utorid } });
+        users[u.utorid] = await prisma.user.findUnique({ where: { utorid: u.utorid }});
     }
 
     const manager = users["manag01"];
     const superuser = users["super01"];
     const cashier = users["cash001"];
 
-    // ============================================================
-    // EVENTS (20 yearly distributed)
-    // ============================================================
-
+    // ========================
+    // EVENTS
+    // ========================
     const events = [];
     for (let i = 1; i <= 20; i++) {
         const start = randomDateInLastYearWeighted();
@@ -158,185 +112,125 @@ async function main() {
                 }
             }
         });
-
         events.push(e);
     }
+    console.log("✔ Events created");
 
-    console.log("✔ 20 events created");
-
-    // randomly add guests
+    // Event guests
     const allUsersArr = Object.values(users);
     for (const e of events) {
         const guestCount = Math.floor(Math.random() * 10);
-        const usedUserIds = new Set();
+        const used = new Set();
 
         for (let j = 0; j < guestCount; j++) {
             let user;
-
-            // keep picking until finding a unique user
             do {
                 user = allUsersArr[Math.floor(Math.random() * allUsersArr.length)];
-            } while (usedUserIds.has(user.id));
+            } while (used.has(user.id));
 
-            usedUserIds.add(user.id);
+            used.add(user.id);
 
             await prisma.eventGuest.create({
-                data: {
-                    eventId: e.id,
-                    userId: user.id
-                }
+                data: { eventId: e.id, userId: user.id }
             });
         }
     }
 
-
     console.log("✔ Event guests assigned");
 
-    // ============================================================
-    // PROMOTIONS (8)
-    // ============================================================
-
+    // ========================
+    // PROMOTIONS
+    // ========================
     const promotionsData = [
-        {
-            name: "Welcome Bonus",
-            description: "10 points for joining",
-            type: "onetime",
-            startTime: new Date(),
-            endTime: new Date(Date.now() + 20 * 86400000),
-            points: 10
-        },
-        {
-            name: "Holiday Double",
-            description: "Earn 2× points in December",
-            type: "automatic",
-            startTime: new Date(Date.now() - 20 * 86400000),
-            endTime: new Date(Date.now() + 20 * 86400000),
-            rate: 1.0
-        },
-        {
-            name: "Exam Stress Relief",
-            description: "Random 5 points during exam months",
-            type: "onetime",
-            startTime: new Date(),
-            endTime: new Date(Date.now() + 40 * 86400000),
-            points: 5
-        },
-        {
-            name: "Loyalty Booster",
-            description: "Earn +5%",
-            type: "automatic",
-            startTime: new Date(),
-            endTime: new Date(Date.now() + 200 * 86400000),
-            rate: 0.05
-        },
-        {
-            name: "Event Plus",
-            description: "Extra 3 points at events",
-            type: "automatic",
-            startTime: new Date(),
-            endTime: new Date(Date.now() + 100 * 86400000),
-            points: 3
-        },
-        {
-            name: "New Year Bonus",
-            description: "5 points in Jan",
-            type: "onetime",
-            startTime: new Date(),
-            endTime: new Date(Date.now() + 50 * 86400000),
-            points: 5
-        },
-        {
-            name: "Frosh Week Special",
-            description: "Frosh week bonus",
-            type: "automatic",
-            startTime: new Date(),
-            endTime: new Date(Date.now() + 60 * 86400000),
-        },
-        {
-            name: "Random Surprise",
-            description: "Random tiny bonus",
-            type: "onetime",
-            startTime: new Date(),
-            endTime: new Date(Date.now() + 15 * 86400000),
-            points: 2
-        }
+        { name: "Welcome Bonus", description: "10 points for joining", type: "onetime", startTime: new Date(), endTime: new Date(Date.now() + 20 * 864e5), points: 10 },
+        { name: "Holiday Double", description: "Earn 2× points in December", type: "automatic", startTime: new Date(Date.now() - 20 * 864e5), endTime: new Date(Date.now() + 20 * 864e5), rate: 1.0 },
+        { name: "Exam Stress Relief", description: "Random 5 points during exam months", type: "onetime", startTime: new Date(), endTime: new Date(Date.now() + 40 * 864e5), points: 5 },
+        { name: "Loyalty Booster", description: "Earn +5%", type: "automatic", startTime: new Date(), endTime: new Date(Date.now() + 200 * 864e5), rate: 0.05 },
+        { name: "Event Plus", description: "Extra 3 points at events", type: "automatic", startTime: new Date(), endTime: new Date(Date.now() + 100 * 864e5), points: 3 },
+        { name: "New Year Bonus", description: "5 points in Jan", type: "onetime", startTime: new Date(), endTime: new Date(Date.now() + 50 * 864e5), points: 5 },
+        { name: "Frosh Week Special", description: "Frosh week bonus", type: "automatic", startTime: new Date(), endTime: new Date(Date.now() + 60 * 864e5) },
+        { name: "Random Surprise", description: "Random tiny bonus", type: "onetime", startTime: new Date(), endTime: new Date(Date.now() + 15 * 864e5), points: 2 }
     ];
 
     await prisma.promotion.createMany({ data: promotionsData });
-    console.log("✔ 8 promotions created");
+    console.log("✔ Promotions created");
 
     const allPromos = await prisma.promotion.findMany();
 
-    // ============================================================
-    // TRANSACTIONS
-    // ============================================================
-
+    // ========================
+    // TRANSACTIONS (batched)
+    // ========================
+    const BATCH = 200;
     const SEED_TX_COUNT = 1500;
-    const transactionTypes = ["purchase", "redemption", "event"];
-
-    let txCount = 0;
+    let txBuffer = [];
 
     for (let i = 0; i < SEED_TX_COUNT; i++) {
-        // weighted role activity distribution
-        let actingUser;
         const r = Math.random();
-
-        if (r < 0.05) actingUser = manager;
-        else if (r < 0.10) actingUser = cashier;
-        else if (r < 0.12) actingUser = superuser;
-        else actingUser = allUsersArr[Math.floor(Math.random() * allUsersArr.length)];
+        let actingUser =
+            r < 0.05 ? manager :
+            r < 0.10 ? cashier :
+            r < 0.12 ? superuser :
+            allUsersArr[Math.floor(Math.random() * allUsersArr.length)];
 
         const typeR = Math.random();
-        let type;
-        if (typeR < 0.6) type = "purchase";
-        else if (typeR < 0.85) type = "redemption";
-        else type = "event";
+        const type =
+            typeR < 0.6 ? "purchase" :
+            typeR < 0.85 ? "redemption" : "event";
 
         const timestamp = randomDateInLastYearWeighted();
-
         let amount = 0;
         let eventId = null;
 
         if (type === "purchase") {
-            amount = Math.floor(Math.random() * 41) + 10; // 10–50
+            amount = Math.floor(Math.random() * 41) + 10;
         } else if (type === "redemption") {
-            amount = -(Math.floor(Math.random() * 36) + 5); // -5 to -40
-        } else if (type === "event") {
+            amount = -(Math.floor(Math.random() * 36) + 5);
+        } else {
             const ev = events[Math.floor(Math.random() * events.length)];
             eventId = ev.id;
             amount = ev.pointsAwarded;
         }
 
-        let txData = {
+        const tx = {
             userId: actingUser.id,
             type,
             amount,
             eventId,
-            remark: `Advanced auto-seed #${i + 1}`,
+            remark: `Seed tx #${i + 1}`,
             createdBy: "seed",
             createdAt: timestamp,
             suspicious: maybeSuspicious(amount)
         };
 
-        // 20% chance attach promo
+        // 20% chance apply promo
         if (Math.random() < 0.2) {
             const promo = allPromos[Math.floor(Math.random() * allPromos.length)];
-            if (promo) {
-                txData.promotions = { connect: [{ id: promo.id }] };
-            }
+            tx.promotions = { connect: [{ id: promo.id }] };
         }
 
-        await prisma.transaction.create({ data: txData });
-        txCount++;
+        // Add to buffer
+        txBuffer.push(tx);
+
+        // Flush batch
+        if (txBuffer.length >= BATCH) {
+            for (const t of txBuffer) {
+                await prisma.transaction.create({ data: t });
+            }
+            txBuffer = [];
+        }
     }
 
-    console.log(`✔ ${txCount} transactions created`);
+    // Flush remainder
+    for (const t of txBuffer) {
+        await prisma.transaction.create({ data: t });
+    }
 
-    // RECALCULATE AND UPDATE USER POINT BALANCES
+    console.log("✔ Transactions created");
 
-    const allUsers = await prisma.user.findMany({
-        select: { id: true }
-    });
+    // ========================
+    // RECALCULATE USER POINTS
+    // ========================
+    const allUsers = await prisma.user.findMany({ select: { id: true }});
 
     for (const u of allUsers) {
         const txSum = await prisma.transaction.aggregate({
@@ -344,21 +238,16 @@ async function main() {
             where: { userId: u.id }
         });
 
-        const totalPoints = txSum._sum.amount || 0;
-
         await prisma.user.update({
             where: { id: u.id },
-            data: { points: totalPoints }
+            data: { points: txSum._sum.amount || 0 }
         });
     }
 
     console.log("✔ User point totals updated");
-
-
     console.log("🌱 Seeding complete!");
 }
 
-// Run seed
 main()
     .catch((e) => {
         console.error(e);
@@ -367,3 +256,5 @@ main()
     .finally(async () => {
         await prisma.$disconnect();
     });
+
+    
