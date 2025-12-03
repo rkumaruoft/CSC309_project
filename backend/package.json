@@ -9,6 +9,7 @@
     "createsuperuser": "node prisma/createsu.js",
     "clean": "rm -rf prisma/dev.db* node_modules package-lock.json prisma/migrations/",
     "seed": "node prisma/seed.js",
+    "build": "npm install --production && npx prisma generate && npx prisma migrate deploy",
     "start": "node --max-old-space-size=256 index.js 3000"
   },
 
