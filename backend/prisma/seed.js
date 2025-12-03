@@ -2,14 +2,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
-const prisma = new PrismaClient();
-await prisma.eventGuest.deleteMany();
-await prisma.eventOrganizer.deleteMany();
-await prisma.transaction.deleteMany();
-await prisma.promotion.deleteMany();
-await prisma.event.deleteMany();
-await prisma.user.deleteMany();
-
 // Utility helpers
 const hash = (pw) => bcrypt.hashSync(pw, 10);
 
