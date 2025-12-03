@@ -60,7 +60,7 @@ function ManagePromotions() {
         // Handle successful request
         setPromos(data.results);
         setPageNum(page);
-        setTotalPages(Math.max(1, Math.ceil(data.count / 10)))
+        setTotalPages(Math.max(1, Math.ceil(data.count / 10)));
     }
 
     // ---------- Closes the currently opened/clicked promotion ----------
