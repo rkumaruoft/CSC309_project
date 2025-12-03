@@ -46,7 +46,6 @@ export default function Register() {
 
     const passwordValid = Object.values(passwordChecks).every(Boolean);
     const passwordsMatch = form.password === form.confirm;
-    console.log(BACKEND_URL);
     // ---------------- SUBMIT REGISTER ----------------
     const handleSubmit = async (e) => {
         e.preventDefault();
