@@ -1,264 +1,14 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Button, Form, Col, Container, Row, Table, Modal} from "react-bootstrap";
+import { Button, Form, Col, Container, Image, Row, Table, Modal} from "react-bootstrap";
+import EventSettingModal from "../components/CreateEventModal";
+import DeleteConfirmModal from "../components/DeleteEventModal";
+import EventGuestModal from "../components/EventGuestModal";
+import EventOrganizerModal from "../components/EventOrganizerModal";
+import EventsFilter from "../components/EventsFilter";
+import fetchEventsFull from "../utils/api/fetchEvents";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-
-function ShowNormalModal({ selectedEvent, rsvp, rsvp_user, error, setError, setShowModal }) {
-    return (
-        <>
-            <Modal.Body>
-                <p><strong>Location:</strong> {selectedEvent?.location}</p>
-                <p><strong>Description:</strong> {selectedEvent?.description}</p>
-                <p><strong>Starts:</strong> {formatDateTime(selectedEvent?.startTime)}</p>
-                <p><strong>Ends:</strong> {formatDateTime(selectedEvent?.endTime)}</p>
-                <p><strong>Available seats:</strong> {selectedEvent?.availableSeats}</p>
-                {error && <div className="alert alert-danger">{error}</div>}
-            </Modal.Body>
-
-            <Modal.Footer>
-                {!rsvp &&
-                    (<Button variant="success" onClick={() => rsvp_user(selectedEvent)}>
-                        RSVP
-                    </Button>)
-                }
-                <Button variant="danger" onClick={() => {setShowModal(false); setError(null);}}>
-                    Close
-                </Button>
-            </Modal.Footer>
-        </>
-    );
-}
-
-function ShowOrganizerModal({
-    
-    selectedEvent, // THE EVENT BEIND EDITED,
-    setSelectedEvent, // TO UPDATE THE SELECTED EVENT
-    isEditing,     // BOOLEAN TO FLAG WHETHER EVENT INFO IS BEING EDITED
-    setIsEditing,  // SETTER FOR THE BOOLEAN ABOVE
-    editedEvent,   // THE EDITED VERSION OF THE EVENT
-    setEditedEvent,// SETTING THE EDITED EVENT TO THIS VERSION
-    saveEdits,     // FUNCTION BEING PASSED TO SAVE THE EDITS OF THIS EVENT
-    rewardGuest,   // FUNCTION BEING USED TO REWARD THE GUEST(S)
-    setShowModal,  // BOOLEAN TO SHOW THE MODAL
-    // LINES BELOW IS FOR REWARDING
-    awardMode,
-    setAwardMode,
-    guestId, 
-    // LINES BELOW IS THE SETTERS FOR THE LINES ABOVE
-    setGuestId,
-    rewardAmount,
-    setRewardAmount,
-    // THE LINES BELOW IS FOR THE TRANSACTION INFO MODEL
-    rewardModel,
-    setRewardModel,
-    // HANDLES ERRORS
-    error,
-    setError,
-    // FUNCTION TO HANDLE EVENT PUBLISHING
-    publish_event,
-    // FUNCTION AND VARIABLE FOR ORGANIZERS
-    organizer,
-    setOrganizer,
-    addOrganizer
-}) {
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setError(null);
-        setEditedEvent(prev => ({ ...prev, [name]: value }));
-    };
-    const published = (selectedEvent.published ? "yes" : "no");
-    return (
-        <>
-            <Modal.Body>
-                {isEditing ? (
-                    <>
-                        {error && <div className="alert alert-danger">{error}</div>}
-                        <div className="mb-2">
-                            <label>Name</label>
-                            <input
-                                className="form-control"
-                                name="name"
-                                value={editedEvent.name}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div className="mb-2">
-                            <label>Description</label>
-                            <textarea
-                                className="form-control"
-                                name="description"
-                                value={editedEvent.description}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div className="mb-2">
-                            <label>Location</label>
-                            <input
-                                className="form-control"
-                                name="location"
-                                value={editedEvent.location}
-                                onChange={handleChange}
-                            />
-                        </div>
-                
-                        <div className="mb-2">
-                            <label>Start Time</label>
-                            <input
-                                type="datetime-local"
-                                className="form-control"
-                                name="startTime"
-                                value={toDateTimeLocalString(editedEvent.startTime)}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div className="mb-2">
-                            <label>End Time</label>
-                            <input
-                                type="datetime-local"
-                                className="form-control"
-                                name="endTime"
-                                value={toDateTimeLocalString(editedEvent.endTime)}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div className="d-flex flex-row gap-2">
-                        <div className="mb-2">
-                            <label>Capacity</label>
-                            <input
-                                type="number"
-                                className="form-control"
-                                name="capacity"
-                                value={editedEvent.capacity}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div className="mb-2">
-                            <label>Total points</label>
-                            <input
-                                type="number"
-                                className="form-control"
-                                name="points"
-                                value={editedEvent.points}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        <p><strong>Name:</strong> {selectedEvent.name}</p>
-                        <p><strong>Description:</strong> {selectedEvent.description}</p>
-                        <p><strong>Location:</strong> {selectedEvent.location}</p>
-                        <p><strong>Starts:</strong> {formatDateTime(selectedEvent.startTime)}</p>
-                        <p><strong>Ends:</strong> {formatDateTime(selectedEvent.endTime)}</p>
-                        <p><strong>Seats:</strong> {selectedEvent.availableSeats}</p>
-                        <p><strong>Published: </strong> {published}</p>
-                        <h5 style={{fontWeight: "bold"}}>Award points</h5>
-                        {awardMode === null && (
-                        <div className="d-flex flex-column w-55 mb-3">
-                            <div className="d-flex flex-row gap-1">
-                                <Button variant="outline-dark p-1" onClick={() => setAwardMode('single')}>Award a guest</Button>
-                                <Button variant="outline-dark p-1" onClick={() => setAwardMode('all')}>Award all guests</Button>
-                                </div>
-                        </div>
-                        )}
-                        {awardMode === null && (
-                            <>
-                            <h5 className="mb-1" style={{fontWeight: "bold"}}>Add organizer</h5>
-                            {error && <div className="alert alert-danger">{error}</div>}
-                            <div className="d-flex flex-column w-50 mb-2">
-                                <input
-                                    name="organizerName"
-                                    placeholder="organizer UTORid"
-                                    value={organizer}
-                                    onChange={(e) => {setOrganizer(e.target.value); setError(null);}}
-                                />
-                            </div>
-                            <Button variant="success" onClick={addOrganizer}>Add organizer</Button>
-                            </>
-                            )
-                        }
-                        {awardMode === 'single' && (
-                            <>
-                                {error && <div className="alert alert-danger">{error}</div>}
-                                <div className="d-flex flex-row mb-3">
-                                    <div className="w-100">
-                                        <label><strong style={{fontWeight: "bolder"}}>Recipient</strong></label>
-                                        <input placeholder="Guest UTORid" value={guestId} onChange={(e) => {setGuestId(e.target.value); setRewardModel(prev => ({...prev, utorid: e.target.value})); setError(null);}} />
-                                    </div>
-                                    <div className="w-100">
-                                        <label><strong style={{fontWeight: "bolder"}}>Amount</strong></label>
-                                        <input placeholder="Amount" value={rewardAmount} onChange={(e) => 
-                                            {
-                                                setRewardAmount(e.target.value); 
-                                                setRewardModel(prev => ({...prev, amount: parseInt(e.target.value) || 0}));
-                                                setError(null);
-                                            }} />
-                                    </div>
-                                </div>
-                                <div className="d-flex flex-row gap-2 w-50">
-                                    <Button className="w-50" variant="success" onClick={rewardGuest}>Send</Button>
-                                    <Button className="w-50" variant="danger" onClick={() => {setAwardMode(null); setError(null);}}>Cancel</Button>
-                                </div>
-                            </>
-                        )}
-
-                        {awardMode === 'all' && (
-                            <>
-                                {error && <div className="alert alert-danger">{error}</div>}
-                                <div className="d-flex flex-column gap-2 w-50">
-                                    <input placeholder="Amount per guest" value={rewardAmount} onChange={(e) => 
-                                    {
-                                        setRewardAmount(e.target.value); 
-                                        setRewardModel(prev => ({
-                                        ...prev,
-                                        amount: parseInt(e.target.value) || 0}));
-                                         setError(null);
-                                    }} />
-                                    <div className="d-flex flex-row gap-2">
-                                        <Button variant="success" className="w-50" onClick={rewardGuest}>Submit</Button>
-                                        <Button variant="danger" className="w-50" onClick={() => {setAwardMode(null); setError(null);}}>Cancel</Button>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    </>
-                )}
-            </Modal.Body>
-
-            <Modal.Footer>
-                {awardMode === null && 
-                (isEditing ? (
-                    <div className="d-flex flex-column">
-                        <div className="d-flex flex-row gap-2">
-                        <Button variant="success" onClick={saveEdits}>Save</Button>
-                        <Button variant="danger" onClick={() => {setIsEditing(false); setError(null); setEditedEvent(selectedEvent)}}>Cancel</Button>
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        { !selectedEvent.published && (<Button variant="success" onClick={() =>
-                                {setSelectedEvent(prev => ({ ...prev, published: true })); publish_event;}
-                            }>publish</Button>)}
-                        <Button variant="info" onClick={() => {setIsEditing(true); setError(null);}}>Edit Info</Button>
-                        <Button variant="danger" onClick={() => {setShowModal(false); setError(null);}}>Close</Button>
-                    </>
-                )) }
-            </Modal.Footer>
-        </>
-    );
-}
-
-function toDateTimeLocalString(dateStr) {
-    const d = new Date(dateStr);
-    return d.toISOString().slice(0, 16);  // drop seconds + Z
-}
-
 
 function formatDateTime(dateInput) {
     const date = new Date(dateInput);
@@ -274,13 +24,12 @@ function formatDateTime(dateInput) {
     });
 }
 
-
-
 export default function EventsList() {
     const location = useLocation();
     const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
     const [isEditing, setIsEditing] = useState(false);
-    const [editEvent, setEditEvent] = useState({
+    const [editedEvent, setEditedEvent] = useState({
         name: "",
         description: "",
         location: "",
@@ -288,33 +37,78 @@ export default function EventsList() {
         endTime: "",
         capacity: 0,
     });
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [events, setEvents] = useState([]);
     const [pageNum, setPageNum] = useState(1);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [totalPages, setTotalPages] = useState(1);
-    const [rsvp, setRSVP] = useState(false)
-    const [awardMode, setAwardMode] = useState(null); // null, 'single', or 'all'
-    const [guestId, setGuestId] = useState("");
-    const [rewardAmount, setRewardAmount] = useState("");
+    const [rsvp, setRSVP] = useState(false);
     const [error, setError] = useState("");
-    const [organizer, setOrganizer] = useState("")
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [filters, setFilters] = useState({});
+    const [showFilter, setShowFilter] = useState(false);
 
-    // THIS IS THE MAIN CONSTANT FOR EVENTS
-    const [rewardModel, setRewardModel] = useState({
-        utorid: null,
-        type: "event",
-        amount: 0
-    });
+    useEffect(() => {
+        fetchEvents(pageNum);
+    }, [filters]);
 
-    const handleRowClick = async (event) => {
+    async function createEvent(eventData) {
+        const url = `${BACKEND_URL}/events`;
+    
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(eventData)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            setError(data.error);
+            return;
+        }
+
+        // Success - close modal and refresh events list
+        setShowCreateModal(false);
+        setError("");
+        fetchEvents(1); // Go to first page to see the new event
+    }
+
+    async function deleteEvent() {
+        const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
+        
+        const res = await fetch(url, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) {
+            const data = await res.json();
+            setError(data.error);
+            return;
+        }
+
+        // Success - close modals and refresh
+        setShowDeleteConfirm(false);
+        setShowModal(false);
+        setError(null);
+        fetchEvents(pageNum);
+    }
+
+    async function handleRowClick(event){
         const url = `${BACKEND_URL}/events/${event.id}`;
         const ev = await fetch(url, {method: "GET", headers: {Authorization: `Bearer ${token}`}});
         const data = await ev.json();
         let formatted_event = formatEvents([data]);
         formatted_event = formatted_event[0];
         setSelectedEvent(formatted_event);
-        setEditEvent({
+        setEditedEvent({
             id: data.id,
             name: data.name,
             description: data.description,
@@ -325,11 +119,13 @@ export default function EventsList() {
             points: data.pointsRemain + data.pointsAwarded,
             published: data.published
         });
+        const isRSVP = data.guests.some(guest => guest.utorid === user.utorid);
+        setRSVP(isRSVP);
         setIsEditing(false);
         setShowModal(true);
-    };
+    }
 
-    async function addOrganizer(){
+    async function addOrganizer(organizer, setOrganizer){
         const url = `${BACKEND_URL}/events/${selectedEvent.id}/organizers`;
         const payload = { utorid: organizer };
 
@@ -344,14 +140,15 @@ export default function EventsList() {
             }
         )
 
-        const data = await res.json();
         if (!res.ok){
+            const data = await res.json();
             setError(data.error);
             return;
         }
+        setOrganizer(null);
     }
 
-    async function rewardGuest(){
+    async function rewardGuest(rewardModel, setRewardModel, setRecipientId, setSubmitted){
         const url = `${BACKEND_URL}/events/${selectedEvent.id}/transactions`;
         const res = await fetch(url, 
             {method: "POST",
@@ -361,27 +158,32 @@ export default function EventsList() {
             },
             body: JSON.stringify(rewardModel)
             });
+        const data = await res.json();
+        if (!res.ok){
+            setError(data.error);
+            return;
+        }
         setRewardModel({
             utorid: null,
             type: "event",
             amount: 0
         });
-        const data = await res.json();
-        setGuestId("");
-        setRewardAmount("");
-        if (!res.ok){
-            setError(data.error);
-            return;
-        }
-        setAwardMode(null);
+        setSubmitted(true);
+        setRecipientId("");
+        setError(null);
     }
 
-    async function saveEdits() {
+    async function saveEdits(editedEvent) {
         const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
         const update_body = {};
         for (const key of ["name", "description", "location", "startTime", "endTime", "capacity", "points", "published"]) {
-            if (editEvent[key] !== selectedEvent[key]) {
-                update_body[key] = editEvent[key];
+            if (editedEvent[key] !== selectedEvent[key]) {
+                // Convert capacity and points to numbers
+                if (key === "capacity" || key === "points") {
+                    update_body[key] = Number(editedEvent[key]);
+                } else {
+                    update_body[key] = editedEvent[key];
+                }
             }
         }
 
@@ -394,18 +196,17 @@ export default function EventsList() {
             body: JSON.stringify(update_body)
         });
 
-            const data = await res.json();
-            if (!res.ok) {
-                setError(data.error);
-                return;
-            }
+        const data = await res.json();
+        if (!res.ok) {
+            setError(data.error);
+            return;
+        }
 
-            // update UI
-            setSelectedEvent(prev => ({ ...prev, ...editEvent }));
-            setIsEditing(false);
-            fetchEvents(pageNum);
+        // update UI
+        setSelectedEvent(prev => ({ ...prev, ...editedEvent }));
+        setIsEditing(false);
+        fetchEvents(pageNum);
     }
-
 
     function formatEvents(events) {
         let new_events = [];
@@ -432,6 +233,80 @@ export default function EventsList() {
         return new_events;
     }
 
+    async function addGuest(guestId, setGuestId){
+        const url = `${BACKEND_URL}/events/${selectedEvent.id}/guests`;
+        const params = { utorid: guestId};
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {"Content-Type": "application/json", Authorization: `Bearer ${token}`},
+            body: JSON.stringify(params)
+        });
+
+        const data = await res.json();
+        if (!res.ok){
+            setError(data.error);
+            return;
+        }
+
+        // Success - refresh the event details
+        await refreshEventDetails();
+        setGuestId(""); // Clear the input
+    }
+
+    // Replace your remGuest function with this:
+    async function remGuest(guestId, setGuestId){
+        const url = `${BACKEND_URL}/events/${selectedEvent.id}/guests/${guestId}`;
+        const res = await fetch(url, {
+            method: "DELETE",
+            headers: {Authorization: `Bearer ${token}`}
+        });
+
+        if (!res.ok){
+            const data = await res.json();
+            setError(data.error);
+            return;
+        }
+
+        // Success - refresh the event details
+        await refreshEventDetails();
+        setGuestId(""); // Clear the input
+    }
+
+// Add this new helper function to refresh event details:
+async function refreshEventDetails() {
+    const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
+    const ev = await fetch(url, {
+        method: "GET", 
+        headers: {Authorization: `Bearer ${token}`}
+    });
+    
+    if (!ev.ok) {
+        console.error("Failed to refresh event details");
+        return;
+    }
+    
+    const data = await ev.json();
+    let formatted_event = formatEvents([data]);
+    formatted_event = formatted_event[0];
+    
+    // Update both the modal view and the table
+    setSelectedEvent(formatted_event);
+    setEditedEvent({
+        id: data.id,
+        name: data.name,
+        description: data.description,
+        location: data.location,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        capacity: data.capacity,
+        points: data.pointsRemain + data.pointsAwarded,
+        published: data.published
+    });
+    
+    // Refresh the events table
+    fetchEvents(pageNum);
+}
+
     async function publish_event(){
         const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
         const publish_data = { publish: true };
@@ -450,55 +325,43 @@ export default function EventsList() {
 
     async function rsvp_user(event){
         const url = `${BACKEND_URL}/events/${event.id}/guests/me`;
-
-        const res = await fetch(url, {
-            method: "POST",
-            headers: {Authorization: `Bearer ${token}`}
-        });
+        const url2 = `${BACKEND_URL}/events/${event.id}/guests/${user.utorid}`
+        let res = null;
+        if (!rsvp){
+            res = await fetch(url, {
+                method: "POST",
+                headers: {Authorization: `Bearer ${token}`}
+            });
+        }
+        else{
+            res = await fetch(url2, {
+                method: "DELETE",
+                headers: {Authorization: `Bearer ${token}`}
+            });
+        }
 
         if (!res.ok){
             const data = await res.json();
             setError(data.error);
             return;
         }
-        setRSVP(true);
+        setRSVP(!rsvp);
+        const eventUrl = `${BACKEND_URL}/events/${event.id}`;
+        const eventRes = await fetch(eventUrl, {
+            method: "GET", 
+            headers: {Authorization: `Bearer ${token}`}
+        });
+        const eventData = await eventRes.json();
+        let formatted_event = formatEvents([eventData]);
+        setSelectedEvent(formatted_event[0]);
+        
+        // Refresh the events list to update the table
+        fetchEvents(pageNum);
     }
 
     async function fetchEvents(page){
-        if (page < 1 || page > totalPages) {
-            return;
-        }
-
-        const params = { page: page };
-        const url = `${BACKEND_URL}/events?${new URLSearchParams(params).toString()}`;
-
-        const res = await fetch(url, {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-            const numDemos = 10;
-            const numPages = 2;
-            const demoEvents = [];
-            for (let i = 0; i < numDemos; i++) {
-                demoEvents.push({
-                    id: i,
-                    name: `Event ${i + 1}`,
-                    location: `Location ${i + 1}`,
-                    pointsRemain: 100 + i,
-                    startTime: new Date(Date.now() - (1000 * 60 * 60 * 24 * (i+1))),
-                    endTime: new Date(Date.now() + (1000 * 60 * 60 * 24 * (i+1))),
-                    capacity: i + 20,
-                    guests: ["a", "b", "c"]
-                });
-            }
-            setEvents(demoEvents);
-            setPageNum(page);
-            setTotalPages(numPages);
+        const data = await fetchEventsFull(page, filters, setError, totalPages);
+        if (data === null) {
             return;
         }
         setEvents(formatEvents(data.results));
@@ -513,12 +376,42 @@ export default function EventsList() {
     return (
     <Container>
         <Row className="justify-content-center align-items-center mt-5">
-            <Col>
-                <Form.Label className="d-block text-center mb-2">
+            <Col xs="auto">
+                <Form.Label className="d-flex flex-row">
+                    <div className="d-flex align-items-center gap-1">
                     <h1>Events</h1>
+                    { (user.role === "manager") &&
+                        <Image
+                            src="../../filter.svg"
+                            alt="Filter"
+                            className="filter opacity-75"
+                            onClick={() => setShowFilter(!showFilter)}
+                        />
+                    }
+                    </div>
                 </Form.Label>
+
+                <Row className="justify-content-center align-items-center mb-2">
+                <Col xs="auto">
+                    {/* Only show for managers/superusers */}
+                    {(user.role === "manager" || user.role === "superuser") && (
+                        <Button 
+                            variant="primary" 
+                            onClick={() => setShowCreateModal(true)}
+                        >
+                            Create Event
+                        </Button>
+                    )}
+                </Col>
+            </Row>
             </Col>
         </Row>
+        {showFilter &&
+            <Row className="justify-content-center align-items-center">
+                <Col xs="auto" className="m-2">
+                    <EventsFilter setFilters={setFilters} setShowFilter={setShowFilter} />
+                </Col>
+            </Row>}
 
         {/* Table */}
         <Row className="justify-content-center">
@@ -529,8 +422,9 @@ export default function EventsList() {
                         <tr>
                             <th>Name</th>
                             <th>Location</th>
+                            <th>Starts at</th>
                             <th>Ends at</th>
-                            <th>Available seats</th>
+                            <th>Seats left</th>
                         </tr>
                     </thead>
 
@@ -546,6 +440,7 @@ export default function EventsList() {
                                 <tr key={item.id} onClick={() => handleRowClick(item)} style={{cursor: "pointer"}}>
                                     <td>{item.name}</td>
                                     <td>{item.location}</td>
+                                    <td>{formatDateTime(item.startTime)}</td>
                                     <td>{formatDateTime(item.endTime)}</td>
                                     <td>{item.availableSeats}</td>
                                 </tr>
@@ -591,35 +486,52 @@ export default function EventsList() {
                 <Modal.Title>{selectedEvent?.name}</Modal.Title>
             </Modal.Header>
             { selectedEvent && selectedEvent.pointsRemain != "-1" ? (
-                <ShowOrganizerModal
+                <EventOrganizerModal
                     selectedEvent={selectedEvent}
                     setSelectedEvent={setSelectedEvent}
+
                     isEditing={isEditing}
                     setIsEditing={setIsEditing}
-                    editedEvent={editEvent}
-                    setEditedEvent={setEditEvent}
-                    saveEdits={saveEdits}
-                    setShowModal={setShowModal}
-                    awardMode={awardMode}
-                    guestId={guestId}
-                    rewardAmount={rewardAmount}
-                    setAwardMode={setAwardMode}
-                    setGuestId={setGuestId}
-                    setRewardAmount={setRewardAmount}
-                    rewardModel={rewardModel}
-                    setRewardModel={setRewardModel}
-                    rewardGuest={rewardGuest}
+
+                    editedEvent={editedEvent}
+                    setEditedEvent={setEditedEvent}
+
                     error={error}
                     setError={setError}
-                    publish_event={publish_event}
-                    organizer={organizer}
-                    setOrganizer={setOrganizer}
+                    
+                    setShowModal={setShowModal}
+                    
+                    setShowDeleteConfirm={setShowDeleteConfirm}
+                    
                     addOrganizer={addOrganizer}
+                    
+                    saveEdits={saveEdits}
+                    rewardGuest={rewardGuest}
+                    publish_event={publish_event}
+
+                    addGuest={addGuest}
+                    remGuest={remGuest}
                 />
             ) : (
-                <ShowNormalModal selectedEvent={selectedEvent} rsvp={rsvp} rsvp_user={rsvp_user} error={error} setError={setError} setShowModal={setShowModal}/>
+                <EventGuestModal selectedEvent={selectedEvent} rsvp={rsvp} setRSVP={setRSVP} rsvp_user={rsvp_user} error={error} setError={setError} setShowModal={setShowModal}/>
             )}
         </Modal>
+        <DeleteConfirmModal 
+            show={showDeleteConfirm}
+            onClose={() => {setShowDeleteConfirm(false); setShowModal(true); setError(false);}}
+            onConfirm={deleteEvent}
+            eventName={selectedEvent?.name}
+            error={error}
+        />
+        <EventSettingModal 
+            show={showCreateModal}
+            onHide={() => {
+                setShowCreateModal(false);
+                setError("");
+            }}
+            onSubmit={createEvent}
+            error={error}
+        />
         </Container>
     );
 }

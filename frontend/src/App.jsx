@@ -46,7 +46,8 @@ export default function App() {
                 <Route path="/redemption" element={<Layout><Redemption /></Layout>} />
                 <Route path="/profile" element={<Layout><Profile /></Layout>} />
 
-                {/* Regular User Only */}
+
+                {/* Regular user transactions */}
                 <Route element={<RequireRole allowedRoles={["regular"]} />}>
                     <Route path="/transactions" element={<Layout><Transactions /></Layout>} />
                     <Route
@@ -95,4 +96,4 @@ export default function App() {
             <ProfileQrModal />
         </>
     );
-}
+  }
