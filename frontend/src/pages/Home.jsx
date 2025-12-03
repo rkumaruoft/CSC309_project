@@ -6,7 +6,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import findAvatar from "../utils/findAvatar";
 
-
 export default function Home() {
     const { user, showQrModal } = useAuth();
     const navigate = useNavigate();
@@ -14,16 +13,13 @@ export default function Home() {
     const [promos, setPromos] = useState([]);
     const [recentTxs, setRecentTxs] = useState([]);
 
-  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+    const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
     /* ============================================================
        LOAD DATA
        ============================================================ */
     useEffect(() => {
         const token = localStorage.getItem("token");
-        const VITE_BACKEND_URL =
-            import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
         async function fetchPromos() {
@@ -68,8 +64,7 @@ export default function Home() {
        ============================================================ */
     useEffect(() => {
         const token = localStorage.getItem("token");
-        const devUser =
-            import.meta.env.DEV && localStorage.getItem("user");
+        const devUser = import.meta.env.DEV && localStorage.getItem("user");
 
         if (!token && !devUser) navigate("/login");
     }, [navigate, user]);
@@ -78,8 +73,6 @@ export default function Home() {
 
     return (
         <div className="container py-4">
-
-            {/* HERO ------------------------------------------------ */}
             <div className="p-4 mb-4 bg-light text-dark rounded shadow-sm">
                 <h1 className="fw-bold mb-1">
                     Welcome back, {displayUser.name?.split(" ")[0] || displayUser.utorid}!
@@ -89,141 +82,110 @@ export default function Home() {
                 </p>
             </div>
 
-            {/* USER SUMMARY ---------------------------------------- */}
-            <div className="card mb-4 shadow-sm">
-                <div className="card-body">
-
-                    <div className="d-flex align-items-center">
-
-                        {/* Avatar */}
-                        <div
-                            className="rounded-circle overflow-hidden bg-light"
-                            style={{ width: 80, height: 80 }}
-                        >
-                            <img
-                                src={findAvatar(displayUser, VITE_BACKEND_URL)}
-                                alt="avatar"
-                                className="w-100 h-100"
-                                style={{ objectFit: "cover" }}
-                            />
-                        </div>
-
-                        {/* User Info */}
-                        <div className="ms-3">
-                            <h4 className="mb-0">
-                                {displayUser.name || displayUser.utorid}
-                            </h4>
-                            <small className="text-muted">
-                                {displayUser.email ?? ""}
-                            </small>
-                        </div>
-
-                        {/* Points */}
-                        <div className="ms-auto text-end">
-                            <h2 className="fw-bold mb-0">
-                                {displayUser.points ?? 0}
-                            </h2>
-                            <small className="text-muted">Points</small>
-                        </div>
-
-                    </div>
-
-                    {/* Actions */}
-                    <div className="mt-4 d-flex gap-3 flex-wrap">
-                        <Button variant="dark" onClick={showQrModal}>
-                            My QR Code
-                        </Button>
-                        <Button
-                            variant="outline-dark"
-                            onClick={() => navigate("/redemption")}
-                        >
-                            Redeem
-                        </Button>
-                        <Button
-                            variant="outline-secondary"
-                            onClick={() => navigate("/transfers")}
-                        >
-                            Transfers
-                        </Button>
-                    </div>
-
-                </div>
-            </div>
-
-            {/* PROMOS + TXS ---------------------------------------- */}
             <div className="row g-4">
 
-                {/* PROMOS */}
-                <div className="col-md-6">
-                    <div className="card shadow-sm h-100">
+                {/* LEFT COLUMN — PROFILE CARD */}
+                <div className="col-lg-4 col-md-5">
+                    <div className="card shadow-sm mb-4">
+                        <div className="card-body">
+
+                            <div className="d-flex align-items-center">
+
+                                {/* Avatar */}
+                                <div
+                                    className="rounded-circle overflow-hidden bg-light"
+                                    style={{ width: 80, height: 80 }}
+                                >
+                                    <img
+                                        src={findAvatar(displayUser, VITE_BACKEND_URL)}
+                                        alt="avatar"
+                                        className="w-100 h-100"
+                                        style={{ objectFit: "cover" }}
+                                    />
+                                </div>
+
+                                <div className="ms-3">
+                                    <h4 className="mb-0">{displayUser.name || displayUser.utorid}</h4>
+                                    <small className="text-muted">{displayUser.email ?? ""}</small>
+                                </div>
+
+                                <div className="ms-auto text-end">
+                                    <h2 className="fw-bold mb-0">{displayUser.points ?? 0}</h2>
+                                    <small className="text-muted">Points</small>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="mt-4 d-flex flex-column gap-2">
+                                <Button variant="dark" onClick={showQrModal}>My QR Code</Button>
+                                <Button variant="outline-dark" onClick={() => navigate("/redemption")}>
+                                    Redeem
+                                </Button>
+                                <Button variant="outline-secondary" onClick={() => navigate("/transfers")}>
+                                    Transfers
+                                </Button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                {/* RIGHT COLUMN — PROMOTIONS + TXS */}
+                <div className="col-lg-8 col-md-7">
+
+                    {/* PROMOTIONS */}
+                    <div className="card shadow-sm mb-4">
                         <div className="card-body">
                             <div className="d-flex justify-content-between">
-                                <h5 className="fw-bold mb-0">Promotions</h5>
-                                <Link to="/promotions" className="small">
-                                    View all
-                                </Link>
+                                <h5 className="fw-bold mb-0">Active Promotions</h5>
+                                <Link to="/promotions" className="small">View all</Link>
                             </div>
                             <hr />
+
                             {promos.length === 0 ? (
-                                <p className="text-muted mb-0">
-                                    No promotions available.
-                                </p>
+                                <p className="text-muted mb-0">No promotions available.</p>
                             ) : (
                                 promos.map((p) => (
                                     <div key={p.id} className="mb-3">
                                         <div className="fw-semibold">{p.name}</div>
                                         <small className="text-muted">
-                                            Ends:{" "}
-                                            {p.endTime
-                                                ? new Date(p.endTime).toDateString()
-                                                : "—"}
+                                            Ends: {new Date(p.endTime).toDateString()}
                                         </small>
                                     </div>
                                 ))
                             )}
                         </div>
                     </div>
-                </div>
 
-                {/* RECENT TXS */}
-                <div className="col-md-6">
-                    <div className="card shadow-sm h-100">
+                    {/* RECENT TRANSACTIONS */}
+                    <div className="card shadow-sm">
                         <div className="card-body">
                             <div className="d-flex justify-content-between">
                                 <h5 className="fw-bold mb-0">Recent Transactions</h5>
-                                <Link to="/transactions" className="small">
-                                    View all
-                                </Link>
+                                <Link to="/transactions" className="small">View all</Link>
                             </div>
                             <hr />
+
                             {recentTxs.length === 0 ? (
-                                <p className="text-muted mb-0">
-                                    No recent transactions.
-                                </p>
+                                <p className="text-muted mb-0">No recent transactions.</p>
                             ) : (
                                 recentTxs.map((t) => (
                                     <div key={t.id} className="mb-3">
                                         <div className="d-flex justify-content-between">
-                                            <span className="fw-semibold">
-                                                {t.type}
-                                            </span>
-                                            <span className="fw-semibold">
-                                                {t.amount} pts
-                                            </span>
+                                            <span className="fw-semibold">{t.type}</span>
+                                            <span className="fw-semibold">{t.amount} pts</span>
                                         </div>
                                         <small className="text-muted">
-                                            Related:{" "}
-                                            {t.relatedId ?? t.relatedUtorid ?? "-"}
+                                            Related: {t.relatedId ?? t.relatedUtorid ?? "-"}
                                         </small>
                                     </div>
                                 ))
                             )}
                         </div>
                     </div>
+
                 </div>
-
             </div>
-
         </div>
     );
 }

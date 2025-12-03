@@ -339,6 +339,30 @@ async function main() {
     }
 
     console.log(`✔ ${txCount} transactions created`);
+
+    // RECALCULATE AND UPDATE USER POINT BALANCES
+
+    const allUsers = await prisma.user.findMany({
+        select: { id: true }
+    });
+
+    for (const u of allUsers) {
+        const txSum = await prisma.transaction.aggregate({
+            _sum: { amount: true },
+            where: { userId: u.id }
+        });
+
+        const totalPoints = txSum._sum.amount || 0;
+
+        await prisma.user.update({
+            where: { id: u.id },
+            data: { points: totalPoints }
+        });
+    }
+
+    console.log("✔ User point totals updated");
+
+
     console.log("🌱 Seeding complete!");
 }
 
