@@ -72,141 +72,147 @@ function CashierRedemptions() {
     }, [utorid]);
 
     return <Container>
-        <Row className="justify-content-center align-items-center mt-4 mb-0">
-            <Col>
-                <h1>Process Redemptions</h1>
-            </Col>
-        </Row>
+        <Card className="shadow-sm mt-4">
+            <Card.Body>
 
-        {/* Manual input of transaction */}
-        <Row>
-            <Col xs={10} md={8} lg={6}>
-            
-                <Card className="shadow-sm mb-0" bg="light">
-                    <Form className="m-3" onSubmit={process}>
-                        <Form.Group className="d-flex align-items-center">
-                            <Form.Label className="mb-0 me-2">
-                                <h5>Enter transaction ID:</h5>
-                            </Form.Label>
+                <Row className="justify-content-center align-items-center mb-0">
+                    <Col>
+                        <h2>Process Redemptions</h2>
+                    </Col>
+                </Row>
 
-                            <Form.Control
-                                required
-                                type="number"
-                                value={tid}
-                                onChange={(e) => setTid(e.target.value)}
-                                placeholder="Enter transaction ID"
-                                className="w-50 shadow-sm me-2"
-                            />
+                {/* Manual input of transaction */}
+                <Row>
+                    <Col xs={10} md={8} lg={6}>
+                    
+                        <Card className="shadow-sm mb-0" bg="light">
+                            <Form className="m-3" onSubmit={process}>
+                                <Form.Group className="d-flex align-items-center">
+                                    <Form.Label className="mb-0 me-2">
+                                        <h5>Enter transaction ID:</h5>
+                                    </Form.Label>
 
-                            <Button
-                                disabled={!tid}
-                                variant="success"
-                                type="submit">
-                                    Process
-                            </Button>
-                        </Form.Group>
-                    </Form>
-                </Card>
+                                    <Form.Control
+                                        required
+                                        type="number"
+                                        value={tid}
+                                        onChange={(e) => setTid(e.target.value)}
+                                        placeholder="Enter transaction ID"
+                                        className="w-50 shadow-sm me-2"
+                                    />
 
-            </Col>
+                                    <Button
+                                        disabled={!tid}
+                                        variant="success"
+                                        type="submit">
+                                            Process
+                                    </Button>
+                                </Form.Group>
+                            </Form>
+                        </Card>
 
-            {/* Display success or error */}
-            <Col>
-                {success &&
-                <Alert variant="success" className="float-end">
-                    {success}
-                </Alert>}
+                    </Col>
 
-                {error &&
-                <Alert variant="danger" className="float-end">
-                    {`Error: ${error}`}
-                </Alert>}
-            </Col>
-        </Row>
+                    {/* Display success or error */}
+                    <Col>
+                        {success &&
+                        <Alert variant="success" className="float-end">
+                            {success}
+                        </Alert>}
 
-        <Row>
-            <Col>
-                <hr />
-                <h5 className="mb-0">You can also find the unprocessed redemption below:</h5>
-            </Col>
-        </Row>
+                        {error &&
+                        <Alert variant="danger" className="float-end">
+                            {`Error: ${error}`}
+                        </Alert>}
+                    </Col>
+                </Row>
 
-        <Row>
-            <Col>
-                <Form.Control
-                    type="text"
-                    value={utorid}
-                    onChange={(e) => setUtorid(e.target.value)}
-                    placeholder="Filter by UTORid"
-                    className="w-50 mb-2"
-                />
-            </Col>
-        </Row>
+                <Row>
+                    <Col>
+                        <hr />
+                        <h5 className="mb-0">You can also find the unprocessed redemption below:</h5>
+                    </Col>
+                </Row>
 
-        <Row>
-            <Col>
-            
-                <Table className="shadow-sm" striped responsive hover>
-                    <thead className="table-primary">
-                        <tr>
-                            <th>Transaction ID</th>
-                            <th>UTORid</th>
-                            <th>Points</th>
-                            <th>Spent</th>
-                        </tr>
-                    </thead>
+                <Row>
+                    <Col>
+                        <Form.Control
+                            type="text"
+                            value={utorid}
+                            onChange={(e) => setUtorid(e.target.value)}
+                            placeholder="Filter by UTORid"
+                            className="w-50 mb-2"
+                        />
+                    </Col>
+                </Row>
 
-                    <tbody className="promo-table-body">
-                        {(redemptions.length === 0) ? (
-                            <tr>
-                                <td colSpan={4} className="text-center">
-                                        No redemptions could be found
-                                </td>
-                            </tr>
-                        ) : (
-                            redemptions.map(item => (
-                                <tr key={item.id} onClick={() => setTid(item.id)}>
-                                    <td>{item.id}</td>
-                                    <td>{item.utorid}</td>
-                                    <td>{item.amount}</td>
-                                    <td>{optional(item.spent, floatToCurrency)}</td>
+                <Row>
+                    <Col>
+                    
+                        <Table className="shadow-sm" striped responsive hover>
+                            <thead className="table-primary">
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>UTORid</th>
+                                    <th>Points</th>
+                                    <th>Spent</th>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </Table>
+                            </thead>
 
-            </Col>
-        </Row>
+                            <tbody className="promo-table-body">
+                                {(redemptions.length === 0) ? (
+                                    <tr>
+                                        <td colSpan={4} className="text-center">
+                                                No redemptions could be found
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    redemptions.map(item => (
+                                        <tr key={item.id} onClick={() => setTid(item.id)}>
+                                            <td>{item.id}</td>
+                                            <td>{item.utorid}</td>
+                                            <td>{item.amount}</td>
+                                            <td>{optional(item.spent, floatToCurrency)}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </Table>
 
-        {/* Pagination and page display (TODO: add better page scrolling as an option) */}
-        <Row className="justify-content-center align-items-center mb-2">
-            {/* Back button */}
-            <Col xs="auto">
-                <Button
-                    onClick={() => getRedemptionsPage(pageNum - 1)}
-                    disabled={pageNum === 1}>
-                        Back
-                </Button>
-            </Col>
+                    </Col>
+                </Row>
 
-            {/* Page Number */}
-            <Col xs="auto">
-                <span>
-                    Page: <strong>{pageNum}/{totalPages}</strong>
-                </span>
-            </Col>
+                {/* Pagination and page display (TODO: add better page scrolling as an option) */}
+                <Row className="justify-content-center align-items-center mb-2">
+                    {/* Back button */}
+                    <Col xs="auto">
+                        <Button
+                            onClick={() => getRedemptionsPage(pageNum - 1)}
+                            disabled={pageNum === 1}>
+                                Back
+                        </Button>
+                    </Col>
 
-            {/* Forward Button */}
-            <Col xs="auto">
-                <Button
-                    onClick={() => getRedemptionsPage(pageNum + 1)}
-                    disabled={pageNum === totalPages}>
-                        Next
-                </Button>
-            </Col>
-    
-        </Row>
+                    {/* Page Number */}
+                    <Col xs="auto">
+                        <span>
+                            Page: <strong>{pageNum}/{totalPages}</strong>
+                        </span>
+                    </Col>
+
+                    {/* Forward Button */}
+                    <Col xs="auto">
+                        <Button
+                            onClick={() => getRedemptionsPage(pageNum + 1)}
+                            disabled={pageNum === totalPages}>
+                                Next
+                        </Button>
+                    </Col>
+            
+                </Row>
+
+            </Card.Body>
+        </Card>
     </Container>;
 
 }
