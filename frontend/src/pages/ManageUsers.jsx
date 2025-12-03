@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 
-const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+const VITE_BACKEND_URL =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
-
+/* ==========================================================
+   ANIMATED MODAL
+   ========================================================== */
 function AnimatedModal({ show, onClose, children, size = "modal-lg" }) {
-    const [visible, setVisible] = useState(false);       // controls fade in/out
-    const [mounted, setMounted] = useState(show);        // controls mount/unmount
+    const [visible, setVisible] = useState(false); // controls fade in/out
+    const [mounted, setMounted] = useState(show);  // controls mount/unmount
 
     // Mount immediately when show = true
     useEffect(() => {
@@ -20,7 +23,7 @@ function AnimatedModal({ show, onClose, children, size = "modal-lg" }) {
             // wait for fade-out animation to finish
             setTimeout(() => {
                 setMounted(false);
-            }, 150);  // Bootstrap fade duration (150ms)
+            }, 150); // Bootstrap fade duration (150ms)
         }
     }, [show]);
 
@@ -54,27 +57,27 @@ function AnimatedModal({ show, onClose, children, size = "modal-lg" }) {
                     className={`modal-dialog ${size}`}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="modal-content">
-                        {children}
-                    </div>
+                    <div className="modal-content">{children}</div>
                 </div>
             </div>
         </>
     );
 }
 
-
+/* ==========================================================
+   MANAGE USERS PAGE
+   ========================================================== */
 export default function ManageUsers() {
     const { currentRole } = useAuth();
 
     const [users, setUsers] = useState([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const [search, setSearch] = useState("");
-    const [reloadFlag, setReloadFlag] = useState(false);
+    const [debouncedSearch, setDebouncedSearch] = useState("");
 
     // modal user
     const [selectedUser, setSelectedUser] = useState(null);
@@ -87,70 +90,93 @@ export default function ManageUsers() {
         name: "",
         email: "",
         password: "",
-        role: "regular"
+        role: "regular",
     });
 
     const token = localStorage.getItem("token");
 
     /* ==========================================================
-       LOAD USERS
+       DEBOUNCED SEARCH
        ========================================================== */
-    async function loadUsers(p, q = "") {
-        setLoading(true);
-        setError(null);
-
-        try {
-            const res = await fetch(
-                `${VITE_BACKEND_URL}/users?page=${p}&limit=10&search=${q}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            if (!res.ok) throw new Error("Failed to load users");
-
-            const data = await res.json();
-            setUsers(data.results || []);
-            setTotalPages(Math.max(1, Math.ceil(data.count / 10)));
-            setPage(p);
-        } catch (e) {
-            setError(e.message);
-        } finally {
-            setLoading(false);
-        }
-    }
-
     useEffect(() => {
-        loadUsers(1, search);
-    }, [reloadFlag]);
+        const handle = setTimeout(() => {
+            setDebouncedSearch(search);
+            // page stays the same; if you want, you can do setPage(1) here
+        }, 300);
 
-    // whenever search changes, reload after 300ms
-    useEffect(() => {
-        const delay = setTimeout(() => {
-            setReloadFlag(p => !p);
-        }, 200);
-
-        return () => clearTimeout(delay);
+        return () => clearTimeout(handle);
     }, [search]);
+
+    /* ==========================================================
+       LOAD USERS WHEN PAGE OR SEARCH CHANGE
+       ========================================================== */
+    useEffect(() => {
+        async function fetchUsers() {
+            setLoading(true);
+            setError(null);
+
+            try {
+                const res = await fetch(
+                    `${VITE_BACKEND_URL}/users?page=${page}&limit=10&search=${debouncedSearch}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                if (!res.ok) throw new Error("Failed to load users");
+
+                const data = await res.json();
+                const count = data.count || 0;
+
+                setUsers(data.results || []);
+                setTotalPages(Math.max(1, Math.ceil(count / 10)));
+            } catch (e) {
+                setError(e.message || "Failed to load users");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchUsers();
+    }, [page, debouncedSearch, token]);
 
     /* ==========================================================
        BACKEND ACTIONS
        ========================================================== */
+
+    // Helper to patch a user on the server
+    async function patchUser(id, payload) {
+        const res = await fetch(`${VITE_BACKEND_URL}/users/${id}`, {
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || "Failed to update user");
+        }
+        return data;
+    }
+
     async function changeRole(id, newRole) {
         try {
-            const res = await fetch(`${VITE_BACKEND_URL}/users/${id}`, {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ role: newRole })
-            });
+            await patchUser(id, { role: newRole });
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
+            // Update local state for both list + selected user
+            setUsers((prev) =>
+                prev.map((u) =>
+                    u.id === id ? { ...u, role: newRole } : u
+                )
+            );
 
-            setReloadFlag(prev => !prev);
             if (selectedUser?.id === id) {
-                setSelectedUser(prev => ({ ...prev, role: newRole }));
+                setSelectedUser((prev) => ({ ...prev, role: newRole }));
             }
         } catch (e) {
             alert(e.message);
@@ -159,21 +185,16 @@ export default function ManageUsers() {
 
     async function toggleSuspicious(id, flag) {
         try {
-            const res = await fetch(`${VITE_BACKEND_URL}/users/${id}`, {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ suspicious: flag })
-            });
+            await patchUser(id, { suspicious: flag });
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
+            setUsers((prev) =>
+                prev.map((u) =>
+                    u.id === id ? { ...u, suspicious: flag } : u
+                )
+            );
 
-            setReloadFlag(prev => !prev);
             if (selectedUser?.id === id) {
-                setSelectedUser(prev => ({ ...prev, suspicious: flag }));
+                setSelectedUser((prev) => ({ ...prev, suspicious: flag }));
             }
         } catch (e) {
             alert(e.message);
@@ -182,21 +203,16 @@ export default function ManageUsers() {
 
     async function verifyUser(id) {
         try {
-            const res = await fetch(`${VITE_BACKEND_URL}/users/${id}`, {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ verified: true })
-            });
+            await patchUser(id, { verified: true });
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
+            setUsers((prev) =>
+                prev.map((u) =>
+                    u.id === id ? { ...u, verified: true } : u
+                )
+            );
 
-            setReloadFlag(prev => !prev);
             if (selectedUser?.id === id) {
-                setSelectedUser(prev => ({ ...prev, verified: true }));
+                setSelectedUser((prev) => ({ ...prev, verified: true }));
             }
         } catch (e) {
             alert(e.message);
@@ -211,22 +227,24 @@ export default function ManageUsers() {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(newUser)
+                body: JSON.stringify(newUser),
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
+            if (!res.ok) throw new Error(data.error || "Failed to create user");
 
+            // Reset form + close modal
             setShowCreateModal(false);
             setNewUser({
                 utorid: "",
                 name: "",
                 email: "",
                 password: "",
-                role: "regular"
+                role: "regular",
             });
-            setReloadFlag(prev => !prev);
 
+            // Reload from page 1 so the new user shows up
+            setPage(1);
         } catch (e) {
             alert(e.message);
         }
@@ -257,73 +275,121 @@ export default function ManageUsers() {
 
     return (
         <div className="container mt-4">
+            <div className="card shadow-sm">
+                <div className="card-body">
+                    {/* HEADER */}
+                    <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <div>
+                            <h1 className="h3 mb-1">Manage Users</h1>
+                            <div className="text-muted small">
+                                View, search, and manage user roles and verification.
+                            </div>
+                        </div>
 
-            {/* HEADER */}
-            <div className="d-flex justify-content-between mb-3">
-                <h1>Manage Users</h1>
-                <button className="btn btn-success" onClick={() => setShowCreateModal(true)}>
-                    + Create User
-                </button>
-            </div>
+                        <button
+                            className="btn btn-success"
+                            onClick={() => setShowCreateModal(true)}
+                        >
+                            + Create User
+                        </button>
+                    </div>
 
-            {/* SEARCH BAR */}
-            <div className="input-group mb-3" style={{ maxWidth: "400px" }}>
-                <input
-                    className="form-control"
-                    placeholder="Search users..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
-            </div>
-            {/* TABLE */}
-            {loading ? (
-                <div>Loading…</div>
-            ) : error ? (
-                <div className="alert alert-danger">{error}</div>
-            ) : (
-                <>
+                    {/* SEARCH + META */}
+                    <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <div className="input-group" style={{ maxWidth: "320px" }}>
+                            <span className="input-group-text">
+                                <i className="bi bi-search" />
+                            </span>
+                            <input
+                                className="form-control"
+                                placeholder="Search by UTORid, name, or email"
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value);
+                                    setPage(1);
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* ERROR */}
+                    {error && (
+                        <div className="alert alert-danger py-2 small">
+                            {error}
+                        </div>
+                    )}
+
+                    {/* TABLE */}
                     <div className="table-responsive">
-                        <table className="table table-hover table-striped">
+                        <table className="table table-hover table-striped align-middle mb-0">
                             <thead className="table-primary">
                                 <tr>
-                                    <th>UTORid</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Verified</th>
+                                    <th className="text-center">UTORid</th>
+                                    <th className="text-center">Name</th>
+                                    <th className="text-center">Email</th>
+                                    <th className="text-center">Role</th>
+                                    <th className="text-center">Verified</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                {users.length === 0 ? (
+                                {loading ? (
                                     <tr>
-                                        <td colSpan="5" className="text-center text-muted py-4">
+                                        <td colSpan="5" className="text-center py-4">
+                                            <div className="d-flex justify-content-center align-items-center gap-2">
+                                                <div
+                                                    className="spinner-border spinner-border-sm"
+                                                    role="status"
+                                                ></div>
+                                                <span className="text-muted">
+                                                    Loading users…
+                                                </span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : users.length === 0 ? (
+                                    <tr>
+                                        <td
+                                            colSpan="5"
+                                            className="text-center text-muted py-4"
+                                        >
                                             No users found.
                                         </td>
                                     </tr>
                                 ) : (
-                                    users.map(u => (
+                                    users.map((u) => (
                                         <tr
                                             key={u.id}
                                             style={{ cursor: "pointer" }}
                                             onClick={() => openUserModal(u)}
                                         >
-                                            <td>{u.utorid}</td>
-                                            <td>{u.name}</td>
-                                            <td>{u.email}</td>
+                                            <td className="text-center">{u.utorid}</td>
+                                            <td className="text-center">
+                                                {u.name || <span className="text-muted">No name</span>}
+                                            </td>
+                                            <td className="text-center">{u.email}</td>
 
-                                            <td>
-                                                <span className={roleBadgeClass(u.role)}>{u.role}</span>
-
+                                            <td className="text-center">
+                                                <span className={roleBadgeClass(u.role)}>
+                                                    {u.role}
+                                                </span>
                                                 {u.suspicious && (
-                                                    <span className="badge bg-danger ms-1">Suspicious</span>
+                                                    <span className="badge bg-danger ms-1">
+                                                        Suspicious
+                                                    </span>
                                                 )}
                                             </td>
 
-                                            <td>{u.verified && (
-                                                <span className="badge bg-success">Verified</span>
-
-                                            )}
+                                            <td className="text-center">
+                                                {u.verified ? (
+                                                    <span className="badge bg-success">
+                                                        Verified
+                                                    </span>
+                                                ) : (
+                                                    <span className="badge bg-secondary">
+                                                        Unverified
+                                                    </span>
+                                                )}
                                             </td>
                                         </tr>
                                     ))
@@ -333,59 +399,79 @@ export default function ManageUsers() {
                     </div>
 
                     {/* Pagination */}
-                    <div className="d-flex justify-content-center gap-2 mt-3">
+                    <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
                         <button
-                            className="btn btn-secondary btn-sm"
-                            disabled={page === 1}
-                            onClick={() => loadUsers(page - 1, search)}
+                            className="btn btn-outline-secondary btn-sm"
+                            disabled={page === 1 || loading}
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
                         >
                             Back
                         </button>
 
-                        <span className="pt-1">Page {page} / {totalPages}</span>
+                        <span className="small text-muted">
+                            Page {page} of {totalPages}
+                        </span>
 
                         <button
-                            className="btn btn-secondary btn-sm"
-                            disabled={page === totalPages}
-                            onClick={() => loadUsers(page + 1, search)}
+                            className="btn btn-outline-secondary btn-sm"
+                            disabled={page === totalPages || loading}
+                            onClick={() =>
+                                setPage((p) => Math.min(totalPages, p + 1))
+                            }
                         >
                             Next
                         </button>
                     </div>
-                </>
-            )}
+                </div>
+            </div>
 
             {/* ==========================================================
                 CREATE USER MODAL (Animated)
                ========================================================== */}
-            <AnimatedModal show={showCreateModal} onClose={() => setShowCreateModal(false)} size="modal-md">
+            <AnimatedModal
+                show={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                size="modal-md"
+            >
                 <div className="modal-header">
                     <h5 className="modal-title">Create New User</h5>
-                    <button className="btn-close" onClick={() => setShowCreateModal(false)}></button>
+                    <button
+                        className="btn-close"
+                        onClick={() => setShowCreateModal(false)}
+                    ></button>
                 </div>
 
                 <div className="modal-body">
                     <div className="mb-2">
                         <label className="form-label">UTORid</label>
-                        <input className="form-control"
+                        <input
+                            className="form-control"
                             value={newUser.utorid}
-                            onChange={e => setNewUser({ ...newUser, utorid: e.target.value })}
+                            onChange={(e) =>
+                                setNewUser({ ...newUser, utorid: e.target.value })
+                            }
                         />
                     </div>
 
                     <div className="mb-2">
                         <label className="form-label">Name</label>
-                        <input className="form-control"
+                        <input
+                            className="form-control"
                             value={newUser.name}
-                            onChange={e => setNewUser({ ...newUser, name: e.target.value })}
+                            onChange={(e) =>
+                                setNewUser({ ...newUser, name: e.target.value })
+                            }
                         />
                     </div>
 
                     <div className="mb-2">
                         <label className="form-label">Email</label>
-                        <input className="form-control"
+                        <input
+                            className="form-control"
                             value={newUser.email}
-                            onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+                            onChange={(e) =>
+                                setNewUser({ ...newUser, email: e.target.value })
+                            }
                         />
                     </div>
 
@@ -395,7 +481,9 @@ export default function ManageUsers() {
                             type="password"
                             className="form-control"
                             value={newUser.password}
-                            onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+                            onChange={(e) =>
+                                setNewUser({ ...newUser, password: e.target.value })
+                            }
                         />
                     </div>
 
@@ -404,11 +492,12 @@ export default function ManageUsers() {
                         <select
                             className="form-select"
                             value={newUser.role}
-                            onChange={e => setNewUser({ ...newUser, role: e.target.value })}
+                            onChange={(e) =>
+                                setNewUser({ ...newUser, role: e.target.value })
+                            }
                         >
                             <option value="regular">Regular</option>
                             <option value="cashier">Cashier</option>
-
                             {currentRole === "superuser" && (
                                 <option value="manager">Manager</option>
                             )}
@@ -417,7 +506,10 @@ export default function ManageUsers() {
                 </div>
 
                 <div className="modal-footer">
-                    <button className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => setShowCreateModal(false)}
+                    >
                         Cancel
                     </button>
                     <button className="btn btn-primary" onClick={createUser}>
@@ -436,38 +528,54 @@ export default function ManageUsers() {
                             <h5 className="modal-title">
                                 User — {selectedUser.name || selectedUser.utorid}
                             </h5>
-                            <button className="btn-close" onClick={closeUserModal}></button>
+                            <button
+                                className="btn-close"
+                                onClick={closeUserModal}
+                            ></button>
                         </div>
 
                         <div className="modal-body">
-
                             {/* Header info */}
-                            <div className="d-flex gap-3 mb-3">
+                            <div className="d-flex gap-3 mb-3 align-items-center">
                                 <div
-                                    className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                    className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
                                     style={{ width: "80px", height: "80px" }}
                                 >
-                                    {(selectedUser.name || selectedUser.utorid)[0].toUpperCase()}
+                                    {(selectedUser.name || selectedUser.utorid)
+                                        .charAt(0)
+                                        .toUpperCase()}
                                 </div>
 
                                 <div>
-                                    <h4>{selectedUser.name || "No name"}</h4>
-                                    <div className="text-muted">Email: {selectedUser.email}</div>
-                                    <div className="text-muted">UTORid: {selectedUser.utorid}</div>
+                                    <h4 className="mb-1">
+                                        {selectedUser.name || "No name"}
+                                    </h4>
+                                    <div className="text-muted small">
+                                        Email: {selectedUser.email}
+                                    </div>
+                                    <div className="text-muted small">
+                                        UTORid: {selectedUser.utorid}
+                                    </div>
 
-                                    <div className="mt-2">
+                                    <div className="mt-2 d-flex flex-wrap gap-2 align-items-center">
                                         <span className={roleBadgeClass(selectedUser.role)}>
                                             {selectedUser.role}
                                         </span>
 
                                         {selectedUser.verified ? (
-                                            <span className="badge bg-success ms-2">Verified</span>
+                                            <span className="badge bg-success">
+                                                Verified
+                                            </span>
                                         ) : (
-                                            <span className="badge bg-secondary ms-2">Unverified</span>
+                                            <span className="badge bg-secondary">
+                                                Unverified
+                                            </span>
                                         )}
 
                                         {selectedUser.suspicious && (
-                                            <span className="badge bg-danger ms-2">Suspicious</span>
+                                            <span className="badge bg-danger">
+                                                Suspicious
+                                            </span>
                                         )}
                                     </div>
                                 </div>
@@ -475,82 +583,184 @@ export default function ManageUsers() {
 
                             <hr />
 
-                            <p><strong>Points:</strong> {selectedUser.points}</p>
-                            <p><strong>Birthday:</strong> {selectedUser.birthday ? new Date(selectedUser.birthday).toLocaleDateString() : "—"}</p>
-                            <p><strong>Created:</strong> {new Date(selectedUser.createdAt).toLocaleString()}</p>
-                            <p><strong>Last Login:</strong> {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : "Never"}</p>
-
+                            <div className="row g-2">
+                                <div className="col-sm-6">
+                                    <p className="mb-1 small text-muted">Points</p>
+                                    <p className="mb-2">
+                                        {selectedUser.points ?? 0}
+                                    </p>
+                                </div>
+                                <div className="col-sm-6">
+                                    <p className="mb-1 small text-muted">Birthday</p>
+                                    <p className="mb-2">
+                                        {selectedUser.birthday
+                                            ? new Date(
+                                                selectedUser.birthday
+                                            ).toLocaleDateString()
+                                            : "—"}
+                                    </p>
+                                </div>
+                                <div className="col-sm-6">
+                                    <p className="mb-1 small text-muted">Created</p>
+                                    <p className="mb-2">
+                                        {new Date(
+                                            selectedUser.createdAt
+                                        ).toLocaleString()}
+                                    </p>
+                                </div>
+                                <div className="col-sm-6">
+                                    <p className="mb-1 small text-muted">Last Login</p>
+                                    <p className="mb-2">
+                                        {selectedUser.lastLogin
+                                            ? new Date(
+                                                selectedUser.lastLogin
+                                            ).toLocaleString()
+                                            : "Never"}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="modal-footer">
+                        <div className="modal-footer d-flex flex-wrap gap-2 justify-content-between">
+                            <div className="d-flex flex-wrap gap-2">
+                                {/* VERIFY */}
+                                {!selectedUser.verified &&
+                                    (currentRole === "manager" ||
+                                        currentRole === "superuser") && (
+                                        <button
+                                            className="btn btn-info"
+                                            onClick={() =>
+                                                verifyUser(selectedUser.id)
+                                            }
+                                        >
+                                            Verify
+                                        </button>
+                                    )}
 
-                            {/* VERIFY */}
-                            {!selectedUser.verified &&
-                                (currentRole === "manager" || currentRole === "superuser") && (
-                                    <button className="btn btn-info" onClick={() => verifyUser(selectedUser.id)}>
-                                        Verify
-                                    </button>
+                                {/* SUSPICIOUS */}
+                                {(currentRole === "manager" ||
+                                    currentRole === "superuser") &&
+                                    selectedUser.role !== "superuser" &&
+                                    (selectedUser.suspicious ? (
+                                        <button
+                                            className="btn btn-success"
+                                            onClick={() =>
+                                                toggleSuspicious(
+                                                    selectedUser.id,
+                                                    false
+                                                )
+                                            }
+                                        >
+                                            Clear Suspicious
+                                        </button>
+                                    ) : (
+                                        <button
+                                            className="btn btn-danger"
+                                            onClick={() =>
+                                                toggleSuspicious(
+                                                    selectedUser.id,
+                                                    true
+                                                )
+                                            }
+                                        >
+                                            Mark Suspicious
+                                        </button>
+                                    ))}
+
+                                {/* ROLE CHANGES */}
+
+                                {/* SUPERUSER: full control over non-superusers */}
+                                {currentRole === "superuser" &&
+                                    selectedUser.role !== "superuser" && (
+                                        <>
+                                            {selectedUser.role !== "regular" && (
+                                                <button
+                                                    className="btn btn-outline-secondary"
+                                                    onClick={() =>
+                                                        changeRole(
+                                                            selectedUser.id,
+                                                            "regular"
+                                                        )
+                                                    }
+                                                >
+                                                    Set Regular
+                                                </button>
+                                            )}
+
+                                            {selectedUser.role !== "cashier" && (
+                                                <button
+                                                    className="btn btn-warning"
+                                                    onClick={() =>
+                                                        changeRole(
+                                                            selectedUser.id,
+                                                            "cashier"
+                                                        )
+                                                    }
+                                                >
+                                                    Set Cashier
+                                                </button>
+                                            )}
+
+                                            {selectedUser.role !== "manager" && (
+                                                <button
+                                                    className="btn btn-primary"
+                                                    onClick={() =>
+                                                        changeRole(
+                                                            selectedUser.id,
+                                                            "manager"
+                                                        )
+                                                    }
+                                                >
+                                                    Promote to Manager
+                                                </button>
+                                            )}
+                                        </>
+                                    )}
+
+                                {/* MANAGER: can only regular ↔ cashier */}
+                                {currentRole === "manager" && (
+                                    <>
+                                        {selectedUser.role === "regular" && (
+                                            <button
+                                                className="btn btn-warning"
+                                                onClick={() =>
+                                                    changeRole(
+                                                        selectedUser.id,
+                                                        "cashier"
+                                                    )
+                                                }
+                                            >
+                                                Promote to Cashier
+                                            </button>
+                                        )}
+
+                                        {selectedUser.role === "cashier" && (
+                                            <button
+                                                className="btn btn-outline-secondary"
+                                                onClick={() =>
+                                                    changeRole(
+                                                        selectedUser.id,
+                                                        "regular"
+                                                    )
+                                                }
+                                            >
+                                                Demote to Regular
+                                            </button>
+                                        )}
+                                    </>
                                 )}
+                            </div>
 
-                            {/* SUSPICIOUS */}
-                            {(currentRole === "manager" || currentRole === "superuser") &&
-                                selectedUser.role !== "superuser" &&
-                                (selectedUser.suspicious ? (
-                                    <button
-                                        className="btn btn-success"
-                                        onClick={() => toggleSuspicious(selectedUser.id, false)}
-                                    >
-                                        Clear Suspicious
-                                    </button>
-                                ) : (
-                                    <button
-                                        className="btn btn-danger"
-                                        onClick={() => toggleSuspicious(selectedUser.id, true)}
-                                    >
-                                        Mark Suspicious
-                                    </button>
-                                ))}
-
-                            {/* ROLE CHANGES */}
-                            {currentRole === "superuser" && selectedUser.role !== "superuser" && (
-                                <>
-                                    {selectedUser.role !== "regular" && (
-                                        <button
-                                            className="btn btn-secondary"
-                                            onClick={() => changeRole(selectedUser.id, "regular")}
-                                        >
-                                            Set Regular
-                                        </button>
-                                    )}
-
-                                    {selectedUser.role !== "cashier" && (
-                                        <button
-                                            className="btn btn-warning"
-                                            onClick={() => changeRole(selectedUser.id, "cashier")}
-                                        >
-                                            Set Cashier
-                                        </button>
-                                    )}
-
-                                    {selectedUser.role !== "manager" && (
-                                        <button
-                                            className="btn btn-primary"
-                                            onClick={() => changeRole(selectedUser.id, "manager")}
-                                        >
-                                            Promote to Manager
-                                        </button>
-                                    )}
-                                </>
-                            )}
-
-                            <button className="btn btn-outline-secondary" onClick={closeUserModal}>
+                            <button
+                                className="btn btn-outline-secondary"
+                                onClick={closeUserModal}
+                            >
                                 Close
                             </button>
                         </div>
                     </>
                 )}
             </AnimatedModal>
-
         </div>
     );
 }
