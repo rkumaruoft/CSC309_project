@@ -1,6 +1,5 @@
 import { Table } from "react-bootstrap";
-import { floatToCurrency, formatRate } from "../utils/format/number"
-import { capitalize } from "../utils/format/string"
+import { capitalize } from "../../utils/format/string"
 
 
 function PromoTable({ promos, setClicked }) {
@@ -13,9 +12,7 @@ function PromoTable({ promos, setClicked }) {
             new_promo.name = promo.name;
             new_promo.type = capitalize(promo.type);
             new_promo.endTime = new Date(promo.endTime).toDateString();
-            new_promo.minSpending = promo.minSpending === null ? "N/A" : floatToCurrency(promo.minSpending);
-            new_promo.rate = promo.rate === null ? "N/A" : formatRate(promo.rate);
-            new_promo.points = promo.points === null ? "N/A" : promo.points;
+            new_promo.startTime = new Date(promo.startTime).toDateString();
             new_promos.push(new_promo);
         }
 
@@ -27,17 +24,15 @@ function PromoTable({ promos, setClicked }) {
             <tr>
                 <th>Name</th>
                 <th>Type</th>
+                <th>Starts At</th>
                 <th>Ends At</th>
-                <th>Minimum Spending</th>
-                <th>Rate</th>
-                <th>Bonus Points</th>
             </tr>
         </thead>
 
         <tbody className="promo-table-body">
             {(promos === null || promos.length === 0) ? (
                 <tr>
-                    <td colSpan={6} className="text-center">
+                    <td colSpan={4} className="text-center">
                             No promotions could be found
                     </td>
                 </tr>
@@ -46,10 +41,8 @@ function PromoTable({ promos, setClicked }) {
                     <tr key={item.id} onClick={() => setClicked(item.id)}>
                         <td>{item.name}</td>
                         <td>{item.type}</td>
+                        <td>{item.startTime}</td>
                         <td>{item.endTime}</td>
-                        <td>{item.minSpending}</td>
-                        <td>{item.rate}</td>
-                        <td>{item.points}</td>
                     </tr>
                 ))
             )}
