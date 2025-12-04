@@ -42,7 +42,6 @@ export default function ManageEvents() {
 
         // Success - close modal and refresh events list
         setSubmitted(true);
-        setShowCreateModal(false);
         setError("");
         fetchEvents(1); // Go to first page to see the new event
     }
@@ -174,7 +173,7 @@ export default function ManageEvents() {
                     {/* Only show for managers/superusers */}
                     <Button 
                         variant="primary" 
-                        onClick={() => setShowCreateModal(true)}
+                        onClick={() => {setShowCreateModal(true); }}
                     >
                         Create Event
                     </Button>
