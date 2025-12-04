@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
 
 export default function Verify() {
     const navigate = useNavigate();
-    const { login } = useAuth();
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-    // --- get utorid from URL ---
+    // --- URL parameters ---
     const location = useLocation();
     const params = new URLSearchParams(location.search);
-    const utorid = params.get("utorid");
+
+    const utorid = params.get("utorid");                
+    const registered = params.get("registered") === "1";
 
     const [code, setCode] = useState("");
     const [error, setError] = useState("");
@@ -35,7 +35,7 @@ export default function Verify() {
         setVerifying(false);
 
         if (!res.ok) {
-            setError(data.error || "Invalid code");
+            setError(data.error || "Invalid verification code.");
             return;
         }
 
@@ -63,20 +63,32 @@ export default function Verify() {
             return;
         }
 
-        setInfo("A new verification code has been sent to your email.");
+        setInfo("A new verification code has been sent to your UofT email.");
     };
 
+    // ---------------- UI ----------------
     return (
         <div className="container mt-5" style={{ maxWidth: "450px" }}>
-            <h2 className="text-center mb-3">Verify Your Account</h2>
+            <h2 className="text-center mb-4">Verify Your Account</h2>
 
+            {/* SUCCESS BANNER AFTER REGISTRATION */}
+            {registered && (
+                <div className="alert alert-success">
+                    Registration successful! Please check your UofT email for a verification code.
+                </div>
+            )}
+
+            {/* ERROR MESSAGE */}
             {error && <div className="alert alert-danger">{error}</div>}
+
+            {/* INFO MESSAGE */}
             {info && <div className="alert alert-info">{info}</div>}
 
-            <p className="text-center">
-                Enter the verification code sent to your UofT email.
+            <p className="text-center mb-4">
+                Enter the 6-digit verification code sent to your UofT email.
             </p>
 
+            {/* FORM */}
             <form onSubmit={handleVerify}>
                 <label className="form-label">Verification Code</label>
                 <input
@@ -87,12 +99,15 @@ export default function Verify() {
                     required
                 />
 
-                <button className="btn btn-primary w-100" disabled={verifying}>
+                <button
+                    className="btn btn-primary w-100"
+                    disabled={verifying}
+                >
                     {verifying ? "Verifying..." : "Verify"}
                 </button>
             </form>
 
-            <hr />
+            <hr className="my-4" />
 
             <button
                 onClick={handleResend}

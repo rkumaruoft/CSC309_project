@@ -3,7 +3,9 @@ import HeaderBase from './HeaderBase';
 export default function Cashier_Header() {
     const links = [
         { to: '/cashier/transactions', label: 'Transactions' },
-        { to: '/cashier/redemption', label: 'Redemptions' },
+        { to: '/events', label: 'Events' },
+        { to: '/events/myEvents', label: 'My Events'},
+        { to: '/cashier/redemption', label: 'Redemptions' }
     ];
-    return <HeaderBase brand="CSSU Rewards — Cashier" links={links} />;
+    return <HeaderBase brand="BananaCreds - Cashier" links={links} />;
 }

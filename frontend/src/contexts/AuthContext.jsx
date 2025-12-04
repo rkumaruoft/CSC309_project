@@ -137,11 +137,13 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem("currentRole", role);
             localStorage.setItem("user", JSON.stringify(userData));
 
-            // role-based navigation
+            // Role-based navigation
             if (role === "manager" || role === "superuser") {
-                navigate("/managerDashboard");
+                Promise.resolve().then(() => navigate("/managerDashboard"));
+            } else if (role === "cashier") {
+                Promise.resolve().then(() => navigate("/cashierDashboard"));
             } else {
-                navigate("/dashboard");
+                Promise.resolve().then(() => navigate("/dashboard"));
             }
 
             return null;
@@ -194,16 +196,25 @@ export const AuthProvider = ({ children }) => {
     const switchRole = (role) => {
         if (!availableRoles.includes(role)) return;
 
+        // If the account is a superuser and the user selected the 'manager
+        // interface from the dropdown, prefer switching them into the
+        // `superuser` interface so they get full superuser controls.
+        let targetRole = role;
+        if (role === "manager" && user && user.role === "superuser") {
+            targetRole = "superuser";
+        }
+
         // Save new interface role
-        setCurrentRole(role);
-        localStorage.setItem("currentRole", role);
+        setCurrentRole(targetRole);
+        localStorage.setItem("currentRole", targetRole);
 
         // Redirect ONLY when user intentionally switches interface
-        if (role === "manager" || role === "superuser") {
-            navigate("/managerDashboard");
+        if (targetRole === "manager" || targetRole === "superuser") {
+            Promise.resolve().then(() => navigate("/managerDashboard"));
+        } else if (targetRole === "cashier") {
+            Promise.resolve().then(() => navigate("/cashierDashboard"));
         } else {
-
-            navigate("/dashboard");
+            Promise.resolve().then(() => navigate("/dashboard"));
         }
     };
 
