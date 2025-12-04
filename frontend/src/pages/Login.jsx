@@ -26,6 +26,10 @@ export default function Login() {
             return <Navigate to="/managerDashboard" replace />;
         }
 
+        if (role === "cashier") {
+            return <Navigate to="/cashierDashboard" replace />;
+        }
+
         return <Navigate to="/dashboard" replace />;
     }
 

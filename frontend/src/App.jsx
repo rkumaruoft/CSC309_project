@@ -13,6 +13,7 @@ import EventsList from "./pages/EventsList.jsx";
 import RequireRole from "./components/RequireRole.jsx";
 import CashierTransactions from "./pages/CashierTransactions.jsx";
 import CashierRedemptions from "./pages/CashierRedemptions.jsx";
+import CashierDashboard from "./pages/CashierDashboard.jsx";
 import Verify from "./pages/Verify.jsx";
 import Profile from "./pages/Profile.jsx";
 import ManageUsers from "./pages/ManageUsers.jsx";
@@ -76,6 +77,7 @@ export default function App() {
                    CASHIERS ONLY
                 --------------------------------------------------------- */}
                 <Route element={<RequireRole allowedRoles={["cashier"]} />}>
+                    <Route path="/cashierDashboard" element={<Layout title="Dashboard - Cashier"><CashierDashboard /></Layout>} />
                     <Route path="/cashier/transactions" element={<Layout title="Transactions - Cashier"><CashierTransactions /></Layout>} />
                     <Route path="/cashier/redemption" element={<Layout title="Redemptions - Cashier"><CashierRedemptions /></Layout>} />
                 </Route>
