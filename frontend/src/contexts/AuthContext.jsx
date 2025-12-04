@@ -137,7 +137,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem("currentRole", role);
             localStorage.setItem("user", JSON.stringify(userData));
 
-            // role-based navigation
+            // Role-based navigation
             if (role === "manager" || role === "superuser") {
                 Promise.resolve().then(() => navigate("/managerDashboard"));
             } else if (role === "cashier") {
