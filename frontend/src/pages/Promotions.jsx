@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Button, Col, Container, Row, Image, Modal, Table } from "react-bootstrap";
+import { Button, Col, Container, Row, Image, Modal, Table, Card } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 import { getAllPromos, getPromoId } from "../utils/api/fetchPromos"
+import PaginationControls from "../components/PaginationControls";
 import PromoTable from "../components/promotions/PromoTable.jsx";
 import PromoFilter from "../components/promotions/PromoFilter.jsx";
-import AppliedFilters from "../components/promotions/PromoAppliedFilters.jsx";
 import { capitalize, optional } from "../utils/format/string.js";
 import { floatToCurrency, formatRate } from "../utils/format/number.js";
 import { formatTime } from "../utils/format/date.js";
@@ -16,6 +16,7 @@ function Promotions() {
     const [promos, setPromos] = useState(null);
     const [pageNum, setPageNum] = useState(1);  // start on page 1 of promotions
     const [totalPages, setTotalPages] = useState(1);  // assumes at least one page
+    const [limit, setLimit] = useState(10);
     const [filters, setFilters] = useState({});
     const [currPromo, setCurrPromo] = useState(null);
 
@@ -26,13 +27,11 @@ function Promotions() {
 
     // ---------- Fetch a page of promotions (10 at a time, as per the default) ----------
     async function getPromos(page) {
-        // TODO: look into adding filters???
-        // Invalid page; don't do anything
         if (page < 1 || page > totalPages) {
             return;
         }
 
-        const data = await getAllPromos(page, filters);
+        const data = await getAllPromos(page, limit, filters);
 
         // Handle request failure
         if (!data) {
@@ -43,7 +42,13 @@ function Promotions() {
         // Handle successful request
         setPromos(data.results);
         setPageNum(page);
-        setTotalPages(Math.max(1, Math.ceil(data.count / 10)));
+        const total = Math.max(1, Math.ceil(data.count / limit));
+        setTotalPages(total);
+        
+        // Handle overflow (sets back to last page)
+        if (page > total) {
+            getPromos(1);
+        }
     }
 
     function closeCurrPromo() {
@@ -51,22 +56,16 @@ function Promotions() {
         setClicked(null);
     }
 
-    // ---------- On navigation to promotions page, fetch promotions ----------
+    // ---------- On navigation/filtering/setting limit, fetch promotions ----------
     useEffect(() => {
         getPromos(pageNum);
-    }, [location]);
-
-    // ---------- On filters set, re-fetch promotions ----------
-    useEffect(() => {
-        getPromos(pageNum);
-    }, [filters]);
+    }, [location, filters, limit]);
 
     // ---------- On clicked set, fetch the clicked promotion data ----------
     useEffect(() => {
         if (!currPromo && clicked) {
             async function loadPromoId() {
                 const data = await getPromoId(clicked);
-                console.log(data);
                 setCurrPromo(data);
             }
 
@@ -77,75 +76,56 @@ function Promotions() {
     // ---------- Return the page ----------
     // TODO: change table spacing once we have login implemented
     return <Container>
-        {/* Label */}
-        <Row className="justify-content-center align-items-center mt-5 mb-3">
-            <Col xs="auto">
-                <div className="d-flex align-items-center gap-3">
-                    <h1 className="m-0">Promotions</h1>
+        <Card className="shadow-sm mt-4">
+            <Card.Body>
+                {/* Label */}
+                <Row className="justify-content-center align-items-center mb-0">
+                    <Col xs="auto">
+                        <div className="d-flex align-items-center gap-3">
+                            <h1 className="m-0">Promotions</h1>
 
-                    <Image
-                        src="../../filter.svg"
-                        alt="Filter"
-                        className="filter opacity-75"
-                        onClick={() => setShowFilter(!showFilter)}
-                    />
-                </div>
-            </Col>
-        </Row>
+                            <Image
+                                draggable={false}
+                                src="../../filter.svg"
+                                alt="Filter"
+                                className="filter opacity-75"
+                                onClick={() => setShowFilter(!showFilter)}
+                            />
+                        </div>
+                    </Col>
+                </Row>
 
-        {/* Show the filter menu */}
-        {showFilter &&
-        <Row className="justify-content-center align-items-center">
-            <Col xs="auto" className="m-2">
-                <PromoFilter setFilters={setFilters} setShowFilter={setShowFilter} />
-            </Col>
-        </Row>}
-        
-        {/* Show the current filters */}
-        {Object.keys(filters).length > 0 &&
-        <Row className="justify-content-center align-items-center mb-1">
-            <Col xs="auto">
-                <AppliedFilters filters={filters} setFilters={setFilters} />
-            </Col>
-        </Row>}
+                {/* Show the filter menu */}
+                {showFilter &&
+                <Row className="justify-content-center align-items-center">
+                    <Col xs="auto" className="m-2">
+                        <PromoFilter setFilters={setFilters} setShowFilter={setShowFilter} />
+                    </Col>
+                </Row>}
 
-        {/* Table */}
-        <Row className="justify-content-center">
-            <Col xs={14} md={12} lg={10}>
+                {/* Table */}
+                <Row className="justify-content-center">
+                    <Col>
 
-                <PromoTable promos={promos} setClicked={setClicked} />
+                        <PromoTable
+                            promos={promos}
+                            setClicked={setClicked}
+                            setLimit={setLimit}
+                            filters={filters}
+                            setFilters={setFilters}
+                        />
 
-            </Col>
-        </Row>
+                    </Col>
+                </Row>
 
-        {/* Pagination and page display (TODO: add better page scrolling as an option) */}
-        <Row className="justify-content-center align-items-center mb-2">
-            {/* Back button */}
-            <Col xs="auto">
-                <Button
-                    onClick={() => getPromos(pageNum - 1)}
-                    disabled={pageNum === 1}>
-                        Back
-                </Button>
-            </Col>
-
-            {/* Page Number */}
-            <Col xs="auto">
-                <span>
-                    Page: <strong>{pageNum}/{totalPages}</strong>
-                </span>
-            </Col>
-
-            {/* Forward Button */}
-            <Col xs="auto">
-                <Button
-                    onClick={() => getPromos(pageNum + 1)}
-                    disabled={pageNum === totalPages}>
-                        Next
-                </Button>
-            </Col>
-    
-        </Row>
+                {/* Pagination and page display*/}
+                <Row className="justify-content-center align-items-center mb-2">
+                    <Col xs="auto">
+                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => getPromos(p)} disabled={false} />
+                    </Col>
+                </Row>
+            </Card.Body>
+        </Card>
 
         {/* On-click effect */}
         {currPromo && 
@@ -153,8 +133,8 @@ function Promotions() {
             <Col>
             
                 <Modal show={clicked} onHide={closeCurrPromo}>
-                    <Modal.Header closeButton className="bg-light">
-                        <Modal.Title><strong>Promotion Details</strong></Modal.Title>
+                    <Modal.Header closeButton className="bg-primary text-light">
+                        <Modal.Title>Promotion Details</Modal.Title>
                     </Modal.Header>
                     <Modal.Body className="d-flex flex-column justify-content-center align-items-center">
                         

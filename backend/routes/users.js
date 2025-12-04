@@ -508,7 +508,7 @@ router.patch(
 
             const match = await bcrypt.compare(old, user.password);
             if (!match) {
-                return res.status(403).json({ error: "Incorrect password" });
+                return res.status(403).json({ error: "Old password does not match" });
             }
 
             // Validate new password strength
@@ -984,11 +984,24 @@ router.post(
     requireClearance(["regular", "cashier", "manager", "superuser"]),
     async (req, res) => {
         try {
-            const recipientId = Number(req.params.userId);
+            const rawRecipient = req.params.userId;
 
-            // ---- Validate path param ----
-            if (isNaN(recipientId) || recipientId <= 0) {
-                return res.status(400).json({ error: "Invalid userId" });
+            // Accept either a numeric internal id OR a utorid string.
+            // If numeric -> resolve by id, otherwise if a valid utorid -> resolve by utorid.
+            let recipient = null;
+
+            if (/^\d+$/.test(String(rawRecipient))) {
+                const recipientId = Number(rawRecipient);
+                if (recipientId <= 0) return res.status(400).json({ error: "Invalid userId" });
+                recipient = await prisma.user.findUnique({ where: { id: recipientId } });
+            } else if (isValidUtorid(rawRecipient)) {
+                recipient = await prisma.user.findUnique({ where: { utorid: rawRecipient } });
+            } else {
+                return res.status(400).json({ error: "Invalid user identifier" });
+            }
+
+            if (!recipient) {
+                return res.status(404).json({ error: "Recipient not found" });
             }
 
             // ---- Validate body fields ----
@@ -1020,11 +1033,6 @@ router.post(
             const sender = await prisma.user.findUnique({ where: { id: req.user.id } });
             if (!sender) {
                 return res.status(401).json({ error: "Sender not found" });
-            }
-
-            const recipient = await prisma.user.findUnique({ where: { id: recipientId } });
-            if (!recipient) {
-                return res.status(404).json({ error: "Recipient not found" });
             }
 
             // ---- Business rules ----
@@ -1095,5 +1103,65 @@ router.post(
         }
     }
 );
+
+// ---------------- /users/me/events (GET) ----------------
+// Clearance: Regular+
+router.get(
+    "/me/events",
+    authenticate,
+    requireClearance(["regular", "cashier", "manager", "superuser"]),
+    async (req, res) => {
+        try {
+            const userId = req.user.id;
+
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: {
+                    organizedEvents: {
+                        select: {
+                            event: {
+                                include: {
+                                    guests: { include: { user: true } },
+                                    organizers: { include: { user: true } }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (!user) return res.status(404).json({ error: "User not found" });
+
+            const organizedEvents = user.organizedEvents;
+
+            const results = organizedEvents.map(({ event }) => ({
+                id: event.id,
+                name: event.name,
+                location: event.location,
+                startTime: event.startTime,
+                endTime: event.endTime,
+                capacity: event.capacity,
+                numGuests: event.guests.length,
+                organizers: event.organizers.map(o => ({
+                    id: o.user.id,
+                    utorid: o.user.utorid,
+                    name: o.user.name
+                })),
+                guests: event.guests.map(g => ({
+                    id: g.user.id,
+                    utorid: g.user.utorid,
+                    name: g.user.name
+                }))
+            }));
+
+            return res.status(200).json({ count: results.length , results });
+
+        } catch (err) {
+            console.log(err);
+            return res.status(500).json({ error: err.message });
+        }
+    }
+);
+
 
 export default router;

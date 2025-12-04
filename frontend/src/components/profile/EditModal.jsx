@@ -137,16 +137,16 @@ function EditModal({ edit, setEdit, addChange }) {
     // ---------- Return the modal ----------
     return (
         <Modal show={edit} onHide={() => setEdit("")}>
-            <Modal.Header closeButton>
+            <Modal.Header closeButton className="bg-primary text-light">
                 <Modal.Title>Editing {formatHeader(shownField)}:</Modal.Title>
             </Modal.Header>
             <Modal.Body className="d-flex flex-column justify-content-center align-items-center">
                 {InputField}
                 {error && <div className="text-center alert alert-danger mt-4">{error}</div>}
             </Modal.Body>
-            <Modal.Footer>
-                <Button variant="warning" onClick={handleChange} disabled={!field}>Confirm</Button>
-                <Button variant="secondary" onClick={handleCancel}>Cancel</Button>
+            <Modal.Footer className="bg-light">
+                <Button onClick={handleChange} disabled={!field}>Confirm</Button>
+                <Button variant="outline-primary" onClick={handleCancel}>Cancel</Button>
             </Modal.Footer>
         </Modal>
     );

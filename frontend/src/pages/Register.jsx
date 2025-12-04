@@ -46,7 +46,6 @@ export default function Register() {
 
     const passwordValid = Object.values(passwordChecks).every(Boolean);
     const passwordsMatch = form.password === form.confirm;
-
     // ---------------- SUBMIT REGISTER ----------------
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -80,7 +79,7 @@ export default function Register() {
                 return setError(data.error || "Registration failed.");
             }
 
-            navigate("/login?registered=1");
+            navigate(`/verify?utorid=${form.utorid}`);
 
 
         } catch {
