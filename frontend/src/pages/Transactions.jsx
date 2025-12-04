@@ -24,7 +24,7 @@ export default function Transactions() {
 
     try {
       if (token) {
-        // try to fetch authenticated transactions
+        // try to fetch authenticated transaction
         const res = await fetch(`/users/me/transactions?page=${p}&limit=10`, {
           headers: { Authorization: `Bearer ${token}` }
         });
