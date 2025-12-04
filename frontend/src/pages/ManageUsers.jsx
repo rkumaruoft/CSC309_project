@@ -9,31 +9,25 @@ const VITE_BACKEND_URL =
    ANIMATED MODAL
    ========================================================== */
 function AnimatedModal({ show, onClose, children, size = "modal-lg" }) {
-    const [visible, setVisible] = useState(false); // controls fade in/out
-    const [mounted, setMounted] = useState(show);  // controls mount/unmount
+    const [visible, setVisible] = useState(false);
+    const [mounted, setMounted] = useState(show);
 
-    // Mount immediately when show = true
     useEffect(() => {
         if (show) {
             setMounted(true);
-            setTimeout(() => setVisible(true), 10); // fade in
+            setTimeout(() => setVisible(true), 10);
         } else {
-            // fade out
             setVisible(false);
-
-            // wait for fade-out animation to finish
             setTimeout(() => {
                 setMounted(false);
-            }, 150); // Bootstrap fade duration (150ms)
+            }, 150);
         }
     }, [show]);
 
-    // Close with ESC key
     useEffect(() => {
         function handleKey(e) {
             if (e.key === "Escape" && show) onClose();
         }
-
         document.addEventListener("keydown", handleKey);
         return () => document.removeEventListener("keydown", handleKey);
     }, [show, onClose]);
@@ -42,13 +36,11 @@ function AnimatedModal({ show, onClose, children, size = "modal-lg" }) {
 
     return (
         <>
-            {/* BACKDROP */}
             <div
                 className={`modal-backdrop fade ${visible ? "show" : ""}`}
                 onClick={onClose}
             ></div>
 
-            {/* MODAL */}
             <div
                 className={`modal fade ${visible ? "show" : ""}`}
                 style={{ display: "block" }}
@@ -80,11 +72,9 @@ export default function ManageUsers() {
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
 
-    // modal user
     const [selectedUser, setSelectedUser] = useState(null);
     const [showUserModal, setShowUserModal] = useState(false);
 
-    // create user modal
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newUser, setNewUser] = useState({
         utorid: "",
@@ -100,16 +90,15 @@ export default function ManageUsers() {
        DEBOUNCED SEARCH
        ========================================================== */
     useEffect(() => {
-        const handle = setTimeout(() => {
-            setDebouncedSearch(search);
-            // page stays the same; if you want, you can do setPage(1) here
-        }, 300);
-
+        const handle = setTimeout(
+            () => setDebouncedSearch(search),
+            300
+        );
         return () => clearTimeout(handle);
     }, [search]);
 
     /* ==========================================================
-       LOAD USERS WHEN PAGE OR SEARCH CHANGE
+       LOAD USERS
        ========================================================== */
     useEffect(() => {
         async function fetchUsers() {
@@ -119,11 +108,7 @@ export default function ManageUsers() {
             try {
                 const res = await fetch(
                     `${VITE_BACKEND_URL}/users?page=${page}&limit=10&search=${debouncedSearch}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
+                    { headers: { Authorization: `Bearer ${token}` } }
                 );
 
                 if (!res.ok) throw new Error("Failed to load users");
@@ -144,10 +129,8 @@ export default function ManageUsers() {
     }, [page, debouncedSearch, token]);
 
     /* ==========================================================
-       BACKEND ACTIONS
+       BACKEND PATCH
        ========================================================== */
-
-    // Helper to patch a user on the server
     async function patchUser(id, payload) {
         const res = await fetch(`${VITE_BACKEND_URL}/users/${id}`, {
             method: "PATCH",
@@ -159,9 +142,8 @@ export default function ManageUsers() {
         });
 
         const data = await res.json();
-        if (!res.ok) {
-            throw new Error(data.error || "Failed to update user");
-        }
+        if (!res.ok) throw new Error(data.error || "Failed");
+
         return data;
     }
 
@@ -169,11 +151,8 @@ export default function ManageUsers() {
         try {
             await patchUser(id, { role: newRole });
 
-            // Update local state for both list + selected user
             setUsers((prev) =>
-                prev.map((u) =>
-                    u.id === id ? { ...u, role: newRole } : u
-                )
+                prev.map((u) => (u.id === id ? { ...u, role: newRole } : u))
             );
 
             if (selectedUser?.id === id) {
@@ -189,9 +168,7 @@ export default function ManageUsers() {
             await patchUser(id, { suspicious: flag });
 
             setUsers((prev) =>
-                prev.map((u) =>
-                    u.id === id ? { ...u, suspicious: flag } : u
-                )
+                prev.map((u) => (u.id === id ? { ...u, suspicious: flag } : u))
             );
 
             if (selectedUser?.id === id) {
@@ -232,9 +209,8 @@ export default function ManageUsers() {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to create user");
+            if (!res.ok) throw new Error(data.error || "Failed to create");
 
-            // Reset form + close modal
             setShowCreateModal(false);
             setNewUser({
                 utorid: "",
@@ -244,7 +220,6 @@ export default function ManageUsers() {
                 role: "regular",
             });
 
-            // Reload from page 1 so the new user shows up
             setPage(1);
         } catch (e) {
             alert(e.message);
@@ -274,6 +249,9 @@ export default function ManageUsers() {
         return "badge bg-secondary";
     }
 
+    /* ==========================================================
+       PAGE RENDER
+       ========================================================== */
     return (
         <div className="container mt-4">
             <div className="card shadow-sm">
@@ -283,7 +261,7 @@ export default function ManageUsers() {
                         <div>
                             <h1 className="h3 mb-1">Manage Users</h1>
                             <div className="text-muted small">
-                                View, search, and manage user roles and verification.
+                                View, search, and manage user roles.
                             </div>
                         </div>
 
@@ -295,22 +273,20 @@ export default function ManageUsers() {
                         </button>
                     </div>
 
-                    {/* SEARCH + META */}
-                    <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                        <div className="input-group" style={{ maxWidth: "320px" }}>
-                            <span className="input-group-text">
-                                <i className="bi bi-search" />
-                            </span>
-                            <input
-                                className="form-control"
-                                placeholder="Search by UTORid, name, or email"
-                                value={search}
-                                onChange={(e) => {
-                                    setSearch(e.target.value);
-                                    setPage(1);
-                                }}
-                            />
-                        </div>
+                    {/* SEARCH */}
+                    <div className="input-group mb-3" style={{ maxWidth: "320px" }}>
+                        <span className="input-group-text">
+                            <i className="bi bi-search" />
+                        </span>
+                        <input
+                            className="form-control"
+                            placeholder="Search by UTORid, name, or email"
+                            value={search}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                            }}
+                        />
                     </div>
 
                     {/* ERROR */}
@@ -337,23 +313,15 @@ export default function ManageUsers() {
                                 {loading ? (
                                     <tr>
                                         <td colSpan="5" className="text-center py-4">
-                                            <div className="d-flex justify-content-center align-items-center gap-2">
-                                                <div
-                                                    className="spinner-border spinner-border-sm"
-                                                    role="status"
-                                                ></div>
-                                                <span className="text-muted">
-                                                    Loading users…
-                                                </span>
+                                            <div className="d-flex justify-content-center gap-2">
+                                                <div className="spinner-border spinner-border-sm"></div>
+                                                <span className="text-muted">Loading…</span>
                                             </div>
                                         </td>
                                     </tr>
                                 ) : users.length === 0 ? (
                                     <tr>
-                                        <td
-                                            colSpan="5"
-                                            className="text-center text-muted py-4"
-                                        >
+                                        <td colSpan="5" className="text-center text-muted py-4">
                                             No users found.
                                         </td>
                                     </tr>
@@ -366,7 +334,9 @@ export default function ManageUsers() {
                                         >
                                             <td className="text-center">{u.utorid}</td>
                                             <td className="text-center">
-                                                {u.name || <span className="text-muted">No name</span>}
+                                                {u.name || (
+                                                    <span className="text-muted">No name</span>
+                                                )}
                                             </td>
                                             <td className="text-center">{u.email}</td>
 
@@ -399,15 +369,19 @@ export default function ManageUsers() {
                         </table>
                     </div>
 
-                    {/* Pagination */}
-                    <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
-                        <PaginationControls page={page} totalPages={totalPages} onPageChange={(p) => setPage(p)} disabled={loading} />
+                    <div className="d-flex justify-content-center mt-3">
+                        <PaginationControls
+                            page={page}
+                            totalPages={totalPages}
+                            onPageChange={(p) => setPage(p)}
+                            disabled={loading}
+                        />
                     </div>
                 </div>
             </div>
 
             {/* ==========================================================
-                CREATE USER MODAL (Animated)
+                CREATE USER MODAL
                ========================================================== */}
             <AnimatedModal
                 show={showCreateModal}
@@ -416,10 +390,7 @@ export default function ManageUsers() {
             >
                 <div className="modal-header">
                     <h5 className="modal-title">Create New User</h5>
-                    <button
-                        className="btn-close"
-                        onClick={() => setShowCreateModal(false)}
-                    ></button>
+                    <button className="btn-close" onClick={() => setShowCreateModal(false)}></button>
                 </div>
 
                 <div className="modal-body">
@@ -428,9 +399,7 @@ export default function ManageUsers() {
                         <input
                             className="form-control"
                             value={newUser.utorid}
-                            onChange={(e) =>
-                                setNewUser({ ...newUser, utorid: e.target.value })
-                            }
+                            onChange={(e) => setNewUser({ ...newUser, utorid: e.target.value })}
                         />
                     </div>
 
@@ -439,9 +408,7 @@ export default function ManageUsers() {
                         <input
                             className="form-control"
                             value={newUser.name}
-                            onChange={(e) =>
-                                setNewUser({ ...newUser, name: e.target.value })
-                            }
+                            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                         />
                     </div>
 
@@ -450,9 +417,7 @@ export default function ManageUsers() {
                         <input
                             className="form-control"
                             value={newUser.email}
-                            onChange={(e) =>
-                                setNewUser({ ...newUser, email: e.target.value })
-                            }
+                            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                         />
                     </div>
 
@@ -462,9 +427,7 @@ export default function ManageUsers() {
                             type="password"
                             className="form-control"
                             value={newUser.password}
-                            onChange={(e) =>
-                                setNewUser({ ...newUser, password: e.target.value })
-                            }
+                            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                         />
                     </div>
 
@@ -473,24 +436,23 @@ export default function ManageUsers() {
                         <select
                             className="form-select"
                             value={newUser.role}
-                            onChange={(e) =>
-                                setNewUser({ ...newUser, role: e.target.value })
-                            }
+                            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
                         >
                             <option value="regular">Regular</option>
                             <option value="cashier">Cashier</option>
+
                             {currentRole === "superuser" && (
-                                <option value="manager">Manager</option>
+                                <>
+                                    <option value="manager">Manager</option>
+                                    <option value="superuser">Superuser</option>
+                                </>
                             )}
                         </select>
                     </div>
                 </div>
 
                 <div className="modal-footer">
-                    <button
-                        className="btn btn-secondary"
-                        onClick={() => setShowCreateModal(false)}
-                    >
+                    <button className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>
                         Cancel
                     </button>
                     <button className="btn btn-primary" onClick={createUser}>
@@ -500,7 +462,7 @@ export default function ManageUsers() {
             </AnimatedModal>
 
             {/* ==========================================================
-                USER DETAILS MODAL (Animated)
+                USER DETAILS MODAL
                ========================================================== */}
             <AnimatedModal show={showUserModal} onClose={closeUserModal}>
                 {selectedUser && (
@@ -509,17 +471,13 @@ export default function ManageUsers() {
                             <h5 className="modal-title">
                                 User — {selectedUser.name || selectedUser.utorid}
                             </h5>
-                            <button
-                                className="btn-close"
-                                onClick={closeUserModal}
-                            ></button>
+                            <button className="btn-close" onClick={closeUserModal}></button>
                         </div>
 
                         <div className="modal-body">
-                            {/* Header info */}
                             <div className="d-flex gap-3 mb-3 align-items-center">
                                 <div
-                                    className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                                    className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
                                     style={{ width: "80px", height: "80px" }}
                                 >
                                     {(selectedUser.name || selectedUser.utorid)
@@ -531,9 +489,11 @@ export default function ManageUsers() {
                                     <h4 className="mb-1">
                                         {selectedUser.name || "No name"}
                                     </h4>
+
                                     <div className="text-muted small">
                                         Email: {selectedUser.email}
                                     </div>
+
                                     <div className="text-muted small">
                                         UTORid: {selectedUser.utorid}
                                     </div>
@@ -544,19 +504,13 @@ export default function ManageUsers() {
                                         </span>
 
                                         {selectedUser.verified ? (
-                                            <span className="badge bg-success">
-                                                Verified
-                                            </span>
+                                            <span className="badge bg-success">Verified</span>
                                         ) : (
-                                            <span className="badge bg-secondary">
-                                                Unverified
-                                            </span>
+                                            <span className="badge bg-secondary">Unverified</span>
                                         )}
 
                                         {selectedUser.suspicious && (
-                                            <span className="badge bg-danger">
-                                                Suspicious
-                                            </span>
+                                            <span className="badge bg-danger">Suspicious</span>
                                         )}
                                     </div>
                                 </div>
@@ -567,35 +521,28 @@ export default function ManageUsers() {
                             <div className="row g-2">
                                 <div className="col-sm-6">
                                     <p className="mb-1 small text-muted">Points</p>
-                                    <p className="mb-2">
-                                        {selectedUser.points ?? 0}
-                                    </p>
+                                    <p>{selectedUser.points ?? 0}</p>
                                 </div>
+
                                 <div className="col-sm-6">
                                     <p className="mb-1 small text-muted">Birthday</p>
-                                    <p className="mb-2">
+                                    <p>
                                         {selectedUser.birthday
-                                            ? new Date(
-                                                selectedUser.birthday
-                                            ).toLocaleDateString()
+                                            ? new Date(selectedUser.birthday).toLocaleDateString()
                                             : "—"}
                                     </p>
                                 </div>
+
                                 <div className="col-sm-6">
                                     <p className="mb-1 small text-muted">Created</p>
-                                    <p className="mb-2">
-                                        {new Date(
-                                            selectedUser.createdAt
-                                        ).toLocaleString()}
-                                    </p>
+                                    <p>{new Date(selectedUser.createdAt).toLocaleString()}</p>
                                 </div>
+
                                 <div className="col-sm-6">
                                     <p className="mb-1 small text-muted">Last Login</p>
-                                    <p className="mb-2">
+                                    <p>
                                         {selectedUser.lastLogin
-                                            ? new Date(
-                                                selectedUser.lastLogin
-                                            ).toLocaleString()
+                                            ? new Date(selectedUser.lastLogin).toLocaleString()
                                             : "Never"}
                                     </p>
                                 </div>
@@ -604,32 +551,27 @@ export default function ManageUsers() {
 
                         <div className="modal-footer d-flex flex-wrap gap-2 justify-content-between">
                             <div className="d-flex flex-wrap gap-2">
+
                                 {/* VERIFY */}
                                 {!selectedUser.verified &&
                                     (currentRole === "manager" ||
                                         currentRole === "superuser") && (
                                         <button
                                             className="btn btn-info"
-                                            onClick={() =>
-                                                verifyUser(selectedUser.id)
-                                            }
+                                            onClick={() => verifyUser(selectedUser.id)}
                                         >
                                             Verify
                                         </button>
                                     )}
 
                                 {/* SUSPICIOUS */}
-                                {(currentRole === "manager" ||
-                                    currentRole === "superuser") &&
+                                {(currentRole === "manager" || currentRole === "superuser") &&
                                     selectedUser.role !== "superuser" &&
                                     (selectedUser.suspicious ? (
                                         <button
                                             className="btn btn-success"
                                             onClick={() =>
-                                                toggleSuspicious(
-                                                    selectedUser.id,
-                                                    false
-                                                )
+                                                toggleSuspicious(selectedUser.id, false)
                                             }
                                         >
                                             Clear Suspicious
@@ -638,19 +580,14 @@ export default function ManageUsers() {
                                         <button
                                             className="btn btn-danger"
                                             onClick={() =>
-                                                toggleSuspicious(
-                                                    selectedUser.id,
-                                                    true
-                                                )
+                                                toggleSuspicious(selectedUser.id, true)
                                             }
                                         >
                                             Mark Suspicious
                                         </button>
                                     ))}
 
-                                {/* ROLE CHANGES */}
-
-                                {/* SUPERUSER: full control over non-superusers */}
+                                {/* SUPERUSER FULL CONTROL */}
                                 {currentRole === "superuser" &&
                                     selectedUser.role !== "superuser" && (
                                         <>
@@ -658,10 +595,7 @@ export default function ManageUsers() {
                                                 <button
                                                     className="btn btn-outline-secondary"
                                                     onClick={() =>
-                                                        changeRole(
-                                                            selectedUser.id,
-                                                            "regular"
-                                                        )
+                                                        changeRole(selectedUser.id, "regular")
                                                     }
                                                 >
                                                     Set Regular
@@ -672,10 +606,7 @@ export default function ManageUsers() {
                                                 <button
                                                     className="btn btn-warning"
                                                     onClick={() =>
-                                                        changeRole(
-                                                            selectedUser.id,
-                                                            "cashier"
-                                                        )
+                                                        changeRole(selectedUser.id, "cashier")
                                                     }
                                                 >
                                                     Set Cashier
@@ -686,29 +617,33 @@ export default function ManageUsers() {
                                                 <button
                                                     className="btn btn-primary"
                                                     onClick={() =>
-                                                        changeRole(
-                                                            selectedUser.id,
-                                                            "manager"
-                                                        )
+                                                        changeRole(selectedUser.id, "manager")
                                                     }
                                                 >
                                                     Promote to Manager
                                                 </button>
                                             )}
+
+                                            {/* NEW: SUPERUSER PROMOTION */}
+                                            <button
+                                                className="btn btn-danger"
+                                                onClick={() =>
+                                                    changeRole(selectedUser.id, "superuser")
+                                                }
+                                            >
+                                                Promote to Superuser
+                                            </button>
                                         </>
                                     )}
 
-                                {/* MANAGER: can only regular ↔ cashier */}
+                                {/* MANAGER LIMITED CONTROL */}
                                 {currentRole === "manager" && (
                                     <>
                                         {selectedUser.role === "regular" && (
                                             <button
                                                 className="btn btn-warning"
                                                 onClick={() =>
-                                                    changeRole(
-                                                        selectedUser.id,
-                                                        "cashier"
-                                                    )
+                                                    changeRole(selectedUser.id, "cashier")
                                                 }
                                             >
                                                 Promote to Cashier
@@ -719,10 +654,7 @@ export default function ManageUsers() {
                                             <button
                                                 className="btn btn-outline-secondary"
                                                 onClick={() =>
-                                                    changeRole(
-                                                        selectedUser.id,
-                                                        "regular"
-                                                    )
+                                                    changeRole(selectedUser.id, "regular")
                                                 }
                                             >
                                                 Demote to Regular
@@ -732,10 +664,7 @@ export default function ManageUsers() {
                                 )}
                             </div>
 
-                            <button
-                                className="btn btn-outline-secondary"
-                                onClick={closeUserModal}
-                            >
+                            <button className="btn btn-outline-secondary" onClick={closeUserModal}>
                                 Close
                             </button>
                         </div>
