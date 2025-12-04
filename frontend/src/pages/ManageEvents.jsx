@@ -28,16 +28,14 @@ export default function ManageEvents() {
     const [filters, setFilters] = useState({});
     const [showFilter, setShowFilter] = useState(false);
 
+    // Fetch events on mount
     useEffect(() => {
         fetchEvents(1);
     }, []);
 
+    // Fetch events when filters change (reset to page 1)
     useEffect(() => {
-        fetchEvents(pageNum);
-    }, [pageNum]);
-
-    useEffect(() => {
-        fetchEvents(pageNum);
+        fetchEvents(1);
     }, [filters]);
 
     async function createEvent(eventData, setSubmitted) {
@@ -73,7 +71,7 @@ export default function ManageEvents() {
         const res = await addOrganizerBackend(organizer, selectedEvent);
 
         if (res.error != null){
-            setError(data.error);
+            setError(res.error);
         }
 
         setOrganizer(null);
@@ -104,7 +102,7 @@ export default function ManageEvents() {
         const res = await publishEventBackend(selectedEvent);
 
         if (res.error != null){
-            setError(data.error);
+            setError(res.error);
             return;
         }
 
@@ -118,7 +116,7 @@ export default function ManageEvents() {
         const res = await remGuestBackend(selectedEvent, guestId);
 
         if (res.error != null){
-            setError(data.error);
+            setError(res.error);
             return;
         }
 
@@ -151,7 +149,7 @@ export default function ManageEvents() {
     }
 
     async function fetchEvents(page){
-        const data = await fetchAllEvents(page, totalPages);
+        const data = await fetchAllEvents(page, filters, totalPages);
         if (data === null) {
             return;
         }
@@ -212,10 +210,10 @@ export default function ManageEvents() {
                     </thead>
 
                     <tbody>
-                        {events === null ? (
+                        {events.length === 0 ? (
                             <tr>
                                 <td colSpan={5} className="text-center">
-                                        Page {pageNum} could not be found
+                                    No events found
                                 </td>
                             </tr>
                         ) : (
