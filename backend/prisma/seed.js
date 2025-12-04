@@ -229,10 +229,11 @@ async function main() {
             type,
             amount,
             eventId,
+            processed: true,
             remark: `Seed tx #${i + 1}`,
             createdBy: "seed",
             createdAt: timestamp,
-            suspicious: maybeSuspicious(amount)
+            suspicious: false
         };
 
         // 20% chance apply promo

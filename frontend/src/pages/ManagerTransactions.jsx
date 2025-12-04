@@ -368,6 +368,10 @@ export default function ManagerTransactions() {
                                             <td className="text-center">
                                                 {tx.amount} pts
                                             </td>
+                                            {/* <td className="text-center">
+                                                {String(tx.processed)} {/* temporary debug */}
+                                            {/* </td> */}
+
                                             <td className="text-center">
                                                 {tx.processed ? (
                                                     <span className="badge bg-success">
