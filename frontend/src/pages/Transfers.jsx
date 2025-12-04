@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useSearchParams } from "react-router-dom";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -12,6 +13,13 @@ export default function Transfers() {
   const [success, setSuccess] = useState(null);
 
   const amountRef = useRef();
+
+    // Autofill data if navigated from link
+    const [searchParams] = useSearchParams();
+    const urlId = searchParams.get("utorid");
+    if (urlId) {
+        setToId(urlId);
+    }
 
   useEffect(() => {
     setError("");

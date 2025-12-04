@@ -17,6 +17,15 @@ function Redemption() {
 
     const token = localStorage.getItem("token");
 
+    // ---------- Get the QR code src (should only be called after transaction is set) ----------
+    function getQR() {
+        // Format the qr code
+        const baseScannedUrl = "https://app.bananacreds.ca/cashier/redemption";
+        const scannedUrl = `${baseScannedUrl}?id=${encodeURIComponent(transaction.id)}`
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(scannedUrl)}`;
+        return qrUrl;
+    }
+
     // ---------- Initialize error to nothing on reload ----------
     useEffect(() => {
         setError("");
@@ -165,7 +174,7 @@ function Redemption() {
                         <div className="d-flex justify-content-center">
                             <img
                                 alt="qr-user"
-                                src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`transaction:${transaction.id}`)}`}
+                                src={getQR()}
                                 style={{ width: 260, height: 260 }}
                                 className="img-fluid rounded"
                             />

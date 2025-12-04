@@ -3,7 +3,7 @@ import { Alert, Button, Card, Col, Container, Form, Row, Table } from "react-boo
 import PaginationControls from "../components/PaginationControls";
 import { optional } from "../utils/format/string";
 import { floatToCurrency } from "../utils/format/number";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { getUnprocessed, processRedemption } from "../utils/api/fetchRedemptions";
 import LimitSelector from "../components/LimitSelector";
 import SortButton from "../components/SortButton";
@@ -25,6 +25,13 @@ function CashierRedemptions() {
     const [utorid, setUtorid] = useState("");
 
     const location = useLocation();
+    
+    // Autofill data if navigated from link
+    const [searchParams] = useSearchParams();
+    const urlId = searchParams.get("id");
+    if (urlId) {
+        setTid(urlId);
+    }
 
     // ---------- Fetch a page of redemptions (10 at a time, as per the default) ----------
     async function getRedemptionsPage(page, name) {
