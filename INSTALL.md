@@ -2,11 +2,11 @@
 
 This file describes how to set up and run the CSC309 project (frontend + backend) in a new environment.
 
-Prerequisites
+**Prerequisites**
 - Node.js 18+ and npm (install from https://nodejs.org/)
 - Git
 
-Quick Local Setup (Windows PowerShell)
+**Quick Local Setup (Windows PowerShell)**
 
 1) Clone the repo
 
@@ -54,7 +54,7 @@ npm install
 npm run dev
 ```
 
-Demo Credentials (from Seed)
+**Demo Credentials (from Seed)**
 
 The database is pre-populated with the following accounts for testing different roles. All accounts use the same password.
 
@@ -68,7 +68,7 @@ Regular, regular1, regular1@mail.utoronto.ca
 
 (There are also auto-generated regular users from u001 to u045 with the same password).
 
-Architecture & Technology Stack
+**Architecture & Technology Stack**
 
 - Frontend: React (Vite), Bootstrap (Bootswatch), React Router.
 
