@@ -156,7 +156,7 @@ function Redemption() {
         <Row>
             <Col>
                 <Modal show={transaction} onHide={cancelRedemption}>
-                    <Modal.Header closeButton className="bg-light">
+                    <Modal.Header closeButton className="bg-primary text-light">
                         <Modal.Title>Scan to Redeem Your Transaction</Modal.Title>
                     </Modal.Header>
                     <Modal.Body className="d-flex flex-column justify-content-center align-items-center">

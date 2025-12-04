@@ -22,7 +22,7 @@ async function processRedemption(id) {
 
 }
 
-async function getUnprocessed(page, name) {
+async function getUnprocessed(page, name, limit) {
     const token = localStorage.getItem("token");
     const type = "redemption";
     const processed = false;
@@ -31,7 +31,8 @@ async function getUnprocessed(page, name) {
         ...(name ? {name: name} : {}),
         page: page,
         type: type,
-        processed: processed
+        processed: processed,
+        limit: limit
     };
     const url = `${VITE_BACKEND_URL}/transactions/processed?${new URLSearchParams(params).toString()}`;
 

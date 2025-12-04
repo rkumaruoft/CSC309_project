@@ -14,6 +14,7 @@ function AppliedFilters({ filters, setFilters }) {
         ))}
 
         <Image
+            draggable={false}
             src="../../xButton.svg"
             alt="Clear"
             className="filter opacity-50"
