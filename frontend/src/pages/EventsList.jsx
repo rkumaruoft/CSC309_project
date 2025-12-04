@@ -7,6 +7,7 @@ import EventGuestModal from "../components/EventGuestModal";
 import EventOrganizerModal from "../components/EventOrganizerModal";
 import EventsFilter from "../components/EventsFilter";
 import fetchEventsFull from "../utils/api/fetchEvents";
+import PaginationControls from "../components/PaginationControls";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -454,31 +455,8 @@ async function refreshEventDetails() {
 
         {/* Pagination and page display */}
         <Row className="justify-content-center align-items-center">
-            {/* Back button */}
             <Col xs="auto">
-                <Button
-                    variant="primary"
-                    onClick={() => fetchEvents(pageNum - 1)}
-                    disabled={pageNum === 1}>
-                        Back
-                </Button>
-            </Col>
-
-            {/* Page Number */}
-            <Col xs="auto">
-                <span>
-                    Page: <strong>{pageNum}/{totalPages}</strong>
-                </span>
-            </Col>
-
-            {/* Forward Button */}
-            <Col xs="auto">
-                <Button
-                    variant="primary"
-                    onClick={() => fetchEvents(pageNum + 1)}
-                    disabled={pageNum === totalPages}>
-                        Next
-                </Button>
+                <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => fetchEvents(p)} disabled={false} />
             </Col>
         </Row>
         <Modal show={showModal} onHide={() => setShowModal(false)}>

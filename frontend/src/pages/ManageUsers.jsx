@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import PaginationControls from "../components/PaginationControls";
 
 const VITE_BACKEND_URL =
     import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
@@ -400,27 +401,7 @@ export default function ManageUsers() {
 
                     {/* Pagination */}
                     <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
-                        <button
-                            className="btn btn-outline-secondary btn-sm"
-                            disabled={page === 1 || loading}
-                            onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        >
-                            Back
-                        </button>
-
-                        <span className="small text-muted">
-                            Page {page} of {totalPages}
-                        </span>
-
-                        <button
-                            className="btn btn-outline-secondary btn-sm"
-                            disabled={page === totalPages || loading}
-                            onClick={() =>
-                                setPage((p) => Math.min(totalPages, p + 1))
-                            }
-                        >
-                            Next
-                        </button>
+                        <PaginationControls page={page} totalPages={totalPages} onPageChange={(p) => setPage(p)} disabled={loading} />
                     </div>
                 </div>
             </div>
