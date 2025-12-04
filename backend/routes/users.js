@@ -984,11 +984,24 @@ router.post(
     requireClearance(["regular", "cashier", "manager", "superuser"]),
     async (req, res) => {
         try {
-            const recipientId = Number(req.params.userId);
+            const rawRecipient = req.params.userId;
 
-            // ---- Validate path param ----
-            if (isNaN(recipientId) || recipientId <= 0) {
-                return res.status(400).json({ error: "Invalid userId" });
+            // Accept either a numeric internal id OR a utorid string.
+            // If numeric -> resolve by id, otherwise if a valid utorid -> resolve by utorid.
+            let recipient = null;
+
+            if (/^\d+$/.test(String(rawRecipient))) {
+                const recipientId = Number(rawRecipient);
+                if (recipientId <= 0) return res.status(400).json({ error: "Invalid userId" });
+                recipient = await prisma.user.findUnique({ where: { id: recipientId } });
+            } else if (isValidUtorid(rawRecipient)) {
+                recipient = await prisma.user.findUnique({ where: { utorid: rawRecipient } });
+            } else {
+                return res.status(400).json({ error: "Invalid user identifier" });
+            }
+
+            if (!recipient) {
+                return res.status(404).json({ error: "Recipient not found" });
             }
 
             // ---- Validate body fields ----
@@ -1020,11 +1033,6 @@ router.post(
             const sender = await prisma.user.findUnique({ where: { id: req.user.id } });
             if (!sender) {
                 return res.status(401).json({ error: "Sender not found" });
-            }
-
-            const recipient = await prisma.user.findUnique({ where: { id: recipientId } });
-            if (!recipient) {
-                return res.status(404).json({ error: "Recipient not found" });
             }
 
             // ---- Business rules ----
