@@ -9,7 +9,9 @@ import Transfers from "./pages/Transfers";
 import Promotions from "./pages/Promotions.jsx";
 import Transactions from "./pages/Transactions.jsx";
 import Redemption from "./pages/Redemption.jsx";
-import EventsList from "./pages/EventsList.jsx";
+import AvailableEvents from "./pages/AvailableEvents.jsx";
+import OrganizedEvents from "./pages/OrganizedEvents.jsx";
+import ManageEvents from "./pages/ManageEvents.jsx";
 import RequireRole from "./components/RequireRole.jsx";
 import CashierTransactions from "./pages/CashierTransactions.jsx";
 import CashierRedemptions from "./pages/CashierRedemptions.jsx";
@@ -49,7 +51,8 @@ export default function App() {
                 <Route element={<RequireRole allowedRoles={["regular", "cashier", "manager", "superuser"]} />}>
                     <Route path="/dashboard" element={<Layout><Home /></Layout>} />
                     <Route path="/transfers" element={<Layout><Transfers /></Layout>} />
-                    <Route path="/events" element={<Layout><EventsList /></Layout>} />
+                    <Route path="/events" element={<Layout><AvailableEvents /></Layout>} />
+                    <Route path="/events/myEvents" element={<Layout><OrganizedEvents /></Layout>}/>
                     <Route path="/promotions" element={<Layout><Promotions /></Layout>} />
                     <Route path="/profile" element={<Layout><Profile /></Layout>} />
                 </Route>
@@ -77,6 +80,7 @@ export default function App() {
                     <Route path="/managerDashboard" element={<Layout><ManagerDashboard /></Layout>} />
                     <Route path="/manageUsers" element={<Layout><ManageUsers /></Layout>} />
                     <Route path="/managePromotions" element={<Layout><ManagePromotions /></Layout>} />
+                    <Route path="/events/manage" element={<Layout><ManageEvents /></Layout>}/>
                 </Route>
 
                 {/* --------------------------------------------------------

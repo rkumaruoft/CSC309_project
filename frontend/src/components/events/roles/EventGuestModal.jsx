@@ -1,4 +1,5 @@
 import { Modal, Button } from "react-bootstrap";
+import { formatDateTime } from "../../../utils/api/dateHandling";
 
 export default function EventGuestModal({ selectedEvent, rsvp, rsvp_user, error, setError, setShowModal }) {
     const isGuest = rsvp ? "yes" : "no";

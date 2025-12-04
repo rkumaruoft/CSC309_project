@@ -23,12 +23,12 @@ export default function HeaderBase({ brand, links = [] }) {
 
     // Check if both /events and /manageEvents exist in links
     const hasEvents = links.some(l => l.to === '/events');
-    const hasManageEvents = links.some(l => l.to === '/manageEvents');
+    const hasManageEvents = links.some(l => l.to === '/events/myEvents');
     const shouldShowEventsDropdown = hasEvents && hasManageEvents;
 
     // Filter out individual event links if dropdown should be shown
     const filteredLinks = shouldShowEventsDropdown
-        ? links.filter(l => l.to !== '/events' && l.to !== '/manageEvents')
+        ? links.filter(l => l.to !== '/events' && l.to !== '/events/myEvents')
         : links;
 
     return (
@@ -81,7 +81,7 @@ export default function HeaderBase({ brand, links = [] }) {
                                         </Link>
                                     </li>
                                     <li>
-                                        <Link className="dropdown-item" to="/manageEvents">
+                                        <Link className="dropdown-item" to="/events/myEvents">
                                             Manage Events
                                         </Link>
                                     </li>
