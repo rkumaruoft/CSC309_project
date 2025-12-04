@@ -6,7 +6,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import findAvatar from "../utils/findAvatar";
 
-export default function Home() {
+export default function RegularUsersDashboard() {
     const { user, showQrModal } = useAuth();
     const navigate = useNavigate();
 
