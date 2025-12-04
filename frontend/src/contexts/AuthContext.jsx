@@ -196,10 +196,9 @@ export const AuthProvider = ({ children }) => {
     const switchRole = (role) => {
         if (!availableRoles.includes(role)) return;
 
-        // If the account is a superuser and the user selected the 'manager
-        // interface from the dropdown, prefer switching them into the
-        // `superuser` interface so they get full superuser controls.
         let targetRole = role;
+
+        // Superuser selecting "manager" → keep superuser interface
         if (role === "manager" && user && user.role === "superuser") {
             targetRole = "superuser";
         }
@@ -208,15 +207,25 @@ export const AuthProvider = ({ children }) => {
         setCurrentRole(targetRole);
         localStorage.setItem("currentRole", targetRole);
 
-        // Redirect ONLY when user intentionally switches interface
+        // Redirect + full refresh
         if (targetRole === "manager" || targetRole === "superuser") {
-            Promise.resolve().then(() => navigate("/managerDashboard"));
+            Promise.resolve().then(() => {
+                navigate("/managerDashboard");
+                setTimeout(() => window.location.reload(), 10);
+            });
         } else if (targetRole === "cashier") {
-            Promise.resolve().then(() => navigate("/cashierDashboard"));
+            Promise.resolve().then(() => {
+                navigate("/cashierDashboard");
+                setTimeout(() => window.location.reload(), 10);
+            });
         } else {
-            Promise.resolve().then(() => navigate("/dashboard"));
+            Promise.resolve().then(() => {
+                navigate("/dashboard");
+                setTimeout(() => window.location.reload(), 10);
+            });
         }
     };
+
 
 
     return (

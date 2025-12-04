@@ -950,7 +950,7 @@ router.get(
                 where: filters,
                 skip: (page - 1) * limit,
                 take: Number(limit),
-                orderBy: { id: "asc" },
+                orderBy: { createdAt: "desc" },
                 include: { promotions: true }
             });
 
