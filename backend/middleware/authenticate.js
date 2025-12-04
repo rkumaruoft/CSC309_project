@@ -1,4 +1,10 @@
-export async function authenticate(req, res, next) {
+import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
+import { JWT_SECRET } from "../config/env.js";
+
+const prisma = new PrismaClient();
+
+async function authenticate(req, res, next) {
     const header = req.headers.authorization;
     const cookie = req.cookies.refresh_token;
 
@@ -39,3 +45,5 @@ export async function authenticate(req, res, next) {
         return res.status(401).json({ error: "Invalid or expired token" });
     }
 }
+
+export default authenticate;
