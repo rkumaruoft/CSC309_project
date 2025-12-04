@@ -8,9 +8,8 @@ export default function Login() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Read URL query params
+    // Query params only for verified + reset
     const params = new URLSearchParams(location.search);
-    const justRegistered = params.get("registered") === "1";
     const justVerified = params.get("verified") === "1";
     const resetSuccess = params.get("reset") === "success";
 
@@ -18,8 +17,8 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
+    // If already logged in → route based on role
     if (user) {
-        // Use currentRole or fallback to user.role
         const role = user.role;
 
         if (role === "manager" || role === "superuser") {
@@ -35,7 +34,7 @@ export default function Login() {
 
         const result = await login(utorid, password);
 
-        // Unverified case
+        // If backend reports unverified → go to verification page
         if (result?.unverified) {
             navigate(`/verify?utorid=${result.utorid}`);
             return;
@@ -56,12 +55,6 @@ export default function Login() {
                 <h2 className="text-center mb-4">Login</h2>
 
                 {/* SUCCESS ALERTS */}
-                {justRegistered && (
-                    <Alert variant="success">
-                        Account created! Please check your email for the verification code.
-                    </Alert>
-                )}
-
                 {justVerified && (
                     <Alert variant="success">
                         Your account has been verified! You can now log in.

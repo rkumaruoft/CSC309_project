@@ -79,7 +79,7 @@ export default function Register() {
                 return setError(data.error || "Registration failed.");
             }
 
-            navigate("/login?registered=1");
+            navigate(`/verify?utorid=${form.utorid}`);
 
 
         } catch {
