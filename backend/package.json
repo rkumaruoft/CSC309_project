@@ -4,7 +4,6 @@
   "description": "CSSU Reward System",
   "type": "module",
   "main": "index.js",
-
   "scripts": {
     "createsuperuser": "node prisma/createsu.js",
     "clean": "rm -rf prisma/dev.db* node_modules package-lock.json prisma/migrations/",
@@ -12,11 +11,9 @@
     "build": "npm install --production && npx prisma generate && npx prisma migrate deploy && npm run seed",
     "start": "node --max-old-space-size=256 index.js"
   },
-
   "prisma": {
     "seed": "node prisma/seed.js"
   },
-
   "dependencies": {
     "@prisma/client": "^6.19.0",
     "bcrypt": "^5.1.1",
@@ -27,11 +24,11 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^7.0.11",
+    "resend": "^6.5.2",
     "sqlite3": "^5.1.7",
     "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },
-
   "devDependencies": {
     "nodemon": "^3.1.11",
     "prisma": "^6.19.0"
