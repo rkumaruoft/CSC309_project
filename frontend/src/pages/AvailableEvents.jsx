@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button, Form, Col, Container, Image, Row, Table, Modal} from "react-bootstrap";
 import EventGuestModal from "../components/events/roles/EventGuestModal";
-import EventsFilter from "../components/EventsFilter";
 import formatEvents, { fetchPublishedEvents, rsvpBackend, fetchSpecificEvent } from "../utils/api/eventActions";
 import { formatDateTime } from "../utils/api/dateHandling";
 
@@ -92,12 +91,6 @@ export default function AvailableEvents() {
                 </Form.Label>
             </Col>
         </Row>
-        {showFilter &&
-            <Row className="justify-content-center align-items-center">
-                <Col xs="auto" className="m-2">
-                    <EventsFilter setFilters={setFilters} setShowFilter={setShowFilter} />
-                </Col>
-            </Row>}
 
         {/* Table */}
         <Row className="justify-content-center">

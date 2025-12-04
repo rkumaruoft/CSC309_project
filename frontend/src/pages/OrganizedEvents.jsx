@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button, Form, Col, Container, Image, Row, Table, Modal} from "react-bootstrap";
 import EventOrganizerModal from "../components/events/roles/EventOrganizerModal";
-import EventsFilter from "../components/EventsFilter";
 import formatEvents, { fetchOrganizedEvents, fetchSpecificEvent } from "../utils/api/eventActions";
 import { formatDateTime } from "../utils/api/dateHandling";
 
@@ -110,26 +109,9 @@ export default function OrganizedEvents() {
                 </Form.Label>
 
                 <Row className="justify-content-center align-items-center mb-2">
-                {/* <Col xs="auto">
-                    {/* Only show for managers/superusers */}
-                    {/* {(user.role === "manager" || user.role === "superuser") && (
-                        <Button 
-                            variant="primary" 
-                            onClick={() => setShowCreateModal(true)}
-                        >
-                            Create Event
-                        </Button>
-                    )} */}
-                {/* </Col> */}
             </Row>
             </Col>
         </Row>
-        {showFilter &&
-            <Row className="justify-content-center align-items-center">
-                <Col xs="auto" className="m-2">
-                    <EventsFilter setFilters={setFilters} setShowFilter={setShowFilter} />
-                </Col>
-            </Row>}
 
         {/* Table */}
         <Row className="justify-content-center">
@@ -217,38 +199,11 @@ export default function OrganizedEvents() {
                     setError={setError}
                     
                     setShowModal={setShowModal}
-                    
-                    // setShowDeleteConfirm={setShowDeleteConfirm}
-                    
-                    // publish_event={publish_event}
-                    // addOrganizer={addOrganizer}
-                    
-                    // saveEdits={saveEdits}
-                    // rewardGuest={rewardGuest}
-
-                    // addGuest={addGuest}
-                    // remGuest={remGuest}
+        
                     refreshEventDetails={refreshEventDetails}
                     fetchEvents={fetchEvents}
                 />
         </Modal>
-        {/* <DeleteConfirmModal 
-            show={showDeleteConfirm}
-            onClose={() => {setShowDeleteConfirm(false); setShowModal(true); setError(false);}}
-            onConfirm={deleteEvent}
-            eventName={selectedEvent?.name}
-            error={error}
-        /> */}
-        {/* <CreateEventModal
-            show={showCreateModal}
-            onHide={() => {
-                setShowCreateModal(false);
-                setError("");
-            }}
-            onSubmit={createEvent}
-            error={error}
-            setError={setError}
-        /> */}
         </Container>
     );
 }
