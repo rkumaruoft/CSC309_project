@@ -1,33 +1,25 @@
-import nodemailer from "nodemailer";
-import {
-    EMAIL_HOST,
-    EMAIL_PORT,
-    EMAIL_USER,
-    EMAIL_PASS,
-    EMAIL_FROM
-} from "../config/env.js";
+import { Resend } from "resend";
+import { RESEND_API_KEY, EMAIL_FROM } from "../config/env.js";
 
-const transporter = nodemailer.createTransport({
-    host: EMAIL_HOST,
-    port: EMAIL_PORT,
-    secure: false, // TLS on 587
-    auth: {
-        user: EMAIL_USER,
-        pass: EMAIL_PASS
-    }
-});
+const resend = new Resend(RESEND_API_KEY);
 
 export async function sendEmail(to, subject, html) {
     try {
-        await transporter.sendMail({
+        const result = await resend.emails.send({
             from: EMAIL_FROM,
             to,
             subject,
-            html
+            html,
         });
+
+        if (result.error) {
+            console.error("Resend error:", result.error);
+            return false;
+        }
+
         return true;
     } catch (err) {
-        console.error("Email send failed:", err);
+        console.error("Resend exception:", err);
         return false;
     }
 }

@@ -17,9 +17,21 @@ export default function HeaderBase({ brand, links = [] }) {
 
     var homePage = "/dashboard";
 
-    if (currentRole === "manager" || currentRole === "superuser") {
+    if (currentRole === "cashier") {
+        homePage = "/cashierDashboard";
+    } else if (currentRole === "manager" || currentRole === "superuser") {
         homePage = "/managerDashboard";
     }
+
+    // Check if both /events and /manageEvents exist in links
+    const hasEvents = links.some(l => l.to === '/events');
+    const hasManageEvents = links.some(l => l.to === '/events/myEvents');
+    const shouldShowEventsDropdown = hasEvents && hasManageEvents;
+
+    // Filter out individual event links if dropdown should be shown
+    const filteredLinks = shouldShowEventsDropdown
+        ? links.filter(l => l.to !== '/events' && l.to !== '/events/myEvents')
+        : links;
 
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-primary mb-3">
@@ -44,13 +56,40 @@ export default function HeaderBase({ brand, links = [] }) {
 
                     {/* LEFT LINKS */}
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                        {links.map((l) => (
+                        {filteredLinks.map((l) => (
                             <li className="nav-item" key={l.to}>
                                 <Link className="nav-link" to={l.to}>
                                     {l.label}
                                 </Link>
                             </li>
                         ))}
+
+                        {/* EVENTS DROPDOWN */}
+                        {shouldShowEventsDropdown && (
+                            <li className="nav-item dropdown">
+                                <a
+                                    className="nav-link dropdown-toggle"
+                                    href="#"
+                                    role="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                >
+                                    Events
+                                </a>
+                                <ul className="dropdown-menu">
+                                    <li>
+                                        <Link className="dropdown-item" to="/events">
+                                            Events
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link className="dropdown-item" to="/events/myEvents">
+                                            Manage Events
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </li>
+                        )}
                     </ul>
 
                     {/* RIGHT SIDE: USER DROPDOWN */}

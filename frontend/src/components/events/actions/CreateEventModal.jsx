@@ -1,15 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 
-// NEEDED PARAMS: NAME, DESCRIPTION, LOCATION, STARTTIME, ENDTIME, CAPACITY (OPTIONAL), PTS
-
-function toDateTimeLocalString(dateStr) {
-    if (!dateStr) return "";
-    const d = new Date(dateStr);
-    return d.toISOString().slice(0, 16);  // drop seconds + Z
-}
-
-export default function EventSettingModal({ show, onHide, onSubmit, error }) {
+export default function CreateEventModal({ show, onHide, onSubmit, error, setError }) {
     const [name, setName] = useState("");
     const [description, setDesc] = useState("");
     const [location, setLocation] = useState("");
@@ -17,6 +9,17 @@ export default function EventSettingModal({ show, onHide, onSubmit, error }) {
     const [endTime, setEnd] = useState("");
     const [capacity, setCapacity] = useState("");
     const [points, setPoints] = useState("");
+    const [submitted, setSubmitted] = useState(false);
+
+    const eventData = {
+            name,
+            description,
+            location,
+            startTime,
+            endTime,
+            capacity: capacity ? Number(capacity) : null,
+            points: Number(points)
+    };
 
     // Reset form when modal closes
     useEffect(() => {
@@ -44,7 +47,7 @@ export default function EventSettingModal({ show, onHide, onSubmit, error }) {
         };
 
         // Call the parent's submit handler
-        onSubmit(eventData);
+        onSubmit(eventData, setSubmitted);
     };
 
     return (
@@ -55,14 +58,14 @@ export default function EventSettingModal({ show, onHide, onSubmit, error }) {
             
             <Modal.Body>
                 {error && <div className="alert alert-danger">{error}</div>}
-                
+                {!error && submitted && <div className="alert alert-success">Created event {eventData.name}</div>}
                 <div className="mb-2">
                     <label>Name</label>
                     <input
                         className="form-control"
                         name="name"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => {setName(e.target.value); setError(null); setSubmitted(false);}}
                         required
                     />
                 </div>
@@ -73,7 +76,7 @@ export default function EventSettingModal({ show, onHide, onSubmit, error }) {
                         className="form-control"
                         name="description"
                         value={description}
-                        onChange={(e) => setDesc(e.target.value)}
+                        onChange={(e) => {setDesc(e.target.value); setError(null); setSubmitted(false);}}
                         rows={3}
                         required
                     />
@@ -85,7 +88,7 @@ export default function EventSettingModal({ show, onHide, onSubmit, error }) {
                         className="form-control"
                         name="location"
                         value={location}
-                        onChange={(e) => setLocation(e.target.value)}
+                        onChange={(e) => {setLocation(e.target.value); setError(null); setSubmitted(false);}}
                         required
                     />
                 </div>
@@ -97,7 +100,7 @@ export default function EventSettingModal({ show, onHide, onSubmit, error }) {
                         className="form-control"
                         name="startTime"
                         value={startTime}
-                        onChange={(e) => setStart(e.target.value)}
+                        onChange={(e) => {setStart(e.target.value); setError(null); setSubmitted(false);}}
                         required
                     />
                 </div>
@@ -109,7 +112,7 @@ export default function EventSettingModal({ show, onHide, onSubmit, error }) {
                         className="form-control"
                         name="endTime"
                         value={endTime}
-                        onChange={(e) => setEnd(e.target.value)}
+                        onChange={(e) => {setEnd(e.target.value); setError(null); setSubmitted(false);}}
                         required
                     />
                 </div>
@@ -122,9 +125,9 @@ export default function EventSettingModal({ show, onHide, onSubmit, error }) {
                             className="form-control"
                             name="capacity"
                             value={capacity}
-                            onChange={(e) => setCapacity(e.target.value)}
+                            onChange={(e) => {setCapacity(e.target.value); setError(null); setSubmitted(false);}}
                             min="1"
-                            placeholder="Optional"
+                            placeholder="Capacity"
                         />
                     </div>
 
@@ -135,7 +138,7 @@ export default function EventSettingModal({ show, onHide, onSubmit, error }) {
                             className="form-control"
                             name="points"
                             value={points}
-                            onChange={(e) => setPoints(e.target.value)}
+                            onChange={(e) => {setPoints(e.target.value); setError(null); setSubmitted(false);}}
                             min="1"
                             required
                         />
