@@ -6,15 +6,20 @@ import { floatToCurrency } from "../utils/format/number";
 import { useLocation } from "react-router-dom";
 import { getUnprocessed, processRedemption } from "../utils/api/fetchRedemptions";
 import LimitSelector from "../components/LimitSelector";
+import SortButton from "../components/SortButton";
 
 
 function CashierRedemptions() {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+        // Redemption fetching states
     const [redemptions, setRedemptions] = useState([]);
     const [pageNum, setPageNum] = useState(1);  // start on page 1 of promotions
     const [totalPages, setTotalPages] = useState(1);  // assumes at least one page
     const [limit, setLimit] = useState(10);
+        // Sorting states
+    const [sorting, setSorting] = useState(null);
+    const [order, setOrder] = useState(null);
         // Input field states
     const [tid, setTid] = useState("");
     const [utorid, setUtorid] = useState("");
@@ -39,13 +44,62 @@ function CashierRedemptions() {
         // Handle successful request
         setRedemptions(data.results);
         setPageNum(page);
-        const total = Math.max(1, Math.ceil(data.count / limit));
-        setTotalPages(total);
+        setTotalPages(Math.max(1, Math.ceil(data.count / limit)));
+    }
 
-        // Handle overflow (sets back to last page)
-        if (page > total) {
-            getRedemptionsPage(1);
+    // ---------- Sorting function ----------
+    // Algorithm is to call for one promotion to get a count, set
+    // limit based on that count, call again, then sort using js
+    // sorting functions, and set list as the first {limit} entries.
+    // - NOTE: if order is null, just fetch entries at page 1 normally. 
+    async function sortRedemptions(page, name) {
+        // Handle !order
+        if (!order) {
+            getRedemptionsPage(page, name);
         }
+
+        // Get the count
+        const count = await getUnprocessed(1, "", 1);
+        if (!count) {
+            setRedemptions([]);
+            return;
+        }
+
+        // Get all entries
+        const data = await getUnprocessed(1, name, count.count);
+        if (!data) {
+            setRedemptions([]);
+            return;
+        }
+
+        // Sort entries according to datatype
+            let sorted = data.results.sort((a, b) => {
+                // Should be strings/numbers
+                if (typeof a[sorting] === "string") {
+                    const fieldA = a[sorting].toUpperCase();
+                    const fieldB = b[sorting].toUpperCase();
+
+                    if (fieldA < fieldB) {
+                        return -1;
+                    }
+                    if (fieldA > fieldB) {
+                        return 1;
+                    }
+                    return 0;
+                } else if (typeof a[sorting] === "number") {
+                    return a[sorting] - b[sorting];
+                }
+            });
+
+        // Reverse if descending
+        if (order === "desc") {
+            sorted.reverse();
+        }
+
+        // Get the first {limit} entries and set pageNum/promos
+        const slicedSorted = sorted.slice((page - 1) * limit, page * limit);
+        setPageNum(page);
+        setRedemptions(slicedSorted);
     }
 
     // ---------- Handle proccessing ----------
@@ -63,22 +117,31 @@ function CashierRedemptions() {
         setError(null);
         setSuccess("Successfully redeemed promotion!");
         setTid("");
-        getRedemptionsPage(1, utorid);
+        sortRedemptions(1, utorid);
     }
 
-    // ---------- On navigation, set redemptions ----------
+    // ---------- On sorting/order change, sort the table ----------
+    useEffect(() => {
+        sortRedemptions(1, utorid);
+    }, [sorting, order]);
+
+    // ---------- On navigation/limit set, set redemptions ----------
     useEffect(() => {
         setUtorid("");
         setError(null);
         setSuccess(null);
-        getRedemptionsPage(pageNum, utorid);
+        setSorting(null);
+        setOrder(null);
+        sortRedemptions(1, utorid);
     }, [location, limit]);
 
     // ---------- On filter, refresh table ----------
     useEffect(() => {
         setError(null);
         setSuccess(null);
-        getRedemptionsPage(1, utorid)
+        setSorting(null);
+        setOrder(null);
+        sortRedemptions(1, utorid)
     }, [utorid]);
 
     return <Container>
@@ -168,10 +231,46 @@ function CashierRedemptions() {
                         <Table className="shadow-sm" striped responsive hover>
                             <thead className="table-primary">
                                 <tr>
-                                    <th>Transaction ID</th>
-                                    <th>UTORid</th>
-                                    <th>Points</th>
-                                    <th>Spent</th>
+                                    <th>
+                                        Transaction ID
+                                        <SortButton
+                                            field={"id"}
+                                            sorting={sorting}
+                                            setSorting={setSorting}
+                                            order={order}
+                                            setOrder={setOrder}
+                                        />
+                                    </th>
+                                    <th>
+                                        UTORid
+                                        <SortButton
+                                            field={"utorid"}
+                                            sorting={sorting}
+                                            setSorting={setSorting}
+                                            order={order}
+                                            setOrder={setOrder}
+                                        />
+                                    </th>
+                                    <th>
+                                        Points
+                                        <SortButton
+                                            field={"amount"}
+                                            sorting={sorting}
+                                            setSorting={setSorting}
+                                            order={order}
+                                            setOrder={setOrder}
+                                        />
+                                    </th>
+                                    <th>
+                                        Spent
+                                        <SortButton
+                                            field={"spent"}
+                                            sorting={sorting}
+                                            setSorting={setSorting}
+                                            order={order}
+                                            setOrder={setOrder}
+                                        />
+                                    </th>
                                 </tr>
                             </thead>
 
@@ -201,7 +300,7 @@ function CashierRedemptions() {
                 {/* Pagination and page display */}
                 <Row className="justify-content-center align-items-center mb-2">
                     <Col xs="auto">
-                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => getRedemptionsPage(p, utorid)} disabled={false} />
+                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => sortRedemptions(p, utorid)} disabled={false} />
                     </Col>
                 </Row>
 

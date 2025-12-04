@@ -26,6 +26,9 @@ function ManagePromotions() {
     const [limit, setLimit] = useState(10);
     const [filters, setFilters] = useState({});
     const [currPromo, setCurrPromo] = useState(null);
+        // Sorting states
+    const [sorting, setSorting] = useState(null);
+    const [order, setOrder] = useState(null);
 
     // ---------- Component States ----------
     const [error, setError] = useState(null);  // Error display
@@ -59,13 +62,58 @@ function ManagePromotions() {
         // Handle successful request
         setPromos(data.results);
         setPageNum(page);
-        const total = Math.max(1, Math.ceil(data.count / limit));
-        setTotalPages(total);
-        
-        // Handle overflow (sets back to last page)
-        if (page > total) {
-            getPromos(1);
+        setTotalPages(Math.max(1, Math.ceil(data.count / limit)));
+    }
+
+    // ---------- Sorting function ----------
+    // Algorithm is to call for one promotion to get a count, set
+    // limit based on that count, call again, then sort using js
+    // sorting functions, and set list as the first {limit} entries.
+    // - NOTE: if order is null, just fetch entries at page 1 normally. 
+    async function sortPromotions(page) {
+        // Handle !order
+        if (!order) {
+            getPromos(page);
         }
+
+        // Get the count
+        const count = await getAllPromos(1, 1, {});
+        if (!count) {
+            setPromos(null);
+            return;
+        }
+
+        // Get all entries
+        const data = await getAllPromos(1, count.count, filters);
+        if (!data) {
+            setPromos(null);
+            return;
+        }
+
+        // Sort entries according to datatype
+        let sorted = data.results.sort((a, b) => {
+            // Should be strings
+            const fieldA = a[sorting].toUpperCase();
+            const fieldB = b[sorting].toUpperCase();
+
+            if (fieldA < fieldB) {
+                return -1;
+            }
+            if (fieldA > fieldB) {
+                return 1;
+            }
+            return 0;
+        });
+
+        // Reverse if descending
+        if (order === "desc") {
+            sorted.reverse();
+        }
+
+        // Get the first {limit} entries and set pageNum/promos
+        const slicedSorted = sorted.slice((page - 1) * limit, page * limit);
+        setPageNum(page);
+        setPromos(slicedSorted);
     }
 
     // ---------- Closes the currently opened/clicked promotion ----------
@@ -102,7 +150,7 @@ function ManagePromotions() {
             return;
         }
 
-        getPromos(pageNum);
+        sortPromotions(pageNum);
         setCurrPromo(null);
         setClicked(null);
         setConfirm(0);
@@ -163,7 +211,7 @@ function ManagePromotions() {
             return;
         }
 
-        getPromos(pageNum);
+        sortPromotions(pageNum);
         setCreating(false);
         setOptional([]);
         setNewFields({});
@@ -171,9 +219,16 @@ function ManagePromotions() {
 
     }
 
+    // ---------- On sorting/order change, sort the table ----------
+    useEffect(() => {
+        sortPromotions(1);
+    }, [sorting, order]);
+
     // ---------- On navigation/filters/limit set, fetch promotions ----------
     useEffect(() => {
-        getPromos(pageNum);
+        setSorting(null);
+        setOrder(null);
+        sortPromotions(pageNum);
         setError(null);
     }, [location, filters, limit]);
 
@@ -201,7 +256,7 @@ function ManagePromotions() {
                 const data = await delPromoId(clicked);
 
                 if ("success" in data) {
-                    getPromos(pageNum);
+                    sortPromotions(pageNum);
                     setCurrPromo(null);
                     setClicked(null);
                     setConfirm(0);
@@ -271,6 +326,10 @@ function ManagePromotions() {
                             setLimit={setLimit}
                             filters={filters}
                             setFilters={setFilters}
+                            sorting={sorting}
+                            setSorting={setSorting}
+                            order={order}
+                            setOrder={setOrder}
                         />
 
                     </Col>
@@ -279,7 +338,7 @@ function ManagePromotions() {
                 {/* Pagination and page display*/}
                 <Row className="justify-content-center align-items-center mb-2">
                     <Col xs="auto">
-                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => getPromos(p)} disabled={false} />
+                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => sortPromotions(p)} disabled={false} />
                     </Col>
                 </Row>
             </Card.Body>
