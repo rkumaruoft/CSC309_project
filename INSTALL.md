@@ -54,6 +54,9 @@ npm install
 npm run dev
 ```
 
+After the server starts, open your browser and navigate to the URL displayed in the frontend terminal (typically http://localhost:5173) to access the application.
+
+
 **Demo Credentials (from Seed)**
 
 The database is pre-populated with the following accounts for testing different roles. All accounts use the same password.
