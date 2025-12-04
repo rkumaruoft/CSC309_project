@@ -383,6 +383,7 @@ async function refreshEventDetails() {
                     <h1>Events</h1>
                     { (user.role === "manager") &&
                         <Image
+                            draggable={false}
                             src="../../filter.svg"
                             alt="Filter"
                             className="filter opacity-75"
