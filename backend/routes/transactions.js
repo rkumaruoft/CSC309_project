@@ -360,6 +360,7 @@ router.get(
                     promotionIds: t.promotions.map(p => p.id),
                     suspicious: t.suspicious ?? false,
                     remark: t.remark ?? "",
+                    processed: t.processed,
                     createdBy: t.createdBy,
                     createdAt: t.createdAt
                 };
