@@ -1124,7 +1124,9 @@ router.get(
 
             if (!user) return res.status(404).json({ error: "User not found" });
 
-            const results = user.organizedEvents.map(({ event }) => ({
+            const organizedEvents = user.organizedEvents;
+
+            const results = organizedEvents.map(({ event }) => ({
                 id: event.id,
                 name: event.name,
                 location: event.location,

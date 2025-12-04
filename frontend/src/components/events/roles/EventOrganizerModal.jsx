@@ -52,8 +52,10 @@ export default function EventOrganizerModal({
     };
     const [publish, setPublish] = useState(false);
     const timeNow = new Date();
-    const isHappening = selectedEvent.startTime <= timeNow <= selectedEvent.endTime;
-
+    const startTime = new Date(selectedEvent.startTime);
+    const endTime = new Date(selectedEvent.endTime);
+    const isHappening = startTime <= timeNow && timeNow <= endTime;
+    const hasNotEnded = timeNow <= endTime;
     useEffect(() => {
         // Reset states when a new event is selected
         setPublish(false);
@@ -84,7 +86,7 @@ export default function EventOrganizerModal({
 
     async function rewardGuest(){
         const data = await rewardGuestBackend(selectedEvent, rewardModel);
-        if (!res.ok){
+        if (data.error != null){
             setError(data.error);
             return;
         }
@@ -124,20 +126,21 @@ export default function EventOrganizerModal({
                         {(error == null && publish) && (<div className="alert alert-success">Published event {selectedEvent.name}</div>)}
                         <p><strong>Name:</strong> {selectedEvent.name}</p>
                         <p><strong>Description:</strong> {selectedEvent.description}</p>
+                        <p><strong>Organizers: </strong> {Array.isArray(selectedEvent.organizers) ? selectedEvent.organizers.join(', ') : selectedEvent.organizers} </p>
+                        <p><strong>Guests: </strong> {Array.isArray(selectedEvent.guests) ? selectedEvent.guests.join(', ') : selectedEvent.guests}</p>
                         <p><strong>Location:</strong> {selectedEvent.location}</p>
-                        <p><strong>Starts:</strong> {formatDateTime(selectedEvent.startTime)}</p>
-                        <p><strong>Ends:</strong> {formatDateTime(selectedEvent.endTime)}</p>
+                        <p><strong>Starts:</strong> {formatDateTime(selectedEvent.startTime)}, <strong>Ends:</strong> {formatDateTime(selectedEvent.endTime)}</p>
                         <p><strong>Points available:</strong> {selectedEvent.pointsRemain}</p>
                         <p><strong>Seats left:</strong> {selectedEvent.availableSeats}</p>
                         <p><strong>Published: </strong> {published}</p>
-                        {isHappening && (<OrganizerActions error={error} setError={error} awardMode={awardMode} setAwardMode={setAwardMode}
+                        <OrganizerActions error={error} setError={setError} awardMode={awardMode} setAwardMode={setAwardMode}
                                           showAllButtons={showAllButtons} setSAB={setSAB} organizer={organizer} setOrganizer={setOrganizer}
                                           addMode={addMode} setAddMode={setAddMode} addMemb={addMemb} setAddingMemb={setAddingMemb}
                                           guestId={guestId} setGuestId={setGuestId} submitted={submitted} setSubmitted={setSubmitted}
                                           recipientId={recipientId} setRecipientId={setRecipientId} rewardAmount={rewardAmount} setRewardAmount={setRewardAmount}
                                           rewardModel={rewardModel} setRewardModel={setRewardModel} addGuest={addGuest} remGuest={remGuest}
-                                          rewardGuest={rewardGuest} role={role} addOrganizer={addOrganizer}             
-                         />)}
+                                          rewardGuest={rewardGuest} role={role} addOrganizer={addOrganizer} isHappening={isHappening} hasNotEnded={hasNotEnded}          
+                         />
                         </>
                 )}
             </Modal.Body>

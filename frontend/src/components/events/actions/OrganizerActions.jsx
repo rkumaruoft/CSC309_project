@@ -1,3 +1,5 @@
+import { Button } from "react-bootstrap";
+
 export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INFO IF NEEDED
     error, 
     setError,
@@ -39,11 +41,15 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
 
     rewardGuest,
 
+    isHappening,
+    hasNotEnded,
+
     role
 }){
+    console.log(isHappening, awardMode, showAllButtons);
     return (
         <>
-            {awardMode === null && showAllButtons && (
+            {awardMode === null && isHappening && showAllButtons && (
             <div className="d-flex flex-column w-55 mb-3">
             <h5 style={{fontWeight: "bold"}}>Award points</h5>
                 <div className="d-flex flex-row gap-1">
@@ -53,7 +59,7 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
             </div>
             )}
                     
-            {awardMode === null && showAllButtons && !addMemb && (role === "manager" || role === "superuser") && ( // DISPLAYS TWO BUTTONS FOR PROMPTING
+            {awardMode === null && showAllButtons && hasNotEnded && !addMemb && (role === "manager" || role === "superuser") && ( // DISPLAYS TWO BUTTONS FOR PROMPTING
                 <>
                     <h5 style={{fontWeight: "bold"}}>Add guests/organizers</h5>
                     <div className="d-flex flex-row gap-2">
@@ -64,7 +70,7 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
                 )
             }
 
-            {awardMode === null && showAllButtons && !addMemb && role != "manager" && role != "superuser" && (
+            {awardMode === null && showAllButtons && hasNotEnded && !addMemb && role != "manager" && role != "superuser" && (
                 <>
                     <h5 style={{fontWeight: "bold"}}>Add guests</h5>
                     <div className="d-flex flex-row gap-2">
@@ -73,7 +79,7 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
                 </>
             )}
 
-            {awardMode === null && !showAllButtons && addMemb && addMode === "o" && (role === "manager" || role === "superuser") && (
+            {awardMode === null && !showAllButtons && addMemb && hasNotEnded && addMode === "o" && (role === "manager" || role === "superuser") && (
                 <div className="d-flex flex-column w-50 mb-2 gap-2">
                         <h5 className="mb-1" style={{fontWeight: "bold"}}>Add organizer</h5>
                         <input
@@ -89,7 +95,7 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
                 </div>  
             )}
 
-            {awardMode === null && !showAllButtons && addMemb && addMode === "g" && (
+            {awardMode === null && !showAllButtons && hasNotEnded && addMemb && addMode === "g" && (
                 <div className="d-flex flex-column w-50 mb-2 gap-2">
                     { (role === "manager" || role === "superuser") ? (
                         <h5 className="mb-1" style={{fontWeight: "bold"}}>Add/remove guest</h5>
@@ -117,7 +123,7 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
                     </div>  
             )}
 
-            {awardMode === 'single' && !showAllButtons && (
+            {awardMode === 'single' && isHappening && !showAllButtons && (
                 <>
                     {error && <div className="alert alert-danger">{error}</div>}
                     {(error == null && submitted) && <div className="alert alert-success">Successfully rewarded {recipientId} {rewardAmount} points</div>}
@@ -145,7 +151,7 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
                 </>
             )}
 
-            {awardMode === 'all' && !showAllButtons && (
+            {awardMode === 'all' && isHappening && !showAllButtons && (
                 <>
                     {error && <div className="alert alert-danger">{error}</div>}
                     {(error == null && submitted) && <div className="alert alert-success">Successfully rewarded everyone {rewardAmount} points</div>}

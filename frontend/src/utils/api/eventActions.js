@@ -22,8 +22,8 @@ export default function formatEvents(events) {
         new_event.pointsRemain = event.pointsRemain || "-1";
         new_event.points = points;
         new_event.published = event.published;
-        new_event.organizers = event.organizers;
-        new_event.guests = event.guests;
+        new_event.organizers = event.organizers.map(u => u.name);
+        new_event.guests = event.guests.map(u => u.name);
         
         new_events.push(new_event);
     }

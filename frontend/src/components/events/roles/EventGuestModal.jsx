@@ -8,8 +8,7 @@ export default function EventGuestModal({ selectedEvent, rsvp, rsvp_user, error,
             <Modal.Body>
                 <p><strong>Location:</strong> {selectedEvent?.location}</p>
                 <p><strong>Description:</strong> {selectedEvent?.description}</p>
-                <p><strong>Starts:</strong> {formatDateTime(selectedEvent?.startTime)}</p>
-                <p><strong>Ends:</strong> {formatDateTime(selectedEvent?.endTime)}</p>
+                <p><strong>Starts:</strong> {formatDateTime(selectedEvent?.startTime)}, <strong>Ends:</strong> {formatDateTime(selectedEvent?.endTime)}</p>
                 <p><strong>Available seats:</strong> {selectedEvent?.availableSeats}</p>
                 <p><strong>Attending:</strong> {isGuest}</p>
                 {error && <div className="alert alert-danger">{error}</div>}
