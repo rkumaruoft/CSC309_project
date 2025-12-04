@@ -26,6 +26,14 @@ export default function OrganizedEvents() {
     const [showFilter, setShowFilter] = useState(false);
 
     useEffect(() => {
+        fetchEvents(1);
+    }, []);
+
+    useEffect(() => {
+        fetchEvents(pageNum);
+    }, [pageNum])
+
+    useEffect(() => {
         fetchEvents(pageNum);
     }, [filters]);
 

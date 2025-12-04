@@ -1,5 +1,5 @@
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-const token = localStorage.getItem("token");
+
 // FUNCTION TO FORMAT EVENTS IN A SPECIFIC STYLING
 export default function formatEvents(events) {
     let new_events = [];
@@ -32,6 +32,7 @@ export default function formatEvents(events) {
 
 // FETCH ALL PUBLISHED EVENTS (AVAILABLE EVENTS PAGE)
 async function fetchPublishedEvents(page, filters, totalPages){
+    const token = localStorage.getItem("token");
     if (page < 1 || page > totalPages) {
         return;
     }
@@ -51,7 +52,7 @@ async function fetchPublishedEvents(page, filters, totalPages){
 
 // FETCH ALL EVENTS (UNFILTERED ONES TOO)
 async function fetchAllEvents(page, filters, totalPages){
-
+    const token = localStorage.getItem("token");
     if (page < 1 || page > totalPages) {
         return;
     }
@@ -71,7 +72,7 @@ async function fetchAllEvents(page, filters, totalPages){
 
 // FETCH ALL EVENTS ORGANIZED BY THIS USER
 async function fetchOrganizedEvents(page, totalPages){
-
+    const token = localStorage.getItem("token");
     if (page < 1 || page > totalPages) {
         return;
     }
@@ -90,6 +91,7 @@ async function fetchOrganizedEvents(page, totalPages){
 
 // CREATE EVENT
 async function createEventBackend(eventData){
+    const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events`;
     
     const res = await fetch(url, {
@@ -107,6 +109,7 @@ async function createEventBackend(eventData){
 
 // BACKEND FUNCTION TO ADD AN ORGANIZER
 async function addOrganizerBackend(organizer, selectedEvent){
+    const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${selectedEvent.id}/organizers`;
     const payload = { utorid: organizer };
 
@@ -127,6 +130,7 @@ async function addOrganizerBackend(organizer, selectedEvent){
 
 // PUBLISH EVENT
 async function publishEventBackend(selectedEvent){
+    const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
     const publish_data = { published: true };
     const res = await fetch(url, {
@@ -141,6 +145,7 @@ async function publishEventBackend(selectedEvent){
 
 // DELETE EVENT
 async function deleteEventBackend(selectedEvent){
+    const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
         
     const res = await fetch(url, {
@@ -156,6 +161,7 @@ async function deleteEventBackend(selectedEvent){
 
 // ADD GUEST TO EVENT
 async function addGuestBackend(selectedEvent, guestId){
+    const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${selectedEvent.id}/guests`;
     const params = { utorid: guestId};
     const res = await fetch(url, {
@@ -170,6 +176,7 @@ async function addGuestBackend(selectedEvent, guestId){
 
 // REMOVE GUEST
 async function remGuestBackend(selectedEvent, guestId){
+    const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${selectedEvent.id}/guests/${guestId}`;
     const res = await fetch(url, {
         method: "DELETE",
@@ -181,6 +188,7 @@ async function remGuestBackend(selectedEvent, guestId){
 }
 
 async function fetchSpecificEvent(selectedEvent){
+    const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
     const ev = await fetch(url, {
         method: "GET", 
@@ -192,6 +200,7 @@ async function fetchSpecificEvent(selectedEvent){
 }
 
 async function rewardGuestBackend(selectedEvent, rewardModel){
+    const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${selectedEvent.id}/transactions`;
     const res = await fetch(url, 
         {method: "POST",
@@ -206,6 +215,7 @@ async function rewardGuestBackend(selectedEvent, rewardModel){
 }
 
 async function saveEditBackend(selectedEvent, editedEvent){
+    const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
     const update_body = {};
     for (const key of ["name", "description", "location", "startTime", "endTime", "capacity", "points", "published"]) {
@@ -233,6 +243,7 @@ async function saveEditBackend(selectedEvent, editedEvent){
 }
 
 async function rsvpBackend(event){
+    const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${event.id}/guests/me`;
     const res = await fetch(url, {
                                     method: "POST",
