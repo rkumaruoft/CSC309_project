@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Col, Container, Row, Image, Modal, Table, Alert, Form } from "react-bootstrap";
+import { Button, Col, Container, Row, Image, Modal, Table, Alert, Form, Card } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 import { delPromoId, getAllPromos, getPromoId, patchPromoId, postPromo } from "../utils/api/fetchPromos"
 import PromoTable from "../components/promotions/PromoTable.jsx";
@@ -13,6 +13,7 @@ import PromoEditField from "../components/promotions/promoEdit/PromoEditField.js
 import PromoEditDropdown from "../components/promotions/promoEdit/PromoEditDropdown.jsx";
 import PromoEditDate from "../components/promotions/promoEdit/PromoEditDate.jsx";
 import PromoEditNumber from "../components/promotions/promoEdit/PromoEditNumber.jsx";
+import PaginationControls from "../components/PaginationControls";
 import DateTimePicker from "react-datetime-picker";
 import NumberControl from "../components/promotions/NumberControl.jsx";
 import NewDatePicker from "../components/promotions/NewDatePicker.jsx";
@@ -231,202 +232,61 @@ function ManagePromotions() {
     // ---------- Return the page ----------
     return <Container>
         {/* Label */}
-        <Row className="justify-content-center align-items-center mt-5 mb-3">
-            <Col xs={14} md={12} lg={10}>
-                <div className="d-flex align-items-center gap-3">
-                    <h1 className="m-0">Manage Promotions</h1>
+        <Card className="shadow-sm mt-4">
+            <Card.Body>
+                <Row className="justify-content-center align-items-center mb-3">
+                    <Col>
+                        <div className="d-flex align-items-center gap-3">
+                            <h1 className="m-0">Manage Promotions</h1>
 
-                    <Image
-                        src="../../filter.svg"
-                        alt="Filter"
-                        className="filter opacity-75"
-                        onClick={() => setShowFilter(!showFilter)}
-                    />
+                            <Image
+                                src="../../filter.svg"
+                                alt="Filter"
+                                className="filter opacity-75"
+                                onClick={() => setShowFilter(!showFilter)}
+                            />
 
-                    <Button
-                        variant="success"
-                        className="ms-auto"
-                        onClick={() => setCreating(true)}>
-                            <strong>+</strong>
-                    </Button>
-                </div>
+                            <Button
+                                variant="success"
+                                className="ms-auto"
+                                onClick={() => setCreating(true)}>
+                                    <strong>+</strong>
+                            </Button>
+                        </div>
 
-                {showFilter && (
-                <div className="mt-2 d-inline-block">
-                    <PromoFilter setFilters={setFilters} setShowFilter={setShowFilter} />
-                </div>
-                )}
-            </Col>
-        </Row>
+                        {showFilter && (
+                        <div className="mt-2 d-inline-block">
+                            <PromoFilter setFilters={setFilters} setShowFilter={setShowFilter} />
+                        </div>
+                        )}
+                    </Col>
+                </Row>
 
-        {/* Creating a new promotion */}
-        {creating &&
-        <Modal show={creating} onHide={() => setCreating(false)}>
-            <Modal.Header closeButton className="bg-light">
-                <Modal.Title>Create a New Promotion</Modal.Title>
-            </Modal.Header>
-            <Modal.Body className="d-flex flex-column justify-content-center align-items-center">
+                {/* Show the current filters */}
+                {Object.keys(filters).length > 0 &&
+                <Row className="justify-content-center align-items-center mb-1">
+                    <Col xs="auto">
+                        <AppliedFilters filters={filters} setFilters={setFilters} />
+                    </Col>
+                </Row>}
                 
-                <Form onSubmit={createNewPromotion}>
-                    <Form.Group className="mb-2">
-                        <Form.Label className="mb-0">Name:</Form.Label>
-                        <Form.Control
-                            value={newFields.name ? newFields.name : ""}
-                            onChange={(e) => addNewField("name", e.target.value)}
-                            required
-                            type="text"
-                        />
-                    </Form.Group>
+                {/* Table */}
+                <Row className="justify-content-center">
+                    <Col>
 
-                    <Form.Group className="mb-2">
-                        <Form.Label className="mb-0">Description:</Form.Label>
-                        <Form.Control
-                            required
-                            as="textarea"
-                            value={newFields.description ? newFields.description : ""}
-                            onChange={(e) => addNewField("description", e.target.value)}
-                        />
-                    </Form.Group>
+                        <PromoTable promos={promos} setClicked={setClicked} />
 
-                    <Form.Group className="mb-2">
-                        <Form.Label className="mb-0">Type:</Form.Label>
-                        <Form.Select
-                            value={newFields.type ? newFields.type : ""}
-                            onChange={(e) => addNewField("type", e.target.value)}
-                            required>
-                                <option value="">Select Type</option>
-                                <option value="automatic">Automatic</option>
-                                <option value="onetime">One-Time</option>
-                        </Form.Select>
-                    </Form.Group>
+                    </Col>
+                </Row>
 
-                    <Form.Group className="mb-2">
-                        <Form.Label className="me-2">Start Time:</Form.Label>
-                        <NewDatePicker
-                            name="startTime"
-                            addNewField={addNewField}
-                        />
-                    </Form.Group>
-
-                    <Form.Group className="mb-2">
-                        <Form.Label className="me-3">End Time:</Form.Label>
-                        <NewDatePicker
-                            name="endTime"
-                            addNewField={addNewField}
-                        />
-                    </Form.Group>
-
-                    <Form.Group className="mb-2">
-                        <div className="d-flex">
-                            <Form.Label className="me-2 mb-0">Minimum Spending:</Form.Label>
-                            <Form.Check
-                                id="minSpending"
-                                checked={optional.includes("minSpending")}
-                                onChange={handleOptional}
-                                className="mb-0"
-                            />
-                        </div>
-                        <NumberControl
-                            name="minSpending"
-                            disabled={!optional.includes("minSpending")}
-                            addNewField={addNewField}
-                        />
-                    </Form.Group>
-
-                    <Form.Group className="mb-2">
-                        <div className="d-flex">
-                            <Form.Label className="me-2 mb-0">Rate:</Form.Label>
-                            <Form.Check
-                                id="rate"
-                                checked={optional.includes("rate")}
-                                onChange={handleOptional}
-                            />
-                        </div>
-                        <NumberControl
-                            name="rate"
-                            disabled={!optional.includes("rate")}
-                            addNewField={addNewField}
-                        />
-                    </Form.Group>
-
-                    <Form.Group className="mb-2">
-                        <div className="d-flex">
-                            <Form.Label className="me-2 mb-0">Bonus Points:</Form.Label>
-                            <Form.Check
-                                id="points"
-                                checked={optional.includes("points")}
-                                onChange={handleOptional}
-                            />
-                        </div>
-                        <NumberControl
-                            name="points"
-                            disabled={!optional.includes("points")}
-                            addNewField={addNewField}
-                            isInt={true}
-                        />
-                    </Form.Group>
-
-                    <Button variant="success" type="submit">Create</Button>
-                </Form>
-
-                {error && 
-                <Alert variant="danger" className="m-2">
-                    {error}
-                </Alert>}
-
-            </Modal.Body>
-            <Modal.Footer className="bg-light">
-                <Button variant="danger" onClick={() => setCreating(false)}>
-                    Cancel
-                </Button>
-            </Modal.Footer>
-        </Modal>}
-        
-        {/* Show the current filters */}
-        {Object.keys(filters).length > 0 &&
-        <Row className="justify-content-center align-items-center mb-1">
-            <Col xs="auto">
-                <AppliedFilters filters={filters} setFilters={setFilters} />
-            </Col>
-        </Row>}
-        
-        {/* Table */}
-        <Row className="justify-content-center">
-            <Col xs={14} md={12} lg={10}>
-
-                <PromoTable promos={promos} setClicked={setClicked} />
-
-            </Col>
-        </Row>
-
-        {/* Pagination and page display (TODO: add better page scrolling as an option) */}
-        <Row className="justify-content-center align-items-center mb-2">
-            {/* Back button */}
-            <Col xs="auto">
-                <Button
-                    onClick={() => getPromos(pageNum - 1)}
-                    disabled={pageNum === 1}>
-                        Back
-                </Button>
-            </Col>
-
-            {/* Page Number */}
-            <Col xs="auto">
-                <span>
-                    Page: <strong>{pageNum}/{totalPages}</strong>
-                </span>
-            </Col>
-
-            {/* Forward Button */}
-            <Col xs="auto">
-                <Button
-                    onClick={() => getPromos(pageNum + 1)}
-                    disabled={pageNum === totalPages}>
-                        Next
-                </Button>
-            </Col>
-    
-        </Row>
+                {/* Pagination and page display*/}
+                <Row className="justify-content-center align-items-center mb-2">
+                    <Col xs="auto">
+                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => getPromos(p)} disabled={false} />
+                    </Col>
+                </Row>
+            </Card.Body>
+        </Card>
 
         {/* On-click effect */}
         {currPromo && 
@@ -676,6 +536,129 @@ function ManagePromotions() {
 
             </Col>
         </Row>}
+
+        {/* Creating a new promotion */}
+        {creating &&
+        <Modal show={creating} onHide={() => setCreating(false)}>
+            <Modal.Header closeButton className="bg-light">
+                <Modal.Title>Create a New Promotion</Modal.Title>
+            </Modal.Header>
+            <Modal.Body className="d-flex flex-column justify-content-center align-items-center">
+                
+                <Form onSubmit={createNewPromotion}>
+                    <Form.Group className="mb-2">
+                        <Form.Label className="mb-0">Name:</Form.Label>
+                        <Form.Control
+                            value={newFields.name ? newFields.name : ""}
+                            onChange={(e) => addNewField("name", e.target.value)}
+                            required
+                            type="text"
+                        />
+                    </Form.Group>
+
+                    <Form.Group className="mb-2">
+                        <Form.Label className="mb-0">Description:</Form.Label>
+                        <Form.Control
+                            required
+                            as="textarea"
+                            value={newFields.description ? newFields.description : ""}
+                            onChange={(e) => addNewField("description", e.target.value)}
+                        />
+                    </Form.Group>
+
+                    <Form.Group className="mb-2">
+                        <Form.Label className="mb-0">Type:</Form.Label>
+                        <Form.Select
+                            value={newFields.type ? newFields.type : ""}
+                            onChange={(e) => addNewField("type", e.target.value)}
+                            required>
+                                <option value="">Select Type</option>
+                                <option value="automatic">Automatic</option>
+                                <option value="onetime">One-Time</option>
+                        </Form.Select>
+                    </Form.Group>
+
+                    <Form.Group className="mb-2">
+                        <Form.Label className="me-2">Start Time:</Form.Label>
+                        <NewDatePicker
+                            name="startTime"
+                            addNewField={addNewField}
+                        />
+                    </Form.Group>
+
+                    <Form.Group className="mb-2">
+                        <Form.Label className="me-3">End Time:</Form.Label>
+                        <NewDatePicker
+                            name="endTime"
+                            addNewField={addNewField}
+                        />
+                    </Form.Group>
+
+                    <Form.Group className="mb-2">
+                        <div className="d-flex">
+                            <Form.Label className="me-2 mb-0">Minimum Spending:</Form.Label>
+                            <Form.Check
+                                id="minSpending"
+                                checked={optional.includes("minSpending")}
+                                onChange={handleOptional}
+                                className="mb-0"
+                            />
+                        </div>
+                        <NumberControl
+                            name="minSpending"
+                            disabled={!optional.includes("minSpending")}
+                            addNewField={addNewField}
+                        />
+                    </Form.Group>
+
+                    <Form.Group className="mb-2">
+                        <div className="d-flex">
+                            <Form.Label className="me-2 mb-0">Rate:</Form.Label>
+                            <Form.Check
+                                id="rate"
+                                checked={optional.includes("rate")}
+                                onChange={handleOptional}
+                            />
+                        </div>
+                        <NumberControl
+                            name="rate"
+                            disabled={!optional.includes("rate")}
+                            addNewField={addNewField}
+                        />
+                    </Form.Group>
+
+                    <Form.Group className="mb-2">
+                        <div className="d-flex">
+                            <Form.Label className="me-2 mb-0">Bonus Points:</Form.Label>
+                            <Form.Check
+                                id="points"
+                                checked={optional.includes("points")}
+                                onChange={handleOptional}
+                            />
+                        </div>
+                        <NumberControl
+                            name="points"
+                            disabled={!optional.includes("points")}
+                            addNewField={addNewField}
+                            isInt={true}
+                        />
+                    </Form.Group>
+
+                    <Button variant="success" type="submit">Create</Button>
+                </Form>
+
+                {error && 
+                <Alert variant="danger" className="m-2">
+                    {error}
+                </Alert>}
+
+            </Modal.Body>
+            <Modal.Footer className="bg-light">
+                <Button variant="danger" onClick={() => setCreating(false)}>
+                    Cancel
+                </Button>
+            </Modal.Footer>
+        </Modal>}
 
     </Container>;
 }

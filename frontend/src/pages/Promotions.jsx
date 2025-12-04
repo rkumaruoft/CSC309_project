@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Button, Col, Container, Row, Image, Modal, Table } from "react-bootstrap";
+import { Button, Col, Container, Row, Image, Modal, Table, Card } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 import { getAllPromos, getPromoId } from "../utils/api/fetchPromos"
+import PaginationControls from "../components/PaginationControls";
 import PromoTable from "../components/promotions/PromoTable.jsx";
 import PromoFilter from "../components/promotions/PromoFilter.jsx";
 import AppliedFilters from "../components/promotions/PromoAppliedFilters.jsx";
@@ -77,75 +78,57 @@ function Promotions() {
     // ---------- Return the page ----------
     // TODO: change table spacing once we have login implemented
     return <Container>
-        {/* Label */}
-        <Row className="justify-content-center align-items-center mt-5 mb-3">
-            <Col xs="auto">
-                <div className="d-flex align-items-center gap-3">
-                    <h1 className="m-0">Promotions</h1>
+        <Card className="shadow-sm mt-4">
+            <Card.Body>
+                {/* Label */}
+                <Row className="justify-content-center align-items-center mb-3">
+                    <Col xs="auto">
+                        <div className="d-flex align-items-center gap-3">
+                            <h1 className="m-0">Promotions</h1>
 
-                    <Image
-                        src="../../filter.svg"
-                        alt="Filter"
-                        className="filter opacity-75"
-                        onClick={() => setShowFilter(!showFilter)}
-                    />
-                </div>
-            </Col>
-        </Row>
+                            <Image
+                                src="../../filter.svg"
+                                alt="Filter"
+                                className="filter opacity-75"
+                                onClick={() => setShowFilter(!showFilter)}
+                            />
+                        </div>
+                    </Col>
+                </Row>
 
-        {/* Show the filter menu */}
-        {showFilter &&
-        <Row className="justify-content-center align-items-center">
-            <Col xs="auto" className="m-2">
-                <PromoFilter setFilters={setFilters} setShowFilter={setShowFilter} />
-            </Col>
-        </Row>}
-        
-        {/* Show the current filters */}
-        {Object.keys(filters).length > 0 &&
-        <Row className="justify-content-center align-items-center mb-1">
-            <Col xs="auto">
-                <AppliedFilters filters={filters} setFilters={setFilters} />
-            </Col>
-        </Row>}
+                {/* Show the filter menu */}
+                {showFilter &&
+                <Row className="justify-content-center align-items-center">
+                    <Col xs="auto" className="m-2">
+                        <PromoFilter setFilters={setFilters} setShowFilter={setShowFilter} />
+                    </Col>
+                </Row>}
+                
+                {/* Show the current filters */}
+                {Object.keys(filters).length > 0 &&
+                <Row className="justify-content-center align-items-center mb-1">
+                    <Col xs="auto">
+                        <AppliedFilters filters={filters} setFilters={setFilters} />
+                    </Col>
+                </Row>}
 
-        {/* Table */}
-        <Row className="justify-content-center">
-            <Col xs={14} md={12} lg={10}>
+                {/* Table */}
+                <Row className="justify-content-center">
+                    <Col>
 
-                <PromoTable promos={promos} setClicked={setClicked} />
+                        <PromoTable promos={promos} setClicked={setClicked} />
 
-            </Col>
-        </Row>
+                    </Col>
+                </Row>
 
-        {/* Pagination and page display (TODO: add better page scrolling as an option) */}
-        <Row className="justify-content-center align-items-center mb-2">
-            {/* Back button */}
-            <Col xs="auto">
-                <Button
-                    onClick={() => getPromos(pageNum - 1)}
-                    disabled={pageNum === 1}>
-                        Back
-                </Button>
-            </Col>
-
-            {/* Page Number */}
-            <Col xs="auto">
-                <span>
-                    Page: <strong>{pageNum}/{totalPages}</strong>
-                </span>
-            </Col>
-
-            {/* Forward Button */}
-            <Col xs="auto">
-                <Button
-                    onClick={() => getPromos(pageNum + 1)}
-                    disabled={pageNum === totalPages}>
-                        Next
-                </Button>
-            </Col>
-    
-        </Row>
+                {/* Pagination and page display*/}
+                <Row className="justify-content-center align-items-center mb-2">
+                    <Col xs="auto">
+                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => getPromos(p)} disabled={false} />
+                    </Col>
+                </Row>
+            </Card.Body>
+        </Card>
 
         {/* On-click effect */}
         {currPromo && 

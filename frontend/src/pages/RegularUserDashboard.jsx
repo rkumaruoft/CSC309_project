@@ -6,7 +6,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import findAvatar from "../utils/findAvatar";
 
-export default function Home() {
+export default function RegularUserDashboard() {
     const { user, showQrModal } = useAuth();
     const navigate = useNavigate();
 
@@ -64,9 +64,7 @@ export default function Home() {
        ============================================================ */
     useEffect(() => {
         const token = localStorage.getItem("token");
-        const devUser = import.meta.env.DEV && localStorage.getItem("user");
-
-        if (!token && !devUser) navigate("/login");
+        if (!token && !user) navigate("/login");
     }, [navigate, user]);
 
     const displayUser = user || {};
