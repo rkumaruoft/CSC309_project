@@ -3,7 +3,7 @@ import { Button, Form, Col, Container, Image, Row, Table, Modal} from "react-boo
 import CreateEventModal from "../components/events/actions/CreateEventModal";
 import DeleteConfirmModal from "../components/events/actions/DeleteEventModal";
 import EventOrganizerModal from "../components/events/roles/EventOrganizerModal";
-import EventsFilter from "../components/EventsFilter";
+import EventsFilter from "../components/events/actions/EventsFilter";
 import formatEvents, { fetchAllEvents, createEventBackend, deleteEventBackend, addOrganizerBackend, publishEventBackend, remGuestBackend, fetchSpecificEvent } from "../utils/api/eventActions";
 import { formatDateTime } from "../utils/api/dateHandling";
 
