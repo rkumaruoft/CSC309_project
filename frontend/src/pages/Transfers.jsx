@@ -28,6 +28,8 @@ export default function Transfers() {
     const trimmed = input.trim();
     if (!trimmed) return null;
     if (/^\d+$/.test(trimmed)) return Number(trimmed);
+    // Accept UTORid format (7-8 alphanumeric chars)
+    if (/^[A-Za-z0-9]{7,8}$/.test(trimmed)) return trimmed;
     return null;
   }
 
@@ -55,22 +57,23 @@ export default function Transfers() {
         return;
       }
     } catch (e) {
-      // continue without strict check
+
     }
 
     setLoading(true);
 
-    // Resolve recipient id (must be numeric user id)
-    const recipientId = resolveRecipientId(toId);
-    if (!recipientId) {
+    // Resolve recipient (numeric id OR UTORid)
+    const recipient = resolveRecipientId(toId);
+    if (!recipient) {
       setLoading(false);
-      setError("Invalid recipient. Transfers require a numeric user id");
+      setError("Invalid recipient. Enter a numeric user ID or a UTORid (e.g. 12 or johndoe1).");
       return;
     }
 
     // Perform transfer
     try {
-      const res = await fetch(`${BACKEND_URL}/users/${recipientId}/transactions`, {
+      const recipientPath = encodeURIComponent(String(recipient));
+      const res = await fetch(`${BACKEND_URL}/users/${recipientPath}/transactions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -114,19 +117,19 @@ export default function Transfers() {
 
       <form onSubmit={handleSubmit} style={{ maxWidth: 520 }}>
         <div className="mb-3">
-          <label className="form-label">Transfer to (user id)</label>
+          <label className="form-label">Transfer to </label>
           <input
             className="form-control"
             value={toId}
             onChange={(e) => setToId(e.target.value)}
-            placeholder="Numeric id (e.g. 12)"
+            placeholder="User ID or UTORid"
             required
             aria-label="recipient"
           />
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Amount (points)</label>
+          <label className="form-label">Amount</label>
           <input
             className="form-control"
             type="number"
@@ -134,6 +137,7 @@ export default function Transfers() {
             value={amount}
             ref={amountRef}
             onChange={(e) => { setAmount(e.target.value); amountRef.current?.setCustomValidity(""); }}
+            placeholder="Enter points to transfer"
             required
           />
         </div>
