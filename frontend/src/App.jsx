@@ -24,6 +24,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ManagePromotions from "./pages/ManagePromotions.jsx";
 import ManagerDashboard from "./pages/ManagerDashboard.jsx";
+import ManagerTransactions from "./pages/ManagerTransactions.jsx";
 import { useEffect } from "react";
 
 function NotFound() {
@@ -93,6 +94,7 @@ export default function App() {
                     <Route path="/manageUsers" element={<Layout title="Manage Users"><ManageUsers /></Layout>} />
                     <Route path="/managePromotions" element={<Layout title="Manage Promotions"><ManagePromotions /></Layout>} />
                     <Route path="/events/manage" element={<Layout title="Manage Events"><ManageEvents /></Layout>}/>
+                    <Route path="/manager/transactions" element={<Layout title="Manage Transactions"><ManagerTransactions /></Layout>} />
                 </Route>
 
                 {/* --------------------------------------------------------
