@@ -338,7 +338,7 @@ function ManagePromotions() {
                 {/* Pagination and page display*/}
                 <Row className="justify-content-center align-items-center mb-2">
                     <Col xs="auto">
-                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => getPromos(p)} disabled={false} />
+                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => sortPromotions(p)} disabled={false} />
                     </Col>
                 </Row>
             </Card.Body>

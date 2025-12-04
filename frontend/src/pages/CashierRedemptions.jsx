@@ -300,7 +300,7 @@ function CashierRedemptions() {
                 {/* Pagination and page display */}
                 <Row className="justify-content-center align-items-center mb-2">
                     <Col xs="auto">
-                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => getRedemptionsPage(p, utorid)} disabled={false} />
+                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => sortRedemptions(p, utorid)} disabled={false} />
                     </Col>
                 </Row>
 
