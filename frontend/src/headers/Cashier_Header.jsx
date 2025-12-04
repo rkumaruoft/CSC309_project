@@ -5,5 +5,5 @@ export default function Cashier_Header() {
         { to: '/cashier/transactions', label: 'Transactions' },
         { to: '/cashier/redemption', label: 'Redemptions' },
     ];
-    return <HeaderBase brand="CSSU Rewards — Cashier" links={links} />;
+    return <HeaderBase brand="BananaCreds - Cashier" links={links} />;
 }
