@@ -2,9 +2,12 @@ import { Col, Container, Row, Table } from "react-bootstrap";
 import { capitalize } from "../../utils/format/string"
 import LimitSelector from "../LimitSelector";
 import AppliedFilters from "./PromoAppliedFilters";
+import SortButton from "../SortButton";
 
 
-function PromoTable({ promos, setClicked, setLimit, filters, setFilters }) {
+function PromoTable({ promos, setClicked, setLimit, filters, setFilters,
+    sorting, setSorting, order, setOrder    
+}) {
     // ---------- Format the promos ----------
     function formatPromos(promos) {
         let new_promos = [];
@@ -40,10 +43,46 @@ function PromoTable({ promos, setClicked, setLimit, filters, setFilters }) {
             <Table className="shadow-sm" striped responsive hover>
                 <thead className="table-primary">
                     <tr>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Starts At</th>
-                        <th>Ends At</th>
+                        <th>
+                            Name
+                            <SortButton
+                                field={"name"}
+                                sorting={sorting}
+                                setSorting={setSorting}
+                                order={order}
+                                setOrder={setOrder}
+                            />
+                        </th>
+                        <th>
+                            Type
+                            <SortButton
+                                field={"type"}
+                                sorting={sorting}
+                                setSorting={setSorting}
+                                order={order}
+                                setOrder={setOrder}
+                            />
+                        </th>
+                        <th>
+                            Starts At
+                            <SortButton
+                                field={"startTime"}
+                                sorting={sorting}
+                                setSorting={setSorting}
+                                order={order}
+                                setOrder={setOrder}
+                            />
+                        </th>
+                        <th>
+                            Ends At
+                            <SortButton
+                                field={"endTime"}
+                                sorting={sorting}
+                                setSorting={setSorting}
+                                order={order}
+                                setOrder={setOrder}
+                            />
+                        </th>
                     </tr>
                 </thead>
 

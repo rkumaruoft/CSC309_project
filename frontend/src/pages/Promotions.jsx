@@ -12,10 +12,15 @@ import "./Promotions.css";
 
 function Promotions() {
     // ---------- Page states ----------
+        // Promo fetching states
     const [promos, setPromos] = useState(null);
     const [pageNum, setPageNum] = useState(1);  // start on page 1 of promotions
     const [totalPages, setTotalPages] = useState(1);  // assumes at least one page
     const [limit, setLimit] = useState(10);
+        // Sorting states
+    const [sorting, setSorting] = useState(null);
+    const [order, setOrder] = useState(null);
+        // Additional states
     const [filters, setFilters] = useState({});
     const [currPromo, setCurrPromo] = useState(null);
 
@@ -41,23 +46,76 @@ function Promotions() {
         // Handle successful request
         setPromos(data.results);
         setPageNum(page);
-        const total = Math.max(1, Math.ceil(data.count / limit));
-        setTotalPages(total);
-        
-        // Handle overflow (sets back to last page)
-        if (page > total) {
-            getPromos(1);
-        }
+        setTotalPages(Math.max(1, Math.ceil(data.count / limit)));
     }
 
+    // ---------- Sorting function ----------
+    // Algorithm is to call for one promotion to get a count, set
+    // limit based on that count, call again, then sort using js
+    // sorting functions, and set list as the first {limit} entries.
+    // - NOTE: if order is null, just fetch entries at page 1 normally. 
+    async function sortPromotions(page) {
+        // Handle !order
+        if (!order) {
+            getPromos(page);
+        }
+
+        // Get the count
+        const count = await getAllPromos(1, 1, {});
+        if (!count) {
+            setPromos(null);
+            return;
+        }
+
+        // Get all entries
+        const data = await getAllPromos(1, count.count, filters);
+        if (!data) {
+            setPromos(null);
+            return;
+        }
+
+        // Sort entries according to datatype
+        let sorted = data.results.sort((a, b) => {
+            // Should be strings
+            const fieldA = a[sorting].toUpperCase();
+            const fieldB = b[sorting].toUpperCase();
+
+            if (fieldA < fieldB) {
+                return -1;
+            }
+            if (fieldA > fieldB) {
+                return 1;
+            }
+            return 0;
+        });
+
+        // Reverse if descending
+        if (order === "desc") {
+            sorted.reverse();
+        }
+
+        // Get the first {limit} entries and set pageNum/promos
+        const slicedSorted = sorted.slice((page - 1) * limit, page * limit);
+        setPageNum(page);
+        setPromos(slicedSorted);
+    }
+
+    // ---------- Close the currently clicked-on promotion ----------
     function closeCurrPromo() {
         setCurrPromo(null);
         setClicked(null);
     }
 
+    // ---------- On sorting/order change, sort the table ----------
+    useEffect(() => {
+        sortPromotions(1);
+    }, [sorting, order]);
+
     // ---------- On navigation/filtering/setting limit, fetch promotions ----------
     useEffect(() => {
-        getPromos(pageNum);
+        setSorting(null);
+        setOrder(null);
+        sortPromotions(1);
     }, [location, filters, limit]);
 
     // ---------- On clicked set, fetch the clicked promotion data ----------
@@ -112,6 +170,10 @@ function Promotions() {
                             setLimit={setLimit}
                             filters={filters}
                             setFilters={setFilters}
+                            sorting={sorting}
+                            setSorting={setSorting}
+                            order={order}
+                            setOrder={setOrder}
                         />
 
                     </Col>
@@ -122,7 +184,7 @@ function Promotions() {
                     {/* Back button */}
                     <Col xs="auto">
                         <Button
-                            onClick={() => getPromos(pageNum - 1)}
+                            onClick={() => sortPromotions(pageNum - 1)}
                             disabled={pageNum === 1}>
                                 Back
                         </Button>
@@ -138,7 +200,7 @@ function Promotions() {
                     {/* Forward Button */}
                     <Col xs="auto">
                         <Button
-                            onClick={() => getPromos(pageNum + 1)}
+                            onClick={() => sortPromotions(pageNum + 1)}
                             disabled={pageNum === totalPages}>
                                 Next
                         </Button>
