@@ -17,7 +17,9 @@ export default function HeaderBase({ brand, links = [] }) {
 
     var homePage = "/dashboard";
 
-    if (currentRole === "manager" || currentRole === "superuser") {
+    if (currentRole === "cashier") {
+        homePage = "/cashierDashboard";
+    } else if (currentRole === "manager" || currentRole === "superuser") {
         homePage = "/managerDashboard";
     }
 

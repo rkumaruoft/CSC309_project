@@ -1,12 +1,13 @@
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
-async function getAllPromos(page, filters) {
+async function getAllPromos(page, limit, filters) {
     const token = localStorage.getItem("token");
 
     // Format query params (assumes valid filters)
     const params = {
         page: page,
+        limit: limit,
         ...filters
     };
     const url = `${VITE_BACKEND_URL}/promotions?${new URLSearchParams(params).toString()}`;

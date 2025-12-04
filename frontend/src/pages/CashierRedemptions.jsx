@@ -5,6 +5,7 @@ import { optional } from "../utils/format/string";
 import { floatToCurrency } from "../utils/format/number";
 import { useLocation } from "react-router-dom";
 import { getUnprocessed, processRedemption } from "../utils/api/fetchRedemptions";
+import LimitSelector from "../components/LimitSelector";
 
 
 function CashierRedemptions() {
@@ -13,6 +14,7 @@ function CashierRedemptions() {
     const [redemptions, setRedemptions] = useState([]);
     const [pageNum, setPageNum] = useState(1);  // start on page 1 of promotions
     const [totalPages, setTotalPages] = useState(1);  // assumes at least one page
+    const [limit, setLimit] = useState(10);
         // Input field states
     const [tid, setTid] = useState("");
     const [utorid, setUtorid] = useState("");
@@ -26,7 +28,7 @@ function CashierRedemptions() {
             return;
         }
 
-        const data = await getUnprocessed(page, name);
+        const data = await getUnprocessed(page, name, limit);
 
         // Handle request failure
         if (!data) {
@@ -37,7 +39,13 @@ function CashierRedemptions() {
         // Handle successful request
         setRedemptions(data.results);
         setPageNum(page);
-        setTotalPages(Math.max(1, Math.ceil(data.count / 10)));
+        const total = Math.max(1, Math.ceil(data.count / limit));
+        setTotalPages(total);
+
+        // Handle overflow (sets back to last page)
+        if (page > total) {
+            getRedemptionsPage(1);
+        }
     }
 
     // ---------- Handle proccessing ----------
@@ -62,8 +70,9 @@ function CashierRedemptions() {
     useEffect(() => {
         setUtorid("");
         setError(null);
+        setSuccess(null);
         getRedemptionsPage(pageNum, utorid);
-    }, [location]);
+    }, [location, limit]);
 
     // ---------- On filter, refresh table ----------
     useEffect(() => {
@@ -144,6 +153,12 @@ function CashierRedemptions() {
                             placeholder="Filter by UTORid"
                             className="w-50 mb-2"
                         />
+                    </Col>
+
+                    <Col xs="auto">
+                        <div className="d-flex flow-end">
+                            <LimitSelector setLimit={setLimit} />
+                        </div>
                     </Col>
                 </Row>
 

@@ -7,5 +7,5 @@ export default function Cashier_Header() {
         { to: '/events/myEvents', label: 'My Events'},
         { to: '/cashier/redemption', label: 'Redemptions' }
     ];
-    return <HeaderBase brand="CSSU Rewards — Cashier" links={links} />;
+    return <HeaderBase brand="BananaCreds - Cashier" links={links} />;
 }

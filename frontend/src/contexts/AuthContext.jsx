@@ -137,11 +137,13 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem("currentRole", role);
             localStorage.setItem("user", JSON.stringify(userData));
 
-            // role-based navigation
+            // Role-based navigation
             if (role === "manager" || role === "superuser") {
-                navigate("/managerDashboard");
+                Promise.resolve().then(() => navigate("/managerDashboard"));
+            } else if (role === "cashier") {
+                Promise.resolve().then(() => navigate("/cashierDashboard"));
             } else {
-                navigate("/dashboard");
+                Promise.resolve().then(() => navigate("/dashboard"));
             }
 
             return null;
@@ -208,9 +210,11 @@ export const AuthProvider = ({ children }) => {
 
         // Redirect ONLY when user intentionally switches interface
         if (targetRole === "manager" || targetRole === "superuser") {
-            navigate("/managerDashboard");
+            Promise.resolve().then(() => navigate("/managerDashboard"));
+        } else if (targetRole === "cashier") {
+            Promise.resolve().then(() => navigate("/cashierDashboard"));
         } else {
-            navigate("/dashboard");
+            Promise.resolve().then(() => navigate("/dashboard"));
         }
     };
 
