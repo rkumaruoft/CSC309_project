@@ -251,13 +251,16 @@ router.get(
                 amount,
                 operator,
                 page = 1,
-                limit = 10
+                limit = 10,
+
+                // NEW SORTING FIELDS
+                sortField = "createdAt",
+                sortOrder = "desc"
             } = req.query;
 
             const filters = {};
 
             // ---------------- FILTER: name ----------------
-            // Filter by utorid OR name (SQLite: case-sensitive only)
             if (name) {
                 filters.user = {
                     OR: [
@@ -316,6 +319,20 @@ router.get(
                 };
             }
 
+            // ---------------- SORTING (NEW) ----------------
+            const allowedSortFields = ["id", "amount", "type", "createdAt", "utorid"];
+            const field = allowedSortFields.includes(sortField) ? sortField : "createdAt";
+
+            const direction = sortOrder === "asc" ? "asc" : "desc";
+
+            // Prisma: if sorting by related field (utorid)
+            let orderBy;
+            if (field === "utorid") {
+                orderBy = { user: { utorid: direction } };
+            } else {
+                orderBy = { [field]: direction };
+            }
+
             // ---------------- COUNT ----------------
             const count = await prisma.transaction.count({ where: filters });
 
@@ -324,7 +341,7 @@ router.get(
                 where: filters,
                 skip: (page - 1) * limit,
                 take: Number(limit),
-                orderBy: { id: "asc" },
+                orderBy, // <--- NEW SORTING
                 include: {
                     user: true,
                     promotions: true
@@ -343,10 +360,10 @@ router.get(
                     promotionIds: t.promotions.map(p => p.id),
                     suspicious: t.suspicious ?? false,
                     remark: t.remark ?? "",
-                    createdBy: t.createdBy
+                    createdBy: t.createdBy,
+                    createdAt: t.createdAt
                 };
 
-                // Show 'redeemed' for redemption transactions
                 if (t.type === "redemption") {
                     obj.redeemed = Math.abs(t.amount);
                 }
@@ -367,6 +384,7 @@ router.get(
 );
 
 
+
 // ---------------- /transactions/processed (GET) ----------------
 // Clearance: Cashier+
 router.get(
@@ -380,13 +398,16 @@ router.get(
                 type,
                 processed,
                 page = 1,
-                limit = 10
+                limit = 10,
+
+                // NEW for sorting
+                sortField = "id",
+                sortOrder = "asc"
             } = req.query;
 
             const filters = {};
 
             // ---------------- FILTER: name ----------------
-            // Filter by utorid OR name (SQLite: case-sensitive only)
             if (name) {
                 filters.user = {
                     OR: [
@@ -400,9 +421,19 @@ router.get(
             if (type) {
                 filters.type = type;
             }
-            
+
             // ---------------- FILTER: processed ----------------
-            filters.processed = processed === "true" ? true : false;
+            if (processed !== undefined) {
+                filters.processed = processed === "true";
+            }
+
+            // ---------------- VALID SORT FIELDS ----------------
+            const allowedSortFields = ["id", "amount", "type", "createdAt"];
+            const sortBy = allowedSortFields.includes(sortField)
+                ? sortField
+                : "id";
+
+            const order = sortOrder === "desc" ? "desc" : "asc";
 
             // ---------------- COUNT ----------------
             const count = await prisma.transaction.count({ where: filters });
@@ -412,7 +443,7 @@ router.get(
                 where: filters,
                 skip: (page - 1) * limit,
                 take: Number(limit),
-                orderBy: { id: "asc" },
+                orderBy: { [sortBy]: order },
                 include: {
                     user: true,
                     promotions: true
@@ -420,27 +451,19 @@ router.get(
             });
 
             // ---------------- FORMAT RESPONSE ----------------
-            const formatted = results.map(t => {
-                const obj = {
-                    id: t.id,
-                    utorid: t.user.utorid,
-                    amount: t.amount,
-                    spent: t.spent ?? undefined,
-                    type: t.type,
-                    relatedId: t.relatedId ?? undefined,
-                    promotionIds: t.promotions.map(p => p.id),
-                    suspicious: t.suspicious ?? false,
-                    remark: t.remark ?? "",
-                    createdBy: t.createdBy
-                };
-
-                // Show 'redeemed' for redemption transactions
-                if (t.type === "redemption") {
-                    obj.redeemed = Math.abs(t.amount);
-                }
-
-                return obj;
-            });
+            const formatted = results.map(t => ({
+                id: t.id,
+                utorid: t.user.utorid,
+                amount: t.amount,
+                type: t.type,
+                relatedId: t.relatedId ?? undefined,
+                promotionIds: t.promotions.map(p => p.id),
+                suspicious: t.suspicious ?? false,
+                remark: t.remark ?? "",
+                createdBy: t.createdBy,
+                processed: t.processed ?? false,
+                createdAt: t.createdAt
+            }));
 
             return res.json({
                 count,
