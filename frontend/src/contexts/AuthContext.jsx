@@ -194,15 +194,22 @@ export const AuthProvider = ({ children }) => {
     const switchRole = (role) => {
         if (!availableRoles.includes(role)) return;
 
+        // If the account is a superuser and the user selected the 'manager
+        // interface from the dropdown, prefer switching them into the
+        // `superuser` interface so they get full superuser controls.
+        let targetRole = role;
+        if (role === "manager" && user && user.role === "superuser") {
+            targetRole = "superuser";
+        }
+
         // Save new interface role
-        setCurrentRole(role);
-        localStorage.setItem("currentRole", role);
+        setCurrentRole(targetRole);
+        localStorage.setItem("currentRole", targetRole);
 
         // Redirect ONLY when user intentionally switches interface
-        if (role === "manager" || role === "superuser") {
+        if (targetRole === "manager" || targetRole === "superuser") {
             navigate("/managerDashboard");
         } else {
-
             navigate("/dashboard");
         }
     };

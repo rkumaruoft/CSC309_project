@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, Button, Card, Col, Container, Form, Row, Table } from "react-bootstrap";
+import PaginationControls from "../components/PaginationControls";
 import { optional } from "../utils/format/string";
 import { floatToCurrency } from "../utils/format/number";
 import { useLocation } from "react-router-dom";
@@ -197,33 +198,11 @@ function CashierRedemptions() {
                     </Col>
                 </Row>
 
-                {/* Pagination and page display (TODO: add better page scrolling as an option) */}
+                {/* Pagination and page display */}
                 <Row className="justify-content-center align-items-center mb-2">
-                    {/* Back button */}
                     <Col xs="auto">
-                        <Button
-                            onClick={() => getRedemptionsPage(pageNum - 1)}
-                            disabled={pageNum === 1}>
-                                Back
-                        </Button>
+                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => getRedemptionsPage(p, utorid)} disabled={false} />
                     </Col>
-
-                    {/* Page Number */}
-                    <Col xs="auto">
-                        <span>
-                            Page: <strong>{pageNum}/{totalPages}</strong>
-                        </span>
-                    </Col>
-
-                    {/* Forward Button */}
-                    <Col xs="auto">
-                        <Button
-                            onClick={() => getRedemptionsPage(pageNum + 1)}
-                            disabled={pageNum === totalPages}>
-                                Next
-                        </Button>
-                    </Col>
-            
                 </Row>
 
             </Card.Body>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, Col, Container, Row, Image, Modal, Table, Card } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 import { getAllPromos, getPromoId } from "../utils/api/fetchPromos"
+import PaginationControls from "../components/PaginationControls";
 import PromoTable from "../components/promotions/PromoTable.jsx";
 import PromoFilter from "../components/promotions/PromoFilter.jsx";
 import { capitalize, optional } from "../utils/format/string.js";
@@ -117,33 +118,11 @@ function Promotions() {
                     </Col>
                 </Row>
 
-                {/* Pagination and page display (TODO: add better page scrolling as an option) */}
+                {/* Pagination and page display*/}
                 <Row className="justify-content-center align-items-center mb-2">
-                    {/* Back button */}
                     <Col xs="auto">
-                        <Button
-                            onClick={() => getPromos(pageNum - 1)}
-                            disabled={pageNum === 1}>
-                                Back
-                        </Button>
+                        <PaginationControls page={pageNum} totalPages={totalPages} onPageChange={(p) => getPromos(p)} disabled={false} />
                     </Col>
-
-                    {/* Page Number */}
-                    <Col xs="auto">
-                        <span>
-                            Page: <strong>{pageNum}/{totalPages}</strong>
-                        </span>
-                    </Col>
-
-                    {/* Forward Button */}
-                    <Col xs="auto">
-                        <Button
-                            onClick={() => getPromos(pageNum + 1)}
-                            disabled={pageNum === totalPages}>
-                                Next
-                        </Button>
-                    </Col>
-            
                 </Row>
             </Card.Body>
         </Card>
