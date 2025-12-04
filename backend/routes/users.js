@@ -1104,4 +1104,64 @@ router.post(
     }
 );
 
+// ---------------- /users/me/events (GET) ----------------
+// Clearance: Regular+
+router.get(
+    "/me/events",
+    authenticate,
+    requireClearance(["regular", "cashier", "manager", "superuser"]),
+    async (req, res) => {
+        try {
+            const userId = req.user.id;
+
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: {
+                    organizedEvents: {
+                        select: {
+                            event: {
+                                include: {
+                                    guests: { include: { user: true } },
+                                    organizers: { include: { user: true } }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (!user) return res.status(404).json({ error: "User not found" });
+
+            const organizedEvents = user.organizedEvents;
+
+            const results = organizedEvents.map(({ event }) => ({
+                id: event.id,
+                name: event.name,
+                location: event.location,
+                startTime: event.startTime,
+                endTime: event.endTime,
+                capacity: event.capacity,
+                numGuests: event.guests.length,
+                organizers: event.organizers.map(o => ({
+                    id: o.user.id,
+                    utorid: o.user.utorid,
+                    name: o.user.name
+                })),
+                guests: event.guests.map(g => ({
+                    id: g.user.id,
+                    utorid: g.user.utorid,
+                    name: g.user.name
+                }))
+            }));
+
+            return res.status(200).json({ count: results.length , results });
+
+        } catch (err) {
+            console.log(err);
+            return res.status(500).json({ error: err.message });
+        }
+    }
+);
+
+
 export default router;
