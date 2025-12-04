@@ -1,8 +1,10 @@
-import { Table } from "react-bootstrap";
+import { Col, Container, Row, Table } from "react-bootstrap";
 import { capitalize } from "../../utils/format/string"
+import LimitSelector from "../LimitSelector";
+import AppliedFilters from "./PromoAppliedFilters";
 
 
-function PromoTable({ promos, setClicked }) {
+function PromoTable({ promos, setClicked, setLimit, filters, setFilters }) {
     // ---------- Format the promos ----------
     function formatPromos(promos) {
         let new_promos = [];
@@ -19,36 +21,53 @@ function PromoTable({ promos, setClicked }) {
         return new_promos;
     }
     
-    return <Table className="shadow-sm" striped responsive hover>
-        <thead className="table-primary">
-            <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Starts At</th>
-                <th>Ends At</th>
-            </tr>
-        </thead>
+    return <Container>
+        <Row className="justify-content-center align-items-center">
+            <Col>
+                <LimitSelector setLimit={setLimit} />
+            </Col>
 
-        <tbody className="promo-table-body">
-            {(promos === null || promos.length === 0) ? (
-                <tr>
-                    <td colSpan={4} className="text-center">
-                            No promotions could be found
-                    </td>
-                </tr>
-            ) : (
-                formatPromos(promos).map(item => (
-                    <tr key={item.id} onClick={() => setClicked(item.id)}>
-                        <td>{item.name}</td>
-                        <td>{item.type}</td>
-                        <td>{item.startTime}</td>
-                        <td>{item.endTime}</td>
+            <Col xs="auto" className="d-flex justify-content-center align-items-center">
+                {Object.keys(filters).length > 0 &&
+                <AppliedFilters filters={filters} setFilters={setFilters} />}
+            </Col>
+
+            {/* placeholder */}
+            <Col></Col>
+        </Row>
+
+        <Row>
+            <Table className="shadow-sm" striped responsive hover>
+                <thead className="table-primary">
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Starts At</th>
+                        <th>Ends At</th>
                     </tr>
-                ))
-            )}
-        </tbody>
-    </Table>;
+                </thead>
 
+                <tbody className="promo-table-body">
+                    {(promos === null || promos.length === 0) ? (
+                        <tr>
+                            <td colSpan={4} className="text-center">
+                                    No promotions could be found
+                            </td>
+                        </tr>
+                    ) : (
+                        formatPromos(promos).map(item => (
+                            <tr key={item.id} onClick={() => setClicked(item.id)}>
+                                <td>{item.name}</td>
+                                <td>{item.type}</td>
+                                <td>{item.startTime}</td>
+                                <td>{item.endTime}</td>
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </Table>
+        </Row>
+    </Container>;
 }
 
 export default PromoTable;

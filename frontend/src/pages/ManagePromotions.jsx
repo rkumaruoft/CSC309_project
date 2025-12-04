@@ -5,7 +5,6 @@ import { delPromoId, getAllPromos, getPromoId, patchPromoId, postPromo } from ".
 import PromoTable from "../components/promotions/PromoTable.jsx";
 import PromoFilter from "../components/promotions/PromoFilter.jsx";
 import PromoEditButtons from "../components/promotions/promoEdit/PromoEditButtons.jsx"
-import AppliedFilters from "../components/promotions/PromoAppliedFilters.jsx";
 import { capitalize } from "../utils/format/string.js";
 import { floatToCurrency, formatRate } from "../utils/format/number.js";
 import "./Promotions.css";
@@ -13,7 +12,6 @@ import PromoEditField from "../components/promotions/promoEdit/PromoEditField.js
 import PromoEditDropdown from "../components/promotions/promoEdit/PromoEditDropdown.jsx";
 import PromoEditDate from "../components/promotions/promoEdit/PromoEditDate.jsx";
 import PromoEditNumber from "../components/promotions/promoEdit/PromoEditNumber.jsx";
-import DateTimePicker from "react-datetime-picker";
 import NumberControl from "../components/promotions/NumberControl.jsx";
 import NewDatePicker from "../components/promotions/NewDatePicker.jsx";
 
@@ -23,6 +21,7 @@ function ManagePromotions() {
     const [promos, setPromos] = useState(null);
     const [pageNum, setPageNum] = useState(1);  // start on page 1 of promotions
     const [totalPages, setTotalPages] = useState(1);  // assumes at least one page
+    const [limit, setLimit] = useState(10);
     const [filters, setFilters] = useState({});
     const [currPromo, setCurrPromo] = useState(null);
 
@@ -43,13 +42,11 @@ function ManagePromotions() {
 
     // ---------- Fetch a page of promotions (10 at a time, as per the default) ----------
     async function getPromos(page) {
-        // TODO: look into adding filters???
-        // Invalid page; don't do anything
         if (page < 1 || page > totalPages) {
             return;
         }
 
-        const data = await getAllPromos(page, filters);
+        const data = await getAllPromos(page, limit, filters);
 
         // Handle request failure
         if (!data) {
@@ -60,7 +57,13 @@ function ManagePromotions() {
         // Handle successful request
         setPromos(data.results);
         setPageNum(page);
-        setTotalPages(Math.max(1, Math.ceil(data.count / 10)));
+        const total = Math.max(1, Math.ceil(data.count / limit));
+        setTotalPages(total);
+        
+        // Handle overflow (sets back to last page)
+        if (page > total) {
+            getPromos(1);
+        }
     }
 
     // ---------- Closes the currently opened/clicked promotion ----------
@@ -166,17 +169,11 @@ function ManagePromotions() {
 
     }
 
-    // ---------- On navigation to promotions page, fetch promotions ----------
+    // ---------- On navigation/filters/limit set, fetch promotions ----------
     useEffect(() => {
         getPromos(pageNum);
         setError(null);
-    }, [location]);
-
-    // ---------- On filters set, re-fetch promotions ----------
-    useEffect(() => {
-        getPromos(pageNum);
-        setError(null);
-    }, [filters]);
+    }, [location, filters, limit]);
 
     // ---------- On clicked set, fetch the clicked promotion data ----------
     useEffect(() => {
@@ -261,20 +258,18 @@ function ManagePromotions() {
                         )}
                     </Col>
                 </Row>
-
-                {/* Show the current filters */}
-                {Object.keys(filters).length > 0 &&
-                <Row className="justify-content-center align-items-center mb-1">
-                    <Col xs="auto">
-                        <AppliedFilters filters={filters} setFilters={setFilters} />
-                    </Col>
-                </Row>}
                 
                 {/* Table */}
                 <Row className="justify-content-center">
                     <Col>
 
-                        <PromoTable promos={promos} setClicked={setClicked} />
+                        <PromoTable
+                            promos={promos}
+                            setClicked={setClicked}
+                            setLimit={setLimit}
+                            filters={filters}
+                            setFilters={setFilters}
+                        />
 
                     </Col>
                 </Row>
