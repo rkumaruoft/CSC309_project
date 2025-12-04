@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import PaginationControls from "../components/PaginationControls";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -23,7 +24,7 @@ export default function Transactions() {
 
     try {
       if (token) {
-        // try to fetch authenticated transactions
+        // try to fetch authenticated transaction
         const res = await fetch(`/users/me/transactions?page=${p}&limit=10`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -87,9 +88,7 @@ export default function Transactions() {
           </ul>
 
           <div className="d-flex justify-content-center gap-2 mt-3">
-            <button className="btn btn-sm btn-secondary" onClick={() => fetchPage(page - 1)} disabled={page === 1}>Back</button>
-            <div className="align-self-center">Page {page}/{totalPages}</div>
-            <button className="btn btn-sm btn-secondary" onClick={() => fetchPage(page + 1)} disabled={page === totalPages}>Next</button>
+            <PaginationControls page={page} totalPages={totalPages} onPageChange={(p) => fetchPage(p)} disabled={loading} />
           </div>
         </div>
       )}

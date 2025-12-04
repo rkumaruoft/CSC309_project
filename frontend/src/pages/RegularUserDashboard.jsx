@@ -62,9 +62,7 @@ export default function RegularUserDashboard() {
        ============================================================ */
     useEffect(() => {
         const token = localStorage.getItem("token");
-        const devUser = import.meta.env.DEV && localStorage.getItem("user");
-
-        if (!token && !devUser) navigate("/login");
+        if (!token && !user) navigate("/login");
     }, [navigate, user]);
 
     const displayUser = user || {};

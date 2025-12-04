@@ -105,24 +105,34 @@ export default function HeaderBase({ brand, links = [] }) {
                                             <h6 className="dropdown-header">Interface</h6>
                                         </li>
 
-                                        {availableRoles.map((r) => {
-                                            const isActive = r === (currentRole || user.role);
+                                                {(() => {
+                                                    // Don't offer the `superuser` role as a switch target
+                                                    // when the current user is already a superuser.
+                                                    const filtered = availableRoles.filter((role) => {
+                                                        if (role === "superuser") {
+                                                            return !(currentRole === "superuser" || user.role === "superuser");
+                                                        }
+                                                        return true;
+                                                    });
 
-                                            return (
-                                                <li key={r}>
-                                                    <button
-                                                        className={`dropdown-item d-flex justify-content-between align-items-center ${isActive ? "active" : ""
-                                                            }`}
-                                                        onClick={() => switchRole(r)}
-                                                    >
-                                                        <span>{r[0].toUpperCase() + r.slice(1)}</span>
-                                                        {isActive && (
-                                                            <small className="text-success">✓</small>
-                                                        )}
-                                                    </button>
-                                                </li>
-                                            );
-                                        })}
+                                                    return filtered.map((r) => {
+                                                        const isActive = r === (currentRole || user.role);
+
+                                                        return (
+                                                            <li key={r}>
+                                                                <button
+                                                                    className={`dropdown-item d-flex justify-content-between align-items-center ${isActive ? "active" : ""}`}
+                                                                    onClick={() => switchRole(r)}
+                                                                >
+                                                                    <span>{r[0].toUpperCase() + r.slice(1)}</span>
+                                                                    {isActive && (
+                                                                        <small className="text-success">✓</small>
+                                                                    )}
+                                                                </button>
+                                                            </li>
+                                                        );
+                                                    });
+                                                })()}
                                     </>
                                 )}
 
