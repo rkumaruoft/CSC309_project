@@ -9,10 +9,12 @@ export default function CashierDashboard() {
     const navigate = useNavigate();
 
     const [promos, setPromos] = useState([]);
-    const [recentTxs, setRecentTxs] = useState([]);
 
     const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
+     /* ============================================================
+       LOAD DATA
+       ============================================================ */
     useEffect(() => {
         const token = localStorage.getItem("token");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -35,31 +37,14 @@ export default function CashierDashboard() {
             }
         }
 
-        async function fetchRecentTxs() {
-            try {
-                // Cashier dashboard shows latest transactions system-wide
-                const res = await fetch(
-                    `${VITE_BACKEND_URL}/transactions?page=1&limit=5`,
-                    { headers }
-                );
-                if (!res.ok) return setRecentTxs([]);
-
-                const data = await res.json();
-                setRecentTxs(data.results || []);
-            } catch {
-                setRecentTxs([]);
-            }
-        }
-
         fetchPromos();
-        fetchRecentTxs();
     }, []);
-
+    /* ============================================================
+       REDIRECT IF NOT LOGGED IN
+       ============================================================ */
     useEffect(() => {
         const token = localStorage.getItem("token");
-        const devUser = import.meta.env.DEV && localStorage.getItem("user");
-
-        if (!token && !devUser) navigate("/login");
+        if (!token && !user) navigate("/login");
     }, [navigate, user]);
 
     const displayUser = user || {};
@@ -73,6 +58,7 @@ export default function CashierDashboard() {
 
             <div className="row g-4">
 
+                {/* LEFT COLUMN — PROFILE CARD */}
                 <div className="col-lg-4 col-md-5">
                     <div className="card shadow-sm mb-4">
                         <div className="card-body">
@@ -111,8 +97,10 @@ export default function CashierDashboard() {
                     </div>
                 </div>
 
+                {/* RIGHT COLUMN — PROMOTIONS */}
                 <div className="col-lg-8 col-md-7">
 
+                    {/* PROMOTIONS */}
                     <div className="card shadow-sm mb-4">
                         <div className="card-body">
                             <div className="d-flex justify-content-between">
@@ -128,30 +116,6 @@ export default function CashierDashboard() {
                                     <div key={p.id} className="mb-3">
                                         <div className="fw-semibold">{p.name}</div>
                                         <small className="text-muted">Ends: {new Date(p.endTime).toDateString()}</small>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="card shadow-sm">
-                        <div className="card-body">
-                            <div className="d-flex justify-content-between">
-                                <h5 className="fw-bold mb-0">Recent Transactions</h5>
-                                <Link to="/cashier/transactions" className="small">View all</Link>
-                            </div>
-                            <hr />
-
-                            {recentTxs.length === 0 ? (
-                                <p className="text-muted mb-0">No recent transactions.</p>
-                            ) : (
-                                recentTxs.map((t) => (
-                                    <div key={t.id} className="mb-3">
-                                        <div className="d-flex justify-content-between">
-                                            <span className="fw-semibold">{t.type}</span>
-                                            <span className="fw-semibold">{t.amount} pts</span>
-                                        </div>
-                                        <small className="text-muted">User: {t.user?.utorid ?? t.relatedUtorid ?? "-"}</small>
                                     </div>
                                 ))
                             )}
