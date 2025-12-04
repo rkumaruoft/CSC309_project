@@ -4,7 +4,7 @@ import { useAuth } from "./contexts/AuthContext";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Home from "./pages/Home";
+import RegularUserDashboard from "./pages/RegularUserDashboard.jsx";
 import Transfers from "./pages/Transfers";
 import Promotions from "./pages/Promotions.jsx";
 import Transactions from "./pages/Transactions.jsx";
@@ -57,7 +57,7 @@ export default function App() {
                    Roles: regular, cashier, manager, superuser
                 --------------------------------------------------------- */}
                 <Route element={<RequireRole allowedRoles={["regular", "cashier", "manager", "superuser"]} />}>
-                    <Route path="/dashboard" element={<Layout title="Home"><Home /></Layout>} />
+                    <Route path="/dashboard" element={<Layout title="Home"><RegularUserDashboard /></Layout>} />
                     <Route path="/transfers" element={<Layout title="Transfers"><Transfers /></Layout>} />
                     <Route path="/events" element={<Layout title="Events"><EventsList /></Layout>} />
                     <Route path="/promotions" element={<Layout title="Promotions"><Promotions /></Layout>} />
