@@ -140,6 +140,8 @@ export const AuthProvider = ({ children }) => {
             // role-based navigation
             if (role === "manager" || role === "superuser") {
                 navigate("/managerDashboard");
+            } else if (role === "cashier") {
+                navigate("/cashierDashboard");
             } else {
                 navigate("/dashboard");
             }
@@ -201,8 +203,9 @@ export const AuthProvider = ({ children }) => {
         // Redirect ONLY when user intentionally switches interface
         if (role === "manager" || role === "superuser") {
             navigate("/managerDashboard");
+        } else if (role === "cashier") {
+            navigate("/cashierDashboard");
         } else {
-
             navigate("/dashboard");
         }
     };
