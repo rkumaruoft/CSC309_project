@@ -25,7 +25,7 @@ export default function Transactions() {
     try {
       if (token) {
         // try to fetch authenticated transaction
-        const res = await fetch(`/users/me/transactions?page=${p}&limit=10`, {
+        const res = await fetch(`${VITE_BACKEND_URL}/users/me/transactions?page=${p}&limit=10`, {
           headers: { Authorization: `Bearer ${token}` },
           credentials: "include"
         });

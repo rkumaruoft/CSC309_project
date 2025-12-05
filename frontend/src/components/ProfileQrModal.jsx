@@ -6,8 +6,15 @@ export default function ProfileQrModal() {
   const { user, showQr, hideQrModal } = useAuth();
   if (!user) return null;
 
-  const id = user.utorid ?? user.id ?? '';
-  const src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`user:${id}`)}`;
+    // ---------- Get the QR code src (should only be called after transaction is set) ----------
+    function getQR() {
+        // Format the qr code
+        const id = user.utorid;  // Should always be valid since you must be logged in to access
+        const baseScannedUrl = "https://app.bananacreds.ca/cashier/redemption";
+        const scannedUrl = `${baseScannedUrl}?utorid=${encodeURIComponent(id)}`
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(scannedUrl)}`;
+        return qrUrl;
+    }
 
   return (
     <Modal
@@ -15,28 +22,27 @@ export default function ProfileQrModal() {
       onHide={hideQrModal}
       centered
       backdrop="static"
-      contentClassName="bg-dark text-light"
     >
-      <Modal.Header closeButton className="bg-dark text-light border-secondary">
+      <Modal.Header closeButton className="bg-primary text-light">
         <Modal.Title>My QR Code</Modal.Title>
       </Modal.Header>
 
-      <Modal.Body className="text-center bg-dark text-light">
+      <Modal.Body className="text-center">
         <p className="mb-1"><strong>{user.name || user.utorid}</strong></p>
         <p className="text-muted small">Scan this QR at the cashier to identify this user.</p>
 
         <div className="d-flex justify-content-center">
           <img
             alt="qr-user"
-            src={src}
+            src={getQR()}
             style={{ width: 260, height: 260 }}
             className="img-fluid rounded"
           />
         </div>
       </Modal.Body>
 
-      <Modal.Footer className="bg-dark border-secondary">
-        <Button variant="secondary" onClick={hideQrModal}>
+      <Modal.Footer className="bg-light">
+        <Button onClick={hideQrModal}>
           Close
         </Button>
       </Modal.Footer>

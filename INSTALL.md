@@ -33,7 +33,7 @@ npm run seed
 
 3) Backend: environment variables
 
-- Copy the provided example and set a real secret locally (do NOT commit `.env`):
+- In the \`backend\` directory, copy the provided example file to \`.env\` and set a real secret locally (do NOT commit `.env`):
 
 ```powershell
 copy .env.example .env

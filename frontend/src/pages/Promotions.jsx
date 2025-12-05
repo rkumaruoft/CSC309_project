@@ -9,6 +9,7 @@ import { capitalize, optional } from "../utils/format/string.js";
 import { floatToCurrency, formatRate } from "../utils/format/number.js";
 import { formatTime } from "../utils/format/date.js";
 import "./Promotions.css";
+import { promoTypeLabel } from "../utils/format/promotion";
 
 
 function Promotions() {
@@ -78,8 +79,8 @@ function Promotions() {
         // Sort entries according to datatype
         let sorted = data.results.sort((a, b) => {
             // Should be strings
-            const fieldA = a[sorting].toUpperCase();
-            const fieldB = b[sorting].toUpperCase();
+            const fieldA = a[sorting];
+            const fieldB = b[sorting];
 
             if (fieldA < fieldB) {
                 return -1;
@@ -214,7 +215,7 @@ function Promotions() {
 
                                 <tr>
                                     <th>Type:</th>
-                                    <td>{capitalize(currPromo.type)}</td>
+                                    <td>{promoTypeLabel(currPromo.type)}</td>
                                 </tr>
 
                                 <tr>

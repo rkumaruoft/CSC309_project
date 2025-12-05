@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { useSearchParams } from "react-router-dom";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -14,6 +15,13 @@ export default function CashierTransactions() {
   const [error, setError] = useState(null);
 
   const { initialized } = useAuth();
+
+    // Autofill data if navigated from link
+    const [searchParams] = useSearchParams();
+    const urlId = searchParams.get("utorid");
+    if (urlId) {
+        setTid(urlId);
+    }
 
   useEffect(() => {
     // load promotions (one-time). We request a large limit so cashiers

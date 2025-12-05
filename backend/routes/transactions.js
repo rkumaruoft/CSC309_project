@@ -122,6 +122,7 @@ router.post(
                         createdBy: req.user.utorid,
                         suspicious: cashierIsSuspicious,
                         relatedId: null,
+                        processed: true,
                         user: { connect: { id: user.id } },
                         promotions: {
                             connect: appliedPromotions.map(p => ({ id: p.id }))

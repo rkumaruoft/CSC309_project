@@ -1,20 +1,5 @@
 #!/usr/bin/env node
-const port = (() => {
-    const args = process.argv;
-
-    if (args.length !== 3) {
-        console.error("usage: node index.js port");
-        process.exit(1);
-    }
-
-    const num = parseInt(args[2], 10);
-    if (isNaN(num)) {
-        console.error("error: argument must be an integer.");
-        process.exit(1);
-    }
-
-    return num;
-})();
+const port = process.env.PORT || 3000;
 
 import express from "express";
 import { PrismaClient } from "@prisma/client";
@@ -24,11 +9,9 @@ const app = express();
 
 
 const allowedOrigins = [
-    "http://localhost:5173",
-    "http://localhost:4173",
-    process.env.FRONTEND_URL
+    process.env.FRONTEND_URL,
+    "http://localhost:5173/"
 ];
-
 const corsOptions = {
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -41,7 +24,6 @@ const corsOptions = {
     allowedHeaders: "Content-Type, Authorization",
     credentials: true
 };
-
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 app.use(express.json());

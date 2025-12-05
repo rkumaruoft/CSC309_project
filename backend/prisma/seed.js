@@ -23,7 +23,7 @@ function maybeSuspicious(amount) {
 async function main() {
     console.log("Seeding DB...");
 
-    // Reset DB in correct order
+    // Reset DB (safe order)
     await prisma.eventGuest.deleteMany();
     await prisma.eventOrganizer.deleteMany();
     await prisma.transaction.deleteMany();
@@ -103,7 +103,7 @@ async function main() {
     // Lookup table for actual DB user records
     const users = {};
     for (const u of usersData) {
-        users[u.utorid] = await prisma.user.findUnique({ where: { utorid: u.utorid } });
+        users[u.utorid] = await prisma.user.findUnique({ where: { utorid: u.utorid }});
     }
 
     const manager = users["manag01"];
@@ -141,6 +141,7 @@ async function main() {
 
         events.push(event);
     }
+    console.log("✔ Events created");
 
     console.log("✔ 20 events created");
 
@@ -214,7 +215,7 @@ async function main() {
         let eventId = null;
 
         if (type === "purchase") {
-            amount = Math.floor(Math.random() * 41) + 10; // 10–50
+            amount = Math.floor(Math.random() * 41) + 10;
         } else if (type === "redemption") {
             amount = -(Math.floor(Math.random() * 36) + 5);
         } else if (type === "event") {
@@ -235,7 +236,7 @@ async function main() {
             suspicious: false
         };
 
-        // 20% chance attach promo
+        // 20% chance apply promo
         if (Math.random() < 0.2) {
             const promo = allPromos[Math.floor(Math.random() * allPromos.length)];
             txData.promotions = { connect: [{ id: promo.id }] };
@@ -269,7 +270,7 @@ async function main() {
 
         await prisma.user.update({
             where: { id: u.id },
-            data: { points: totalPoints }
+            data: { points: txSum._sum.amount || 0 }
         });
     }
 
@@ -286,3 +287,5 @@ main()
     .finally(async () => {
         await prisma.$disconnect();
     });
+
+    

@@ -131,7 +131,7 @@ function Profile() {
                             <col className="profile-edit" />
                         </colgroup>
 
-                        <tbody>
+                        <tbody className="profile-height">
                             <tr>
                                 <th>UTORid:</th>
                                 <td className="text-truncate">{currUser.utorid}</td>

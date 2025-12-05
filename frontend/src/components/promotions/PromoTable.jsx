@@ -3,6 +3,7 @@ import { capitalize } from "../../utils/format/string"
 import LimitSelector from "../LimitSelector";
 import AppliedFilters from "./PromoAppliedFilters";
 import SortButton from "../SortButton";
+import { promoTypeLabel } from "../../utils/format/promotion";
 
 
 function PromoTable({ promos, setClicked, setLimit, filters, setFilters,
@@ -15,7 +16,7 @@ function PromoTable({ promos, setClicked, setLimit, filters, setFilters,
             const new_promo = {};
             new_promo.id = promo.id;
             new_promo.name = promo.name;
-            new_promo.type = capitalize(promo.type);
+            new_promo.type = promoTypeLabel(promo.type);
             new_promo.endTime = new Date(promo.endTime).toDateString();
             new_promo.startTime = new Date(promo.startTime).toDateString();
             new_promos.push(new_promo);
