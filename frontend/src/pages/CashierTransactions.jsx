@@ -23,7 +23,7 @@ export default function CashierTransactions() {
         // Autofill data if navigated from link
         const urlId = searchParams.get("utorid");
         if (urlId) {
-            setTid(urlId);
+            setUtorid(urlId);
         }
     }, [location.searchParams]);
 
