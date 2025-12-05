@@ -25,3 +25,17 @@
 .change-pw-card {
     width: fit-content;
 }
+
+.profile-height tr {
+    height: 48px;        /* fixed height */
+    max-height: 48px;    /* optional if rows could vary */
+}
+
+.profile-height td,
+.profile-height th {
+    height: 48px;
+    max-height: 48px;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    overflow: hidden;
+}
