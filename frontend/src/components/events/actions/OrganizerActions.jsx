@@ -31,9 +31,6 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
     rewardAmount,
     setRewardAmount,
 
-    rewardModel,
-    setRewardModel,
-
     addGuest,
     remGuest,
 
@@ -46,7 +43,6 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
 
     role
 }){
-    console.log(isHappening, awardMode, showAllButtons);
     return (
         <>
             {awardMode === null && isHappening && showAllButtons && (
@@ -81,17 +77,17 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
 
             {awardMode === null && !showAllButtons && addMemb && hasNotEnded && addMode === "o" && (role === "manager" || role === "superuser") && (
                 <div className="d-flex flex-column w-50 mb-2 gap-2">
-                        <h5 className="mb-1" style={{fontWeight: "bold"}}>Add organizer</h5>
-                        <input
-                            name="organizerName"
-                            placeholder="organizer UTORid"
-                            value={organizer}
-                            onChange={(e) => {setOrganizer(e.target.value); setError(null);}}
-                        />
-                        <div className="d-flex flex-row gap-2 mb-2">
-                        <Button variant="success" onClick={() => {addOrganizer(organizer, setOrganizer)}} className="w-50">Add</Button>
-                        <Button variant="warning" onClick={() => {setAddMode(null); setAddingMemb(false); setSAB(true); setError(null); setSubmitted(false);}} className="w-50">Cancel</Button>
-                        </div>
+                    <h5 className="mb-1" style={{fontWeight: "bold"}}>Add organizer</h5>
+                    <input
+                        name="organizerName"
+                        placeholder="organizer UTORid"
+                        value={organizer}
+                        onChange={(e) => {setOrganizer(e.target.value); setError(null);}}
+                    />
+                    <div className="d-flex flex-row gap-2 mb-2">
+                    <Button variant="success" onClick={() => {addOrganizer(organizer, setOrganizer)}} className="w-50">Add</Button>
+                    <Button variant="warning" onClick={() => {setAddMode(null); setAddingMemb(false); setSAB(true); setError(null); setSubmitted(false);}} className="w-50">Cancel</Button>
+                    </div>
                 </div>  
             )}
 
@@ -125,27 +121,25 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
 
             {awardMode === 'single' && isHappening && !showAllButtons && (
                 <>
-                    {error && <div className="alert alert-danger">{error}</div>}
                     {(error == null && submitted) && <div className="alert alert-success">Successfully rewarded {recipientId} {rewardAmount} points</div>}
                     <h5 style={{fontWeight: "bold"}}>Award points</h5>
                     <div className="d-flex flex-row mb-2">
                         <div className="w-100">
                             <label><strong style={{fontWeight: "bolder"}}>Recipient</strong></label>
-                            <input placeholder="Recipient's UTORid" value={recipientId} onChange={(e) => {setRecipientId(e.target.value); setRewardModel(prev => ({...prev, utorid: e.target.value})); setError(null);}} />
+                            <input placeholder="Recipient's UTORid" value={recipientId} onChange={(e) => {setRecipientId(e.target.value); setError(null);}} />
                         </div>
                         <div className="w-100">
                             <label><strong style={{fontWeight: "bolder"}}>Amount</strong></label>
                             <input type="number" placeholder="Amount" value={rewardAmount} onChange={(e) => 
                                 {
-                                    setRewardAmount(e.target.value); 
-                                    setRewardModel(prev => ({...prev, amount: parseInt(e.target.value) || 0}));
+                                    setRewardAmount(e.target.value);
                                     setSubmitted(false);
                                     setError(null);
                                 }} />
                         </div>
                     </div>
                     <div className="d-flex flex-row gap-2 w-50">
-                        <Button className="w-50" variant="success" onClick={() => {rewardGuest(rewardModel, setRewardModel, setRecipientId, setSubmitted);}}>Send</Button>
+                        <Button className="w-50" variant="success" onClick={() => {rewardGuest();}}>Send</Button>
                         <Button className="w-50" variant="danger" onClick={() => {setAwardMode(null); setError(null); setRewardAmount(""); setRecipientId(""); setSAB(true);}}>Cancel</Button>
                     </div>
                 </>
@@ -153,21 +147,17 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
 
             {awardMode === 'all' && isHappening && !showAllButtons && (
                 <>
-                    {error && <div className="alert alert-danger">{error}</div>}
                     {(error == null && submitted) && <div className="alert alert-success">Successfully rewarded everyone {rewardAmount} points</div>}
                     <div className="d-flex flex-column gap-2 w-50">
                         <h5 style={{fontWeight: "bold"}}>Award points</h5>
                         <input placeholder="Amount per guest" type="number" value={rewardAmount} onChange={(e) => 
                         {
-                            setRewardAmount(e.target.value); 
-                            setRewardModel(prev => ({
-                            ...prev,
-                            amount: parseInt(e.target.value) || 0}));
+                            setRewardAmount(e.target.value);
                             setSubmitted(false);
                             setError(null);
                         }} />
                         <div className="d-flex flex-row gap-2">
-                            <Button variant="success" className="w-50" onClick={() => {rewardGuest(rewardModel, setRewardModel, setRecipientId, setSubmitted);}}>Send</Button>
+                            <Button variant="success" className="w-50" onClick={() => {rewardGuest();}}>Send</Button>
                             <Button variant="danger" className="w-50" onClick={() => {setAwardMode(null); setError(null); setRewardAmount(""); setSubmitted(false); setSAB(true);}}>Cancel</Button>
                         </div>
                     </div>

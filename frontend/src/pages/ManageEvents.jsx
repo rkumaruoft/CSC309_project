@@ -3,8 +3,8 @@ import { Button, Form, Col, Container, Image, Row, Table, Modal} from "react-boo
 import CreateEventModal from "../components/events/actions/CreateEventModal";
 import DeleteConfirmModal from "../components/events/actions/DeleteEventModal";
 import EventOrganizerModal from "../components/events/roles/EventOrganizerModal";
-import EventsFilter from "../components/EventsFilter";
-import formatEvents, { fetchAllEvents, createEventBackend, deleteEventBackend, addOrganizerBackend, publishEventBackend, remGuestBackend, fetchSpecificEvent } from "../utils/api/eventActions";
+import EventsFilter from "../components/events/actions/EventsFilter";
+import formatEvents, { fetchAllEvents, createEventBackend, deleteEventBackend, addOrganizerBackend, publishEventBackend, remGuestBackend, fetchSpecificEvent, rewardGuestBackend } from "../utils/api/eventActions";
 import { formatDateTime } from "../utils/api/dateHandling";
 
 export default function ManageEvents() {
@@ -27,9 +27,16 @@ export default function ManageEvents() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [filters, setFilters] = useState({});
     const [showFilter, setShowFilter] = useState(false);
+    const [rsvpFilter, setRSVPfilter] = useState(false);
 
+    // Fetch events on mount
     useEffect(() => {
-        fetchEvents(pageNum);
+        fetchEvents(1);
+    }, []);
+
+    // Fetch events when filters change (reset to page 1)
+    useEffect(() => {
+        fetchEvents(1);
     }, [filters]);
 
     async function createEvent(eventData, setSubmitted) {
@@ -65,7 +72,7 @@ export default function ManageEvents() {
         const res = await addOrganizerBackend(organizer, selectedEvent);
 
         if (res.error != null){
-            setError(data.error);
+            setError(res.error);
         }
 
         setOrganizer(null);
@@ -96,7 +103,7 @@ export default function ManageEvents() {
         const res = await publishEventBackend(selectedEvent);
 
         if (res.error != null){
-            setError(data.error);
+            setError(res.error);
             return;
         }
 
@@ -110,7 +117,7 @@ export default function ManageEvents() {
         const res = await remGuestBackend(selectedEvent, guestId);
 
         if (res.error != null){
-            setError(data.error);
+            setError(res.error);
             return;
         }
 
@@ -143,10 +150,11 @@ export default function ManageEvents() {
     }
 
     async function fetchEvents(page){
-        const data = await fetchAllEvents(page, totalPages);
+        const data = await fetchAllEvents(page, filters, totalPages);
         if (data === null) {
             return;
         }
+        data.results.filter
         setEvents(formatEvents(data.results));
         setPageNum(page);
         setTotalPages(Math.max(1, Math.ceil(data.count / 10)));
@@ -204,10 +212,10 @@ export default function ManageEvents() {
                     </thead>
 
                     <tbody>
-                        {events === null ? (
+                        {events.length === 0 ? (
                             <tr>
                                 <td colSpan={5} className="text-center">
-                                        Page {pageNum} could not be found
+                                    No events found
                                 </td>
                             </tr>
                         ) : (
