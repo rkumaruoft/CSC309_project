@@ -24,6 +24,7 @@ export default function ForgotPassword() {
             const res = await fetch(`${VITE_BACKEND_URL}/auth/resets`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ utorid })
             });
 

@@ -18,6 +18,7 @@ const port = (() => {
 
 import express from "express";
 import { PrismaClient } from "@prisma/client";
+import cookieParser from "cookie-parser";
 import cors from "cors"
 const app = express();
 
@@ -44,6 +45,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser())
 
 // ---------------- Routes ----------------
 import path from "path";
@@ -51,7 +53,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const avatarsPath = path.join(__dirname, "uploads", "avatars");
-app.use("/avatars", express.static(avatarsPath));  // expose avatars under an endpoint
+app.use("/avatars", express.static(avatarsPath));
 
 import userRoutes from "./routes/users.js";
 app.use("/users", userRoutes);

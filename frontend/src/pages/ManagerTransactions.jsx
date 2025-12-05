@@ -66,6 +66,7 @@ export default function ManagerTransactions() {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
+                    credentials: "include"
                 }
             );
 
@@ -146,6 +147,7 @@ export default function ManagerTransactions() {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
                     },
+                    credentials: "include",
                     body: JSON.stringify({ suspicious: flag }),
                 }
             );
@@ -186,6 +188,7 @@ export default function ManagerTransactions() {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
                     },
+                    credentials: "include",
                     body: JSON.stringify({ processed: true }),
                 }
             );
@@ -230,6 +233,7 @@ export default function ManagerTransactions() {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify({
                     utorid: selectedTx.utorid,
                     type: "adjustment",
@@ -368,6 +372,10 @@ export default function ManagerTransactions() {
                                             <td className="text-center">
                                                 {tx.amount} pts
                                             </td>
+                                            {/* <td className="text-center">
+                                                {String(tx.processed)} {/* temporary debug */}
+                                            {/* </td> */}
+
                                             <td className="text-center">
                                                 {tx.processed ? (
                                                     <span className="badge bg-success">

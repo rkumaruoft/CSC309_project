@@ -7,10 +7,10 @@ export default function formatEvents(events) {
     let new_events = [];
     for (const event of events) {
         let remaining_seats = 0;
-        if (event.capacity == null){
+        if (event.capacity == null) {
             remaining_seats = "unlimited";
         }
-        else{remaining_seats = event.capacity - event.numGuests;}
+        else { remaining_seats = event.capacity - event.numGuests; }
         const points = event.pointsRemain + event.pointsAwarded;
         const new_event = {};
         new_event.id = event.id;
@@ -18,7 +18,7 @@ export default function formatEvents(events) {
         new_event.description = event.description;
         new_event.location = event.location;
         new_event.startTime = event.startTime;
-        new_event.endTime = event.endTime;  
+        new_event.endTime = event.endTime;
         new_event.capacity = (event.capacity == null) ? "unlimited" : event.capacity;
         new_event.availableSeats = remaining_seats;
         new_event.pointsRemain = event.pointsRemain || "-1";
@@ -46,7 +46,8 @@ async function fetchPublishedEvents(page, filters, totalPages){
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`
-        }
+        },
+        credentials: "include"
     });
 
     const data = await res.json();
@@ -56,6 +57,7 @@ async function fetchPublishedEvents(page, filters, totalPages){
 // FETCH ALL EVENTS (UNFILTERED ONES TOO)
 async function fetchAllEvents(page, filters, totalPages){
     const token = localStorage.getItem("token");
+
     if (page < 1 || page > totalPages) {
         return;
     }
@@ -67,7 +69,8 @@ async function fetchAllEvents(page, filters, totalPages){
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`
-        }
+        },
+        credentials: "include"
     });
     const data = await res.json();
     return data;
@@ -86,7 +89,8 @@ async function fetchOrganizedEvents(page, totalPages){
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`
-        }
+        },
+        credentials: "include"
     });
     const data = await res.json();
     return data;
@@ -96,13 +100,14 @@ async function fetchOrganizedEvents(page, totalPages){
 async function createEventBackend(eventData){
     const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events`;
-    
+
     const res = await fetch(url, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
         },
+        credentials: "include",
         body: JSON.stringify(eventData)
     });
 
@@ -116,13 +121,14 @@ async function addOrganizerBackend(organizer, selectedEvent){
     const url = `${BACKEND_URL}/events/${selectedEvent.id}/organizers`;
     const payload = { utorid: organizer };
 
-    const res = await fetch(url, 
+    const res = await fetch(url,
         {
             method: "POST",
             headers: {
                 "Content-type": "application/json",
                 Authorization: `Bearer ${token}`
             },
+            credentials: "include",
             body: JSON.stringify(payload)
         }
     )
@@ -138,7 +144,8 @@ async function publishEventBackend(selectedEvent){
     const publish_data = { published: true };
     const res = await fetch(url, {
         method: "PATCH",
-        headers: {"Content-Type": "application/json", Authorization: `Bearer ${token}`},
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        credentials: "include",
         body: JSON.stringify(publish_data)
     });
 
@@ -150,12 +157,14 @@ async function publishEventBackend(selectedEvent){
 async function deleteEventBackend(selectedEvent){
     const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
-        
+
     const res = await fetch(url, {
         method: "DELETE",
         headers: {
             Authorization: `Bearer ${token}`
-        }
+        },
+        credentials: "include"
+
     });
 
     const data = await res.json();
@@ -166,10 +175,11 @@ async function deleteEventBackend(selectedEvent){
 async function addGuestBackend(selectedEvent, guestId){
     const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${selectedEvent.id}/guests`;
-    const params = { utorid: guestId};
+    const params = { utorid: guestId };
     const res = await fetch(url, {
         method: "POST",
-        headers: {"Content-Type": "application/json", Authorization: `Bearer ${token}`},
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        credentials: "include",
         body: JSON.stringify(params)
     });
 
@@ -183,7 +193,8 @@ async function remGuestBackend(selectedEvent, guestId){
     const url = `${BACKEND_URL}/events/${selectedEvent.id}/guests/${guestId}`;
     const res = await fetch(url, {
         method: "DELETE",
-        headers: {Authorization: `Bearer ${token}`}
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include"
     });
 
     const data = await res.json();
@@ -194,10 +205,11 @@ async function fetchSpecificEvent(selectedEvent){
     const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${selectedEvent.id}`;
     const ev = await fetch(url, {
-        method: "GET", 
-        headers: {Authorization: `Bearer ${token}`}
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include"
     });
-    
+
     const data = await ev.json();
     return data;
 }
@@ -205,13 +217,15 @@ async function fetchSpecificEvent(selectedEvent){
 async function rewardGuestBackend(selectedEvent, rewardModel){
     const token = localStorage.getItem("token");
     const url = `${BACKEND_URL}/events/${selectedEvent.id}/transactions`;
-    const res = await fetch(url, 
-        {method: "POST",
-        headers: {
-            "Content-type": "application/json",
-            Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(rewardModel)
+    const res = await fetch(url,
+        {
+            method: "POST",
+            headers: {
+                "Content-type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            credentials: "include",
+            body: JSON.stringify(rewardModel)
         });
     const data = await res.json();
     return data;
@@ -238,6 +252,7 @@ async function saveEditBackend(selectedEvent, editedEvent){
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
         },
+        credentials: "include",
         body: JSON.stringify(update_body)
     });
 
@@ -246,16 +261,18 @@ async function saveEditBackend(selectedEvent, editedEvent){
 }
 
 async function rsvpBackend(event){
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token")
     const url = `${BACKEND_URL}/events/${event.id}/guests/me`;
     const res = await fetch(url, {
-                                    method: "POST",
-                                    headers: {Authorization: `Bearer ${token}`}
-                                });
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include"
+    });
     const data = await res.json();
     return data;
 }
 
-export { fetchPublishedEvents, fetchAllEvents, addOrganizerBackend, fetchOrganizedEvents, createEventBackend, deleteEventBackend,
+export {
+    fetchPublishedEvents, fetchAllEvents, addOrganizerBackend, fetchOrganizedEvents, createEventBackend, deleteEventBackend,
     publishEventBackend, remGuestBackend, fetchSpecificEvent, addGuestBackend, rewardGuestBackend, saveEditBackend, rsvpBackend
- }
+}

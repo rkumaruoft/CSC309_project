@@ -35,6 +35,7 @@ export const AuthProvider = ({ children }) => {
             try {
                 const res = await fetch(`${BACKEND_URL}/users/me`, {
                     headers: { Authorization: `Bearer ${token}` },
+                    credentials: "include"
                 });
 
                 if (!res.ok) {
@@ -76,6 +77,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const res = await fetch(`${BACKEND_URL}/users/me`, {
                 headers: { Authorization: `Bearer ${token}` },
+                credentials : "include"
             });
 
             if (!res.ok) {
@@ -100,6 +102,7 @@ export const AuthProvider = ({ children }) => {
             const res = await fetch(`${BACKEND_URL}/auth/tokens`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ utorid, password }),
             });
 
@@ -124,6 +127,7 @@ export const AuthProvider = ({ children }) => {
             // FETCH PROFILE
             const meRes = await fetch(`${BACKEND_URL}/users/me`, {
                 headers: { Authorization: `Bearer ${data.token}` },
+                credentials: "include"
             });
 
             if (!meRes.ok) return "Failed to retrieve user profile.";
