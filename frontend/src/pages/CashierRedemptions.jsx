@@ -12,26 +12,20 @@ import SortButton from "../components/SortButton";
 function CashierRedemptions() {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
-        // Redemption fetching states
+    // Redemption fetching states
     const [redemptions, setRedemptions] = useState([]);
     const [pageNum, setPageNum] = useState(1);  // start on page 1 of promotions
     const [totalPages, setTotalPages] = useState(1);  // assumes at least one page
     const [limit, setLimit] = useState(10);
-        // Sorting states
+    // Sorting states
     const [sorting, setSorting] = useState(null);
     const [order, setOrder] = useState(null);
-        // Input field states
+    // Input field states
     const [tid, setTid] = useState("");
     const [utorid, setUtorid] = useState("");
 
     const location = useLocation();
-    
-    // Autofill data if navigated from link
     const [searchParams] = useSearchParams();
-    const urlId = searchParams.get("id");
-    if (urlId) {
-        setTid(urlId);
-    }
 
     // ---------- Fetch a page of redemptions (10 at a time, as per the default) ----------
     async function getRedemptionsPage(page, name) {
@@ -80,23 +74,23 @@ function CashierRedemptions() {
         }
 
         // Sort entries according to datatype
-            let sorted = data.results.sort((a, b) => {
-                // Should be strings/numbers
-                if (typeof a[sorting] === "string") {
-                    const fieldA = a[sorting].toUpperCase();
-                    const fieldB = b[sorting].toUpperCase();
+        let sorted = data.results.sort((a, b) => {
+            // Should be strings/numbers
+            if (typeof a[sorting] === "string") {
+                const fieldA = a[sorting].toUpperCase();
+                const fieldB = b[sorting].toUpperCase();
 
-                    if (fieldA < fieldB) {
-                        return -1;
-                    }
-                    if (fieldA > fieldB) {
-                        return 1;
-                    }
-                    return 0;
-                } else if (typeof a[sorting] === "number") {
-                    return a[sorting] - b[sorting];
+                if (fieldA < fieldB) {
+                    return -1;
                 }
-            });
+                if (fieldA > fieldB) {
+                    return 1;
+                }
+                return 0;
+            } else if (typeof a[sorting] === "number") {
+                return a[sorting] - b[sorting];
+            }
+        });
 
         // Reverse if descending
         if (order === "desc") {
@@ -127,6 +121,14 @@ function CashierRedemptions() {
         sortRedemptions(1, utorid);
     }
 
+    useEffect(() => {
+        // Autofill data if navigated from link
+        const urlId = searchParams.get("id");
+        if (urlId) {
+            setTid(urlId);
+        }
+    }, [location.searchParams]);
+
     // ---------- On sorting/order change, sort the table ----------
     useEffect(() => {
         sortRedemptions(1, utorid);
@@ -140,7 +142,7 @@ function CashierRedemptions() {
         setSorting(null);
         setOrder(null);
         sortRedemptions(1, utorid);
-    }, [location, limit]);
+    }, [location.pathname, limit]);
 
     // ---------- On filter, refresh table ----------
     useEffect(() => {
@@ -164,7 +166,7 @@ function CashierRedemptions() {
                 {/* Manual input of transaction */}
                 <Row>
                     <Col xs={10} md={8} lg={6}>
-                    
+
                         <Card className="shadow-sm mb-0" bg="light">
                             <Form className="m-3" onSubmit={process}>
                                 <Form.Group className="d-flex align-items-center">
@@ -185,7 +187,7 @@ function CashierRedemptions() {
                                         disabled={!tid}
                                         variant="success"
                                         type="submit">
-                                            Process
+                                        Process
                                     </Button>
                                 </Form.Group>
                             </Form>
@@ -196,14 +198,14 @@ function CashierRedemptions() {
                     {/* Display success or error */}
                     <Col>
                         {success &&
-                        <Alert variant="success" className="float-end">
-                            {success}
-                        </Alert>}
+                            <Alert variant="success" className="float-end">
+                                {success}
+                            </Alert>}
 
                         {error &&
-                        <Alert variant="danger" className="float-end">
-                            {`Error: ${error}`}
-                        </Alert>}
+                            <Alert variant="danger" className="float-end">
+                                {`Error: ${error}`}
+                            </Alert>}
                     </Col>
                 </Row>
 
@@ -234,7 +236,7 @@ function CashierRedemptions() {
 
                 <Row>
                     <Col>
-                    
+
                         <Table className="shadow-sm" striped responsive hover>
                             <thead className="table-primary">
                                 <tr>
@@ -285,7 +287,7 @@ function CashierRedemptions() {
                                 {(redemptions.length === 0) ? (
                                     <tr>
                                         <td colSpan={4} className="text-center">
-                                                No redemptions could be found
+                                            No redemptions could be found
                                         </td>
                                     </tr>
                                 ) : (
