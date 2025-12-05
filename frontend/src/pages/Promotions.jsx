@@ -9,6 +9,7 @@ import { capitalize, optional } from "../utils/format/string.js";
 import { floatToCurrency, formatRate } from "../utils/format/number.js";
 import { formatTime } from "../utils/format/date.js";
 import "./Promotions.css";
+import { promoTypeLabel } from "../utils/format/promotion";
 
 
 function Promotions() {
@@ -214,7 +215,7 @@ function Promotions() {
 
                                 <tr>
                                     <th>Type:</th>
-                                    <td>{capitalize(currPromo.type)}</td>
+                                    <td>{promoTypeLabel(currPromo.type)}</td>
                                 </tr>
 
                                 <tr>
