@@ -2,6 +2,8 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 // FUNCTION TO FORMAT EVENTS IN A SPECIFIC STYLING
 export default function formatEvents(events) {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const utorid = user.utorid;
     let new_events = [];
     for (const event of events) {
         let remaining_seats = 0;
@@ -24,7 +26,7 @@ export default function formatEvents(events) {
         new_event.published = event.published;
         new_event.organizers = event.organizers.map(u => u.name);
         new_event.guests = event.guests.map(u => u.name);
-        
+        new_event.isRSVPd = (event.guests.some(guest => guest.utorid === utorid) ? "yes" : "no");
         new_events.push(new_event);
     }
     return new_events;
@@ -46,6 +48,7 @@ async function fetchPublishedEvents(page, filters, totalPages){
             Authorization: `Bearer ${token}`
         }
     });
+
     const data = await res.json();
     return data;
 }

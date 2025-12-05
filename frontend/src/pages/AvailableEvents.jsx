@@ -15,7 +15,6 @@ export default function AvailableEvents() {
     const [rsvp, setRSVP] = useState(false);
     const [error, setError] = useState("");
     const [filters, setFilters] = useState({});
-    const [showFilter, setShowFilter] = useState(false);
 
     useEffect(() => {
         fetchEvents(1);
@@ -67,7 +66,9 @@ export default function AvailableEvents() {
         if (data === null) {
             return;
         }
-        setEvents(formatEvents(data.results));
+        
+        const formattedEvents = formatEvents(data.results);
+        setEvents(formattedEvents);
         setPageNum(page);
         setTotalPages(Math.max(1, Math.ceil(data.count / 10)));
     }
@@ -79,14 +80,6 @@ export default function AvailableEvents() {
                 <Form.Label className="d-flex flex-row">
                     <div className="d-flex align-items-center gap-1">
                     <h1>Available Events</h1>
-                    { (role === "manager" || role === "superuser") &&
-                        <Image
-                            src="../../filter.svg"
-                            alt="Filter"
-                            className="filter opacity-75"
-                            onClick={() => setShowFilter(!showFilter)}
-                        />
-                    }
                     </div>
                 </Form.Label>
             </Col>
@@ -104,6 +97,7 @@ export default function AvailableEvents() {
                             <th>Starts at</th>
                             <th>Ends at</th>
                             <th>Seats left</th>
+                            <th>Attending</th>
                         </tr>
                     </thead>
 
@@ -122,6 +116,7 @@ export default function AvailableEvents() {
                                     <td>{formatDateTime(item.startTime)}</td>
                                     <td>{formatDateTime(item.endTime)}</td>
                                     <td>{item.availableSeats}</td>
+                                    <td>{item.isRSVPd}</td>
                                 </tr>
                             ))
                         )}

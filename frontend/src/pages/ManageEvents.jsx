@@ -4,7 +4,7 @@ import CreateEventModal from "../components/events/actions/CreateEventModal";
 import DeleteConfirmModal from "../components/events/actions/DeleteEventModal";
 import EventOrganizerModal from "../components/events/roles/EventOrganizerModal";
 import EventsFilter from "../components/events/actions/EventsFilter";
-import formatEvents, { fetchAllEvents, createEventBackend, deleteEventBackend, addOrganizerBackend, publishEventBackend, remGuestBackend, fetchSpecificEvent } from "../utils/api/eventActions";
+import formatEvents, { fetchAllEvents, createEventBackend, deleteEventBackend, addOrganizerBackend, publishEventBackend, remGuestBackend, fetchSpecificEvent, rewardGuestBackend } from "../utils/api/eventActions";
 import { formatDateTime } from "../utils/api/dateHandling";
 
 export default function ManageEvents() {
@@ -27,6 +27,7 @@ export default function ManageEvents() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [filters, setFilters] = useState({});
     const [showFilter, setShowFilter] = useState(false);
+    const [rsvpFilter, setRSVPfilter] = useState(false);
 
     // Fetch events on mount
     useEffect(() => {
@@ -153,6 +154,7 @@ export default function ManageEvents() {
         if (data === null) {
             return;
         }
+        data.results.filter
         setEvents(formatEvents(data.results));
         setPageNum(page);
         setTotalPages(Math.max(1, Math.ceil(data.count / 10)));
