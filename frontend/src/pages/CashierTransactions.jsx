@@ -85,6 +85,7 @@ export default function CashierTransactions() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
+        credentials: "include",
         body: JSON.stringify(payload)
       });
 

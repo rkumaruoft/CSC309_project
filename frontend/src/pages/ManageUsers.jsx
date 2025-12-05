@@ -138,6 +138,7 @@ export default function ManageUsers() {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify(payload),
         });
 
@@ -205,6 +206,7 @@ export default function ManageUsers() {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify(newUser),
             });
 
