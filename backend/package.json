@@ -5,8 +5,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "build": "npm install --production",
-    "start": "node --max-old-space-size=256 index.js",
+    "build": "npm install",
+    "start": "node index.js",
     "postinstall": "npx prisma generate"
   },
   "prisma": {
