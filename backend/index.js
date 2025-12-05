@@ -65,6 +65,8 @@ import eventRoutes from "./routes/events.js";
 app.use("/events", eventRoutes);
 import promotionRoutes from "./routes/promotions.js";
 app.use("/promotions", promotionRoutes);
+import analyticsRouter from "./routes/analytics.js";
+app.use("/analytics", analyticsRouter);
 
 // ---------------- HEALTHCHECK ----------------
 app.get('/health', (req, res) => {

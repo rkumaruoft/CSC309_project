@@ -1,12 +1,13 @@
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
-async function getAllPromos(page, filters) {
+async function getAllPromos(page, limit, filters) {
     const token = localStorage.getItem("token");
 
     // Format query params (assumes valid filters)
     const params = {
         page: page,
+        limit: limit,
         ...filters
     };
     const url = `${VITE_BACKEND_URL}/promotions?${new URLSearchParams(params).toString()}`;
@@ -48,4 +49,58 @@ async function getPromoId(id) {
     return data;
 }
 
-export { getAllPromos, getPromoId };
+async function delPromoId(id) {
+    const token = localStorage.getItem("token");
+
+    // Sending backend request
+    const res = await fetch(`${VITE_BACKEND_URL}/promotions/${id}`, {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    // Handle request failure
+    if (!res.ok) {
+        const data = await res.json();
+        return data;
+    }
+
+    return {success: true};
+}
+
+async function patchPromoId(id, body) {
+    const token = localStorage.getItem("token");
+
+    // Sending backend request
+    const res = await fetch(`${VITE_BACKEND_URL}/promotions/${id}`, {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    return data;
+}
+
+async function postPromo(body) {
+    const token = localStorage.getItem("token");
+
+    // Sending backend request
+    const res = await fetch(`${VITE_BACKEND_URL}/promotions`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    return data;
+}
+
+export { getAllPromos, getPromoId, delPromoId, patchPromoId, postPromo };

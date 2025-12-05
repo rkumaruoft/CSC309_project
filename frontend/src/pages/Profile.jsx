@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Container, Form, Image, Modal, Row, Table } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
-import EditModal from "../components/EditModal";
+import EditModal from "../components/profile/EditModal";
 import findAvatar from "../utils/findAvatar";
 import { capitalize } from "../utils/format/string";
 import { formatBirthday } from "../utils/format/date";
+import PasswordModal from "../components/profile/PasswordModal";
 
 
 // Setting up backend URL (TODO: how are we doing this?)
@@ -21,6 +22,7 @@ function Profile() {
     // ---------- Component states ----------
     const [hovering, setHovering] = useState("");
     const [edit, setEdit] = useState("");
+    const [changingPw, setChangingPw] = useState(false);
     const [error, setError] = useState("");  // TODO: add error display somewhere
 
     const location = useLocation();
@@ -109,7 +111,7 @@ function Profile() {
         {/* Label for page */}
         <Row className="justify-content-center align-items-center mt-5">
             <Col>
-                <Form.Label id="profile-label" className="d-block mb-3">
+                <Form.Label className="d-block mb-3">
                     <h1>{currUser ? `${capitalize(currUser.name)}'s` : "Your"} Profile</h1>
                 </Form.Label>
             </Col>
@@ -119,69 +121,75 @@ function Profile() {
         <Row>
             <Col xs={7}>
 
-                <Card>
+                <Card className="p-2 shadow-sm">
                     {currUser &&
-                        <Table className="profile-table" aria-labelledby="profile-label" borderless responsive>
-                            <colgroup>
-                                <col className="profile-key" />
-                                <col className="profile-data" />
-                                <col className="profile-edit" />
-                            </colgroup>
+                    <Table className="profile-table" borderless responsive>
+                        <colgroup>
+                            <col className="profile-key" />
+                            <col className="profile-data" />
+                            <col className="profile-edit" />
+                        </colgroup>
 
-                            <tbody>
-                                <tr>
-                                    <th>UTORid:</th>
-                                    <td className="text-truncate">{currUser.utorid}</td>
-                                </tr>
-                                <tr onMouseEnter={() => setHovering("name")}
-                                    onMouseLeave={() => setHovering("")}>
-                                    <th>Name:</th>
-                                    <td className="text-truncate">{capitalize(currUser.name)}</td>
-                                    <td>
-                                        <Button
-                                            onClick={() => setEdit("name")}
-                                            className={hovering === "name" ? "visible" : "invisible"}
-                                            size="sm">
-                                            Edit
-                                        </Button>
-                                    </td>
-                                </tr>
-                                <tr onMouseEnter={() => setHovering("email")}
-                                    onMouseLeave={() => setHovering("")}>
-                                    <th>Email:</th>
-                                    <td className="text-truncate">{currUser.email}</td>
-                                    <td>
-                                        <Button
-                                            onClick={() => setEdit("email")}
-                                            className={hovering === "email" ? "visible" : "invisible"}
-                                            size="sm">
-                                            Edit
-                                        </Button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Verified:</th>
-                                    <td className="text-truncate">{formatVerified(currUser.verified)}</td>
-                                </tr>
-                                <tr onMouseEnter={() => setHovering("birthday")}
-                                    onMouseLeave={() => setHovering("")}>
-                                    <th>Birthday:</th>
-                                    <td className="text-truncate">{formatBirthday(currUser.birthday)}</td>
-                                    <td>
-                                        <Button
-                                            onClick={() => setEdit("birthday")}
-                                            className={hovering === "birthday" ? "visible" : "invisible"}
-                                            size="sm">
-                                            Edit
-                                        </Button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Points:</th>
-                                    <td className="text-truncate">{currUser.points}</td>
-                                </tr>
-                            </tbody>
-                        </Table>}
+                        <tbody>
+                            <tr>
+                                <th>UTORid:</th>
+                                <td className="text-truncate">{currUser.utorid}</td>
+                            </tr>
+                            <tr onMouseEnter={() => setHovering("name")}
+                                onMouseLeave={() => setHovering("")}>
+                                <th>Name:</th>
+                                <td className="text-truncate">{capitalize(currUser.name)}</td>
+                                <td>
+                                    <Button
+                                        onClick={() => setEdit("name")}
+                                        className={hovering === "name" ? "visible" : "invisible"}
+                                        size="sm">
+                                        Edit
+                                    </Button>
+                                </td>
+                            </tr>
+                            <tr onMouseEnter={() => setHovering("email")}
+                                onMouseLeave={() => setHovering("")}>
+                                <th>Email:</th>
+                                <td className="text-truncate">{currUser.email}</td>
+                                <td>
+                                    <Button
+                                        onClick={() => setEdit("email")}
+                                        className={hovering === "email" ? "visible" : "invisible"}
+                                        size="sm">
+                                        Edit
+                                    </Button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Verified:</th>
+                                <td className="text-truncate">{formatVerified(currUser.verified)}</td>
+                            </tr>
+                            <tr onMouseEnter={() => setHovering("birthday")}
+                                onMouseLeave={() => setHovering("")}>
+                                <th>Birthday:</th>
+                                <td className="text-truncate">{formatBirthday(currUser.birthday)}</td>
+                                <td>
+                                    <Button
+                                        onClick={() => setEdit("birthday")}
+                                        className={hovering === "birthday" ? "visible" : "invisible"}
+                                        size="sm">
+                                        Edit
+                                    </Button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Points:</th>
+                                <td className="text-truncate">{currUser.points}</td>
+                            </tr>
+                        </tbody>
+                    </Table>}
+
+                    {changes &&
+                    <div className="d-flex">
+                        <Button className="me-2" onClick={updateUser}>Save Changes</Button>
+                        <Button variant="secondary" onClick={clearChanges}>Clear</Button>
+                    </div>}
                 </Card>
 
             </Col>
@@ -212,14 +220,23 @@ function Profile() {
             </Col>
         </Row>
 
-        {/* Save and clear buttons */}
-        {changes &&
-            <Row className="mt-2">
-                <Col>
-                    <Button className="me-2" onClick={updateUser}>Save Changes</Button>
-                    <Button variant="secondary" onClick={clearChanges}>Clear</Button>
-                </Col>
-            </Row>}
+        {/* Change password */}
+        {changingPw &&
+        <PasswordModal changing={changingPw} setChanging={setChangingPw} />}
+
+        {/* Change password buttons */}
+        <Row className="mt-2">
+            <Col>
+                <Card className="shadow-sm change-pw-card">
+                    <Card.Body className="d-flex justify-content-center align-items-center gap-2">
+                        <span className="fw-bold">Change Password:</span>
+                        <Button size="sm" onClick={() => setChangingPw(true)}>
+                            Edit
+                        </Button>
+                    </Card.Body>
+                </Card>
+            </Col>
+        </Row>
 
         {/* The edit field */}
         <Row>

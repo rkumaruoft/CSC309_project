@@ -3,11 +3,27 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
+const hash = (pw) => bcrypt.hashSync(pw, 10);
+
+// Random timestamp helper
+function randomDateInLastYear() {
+    const now = new Date();
+    const past = new Date(now);
+    past.setFullYear(past.getFullYear() - 1);
+    return new Date(past.getTime() + Math.random() * (now.getTime() - past.getTime()));
+}
+
+function maybeSuspicious(amount) {
+    if (amount < -40 && Math.random() < 0.3) return true;
+    if (amount < 0 && Math.random() < 0.05) return true;
+    if (Math.random() < 0.02) return true;
+    return false;
+}
 
 async function main() {
-    console.log("🌱 Seeding database...");
+    console.log("Seeding DB...");
 
-    // ---- Clear DB in correct order ----
+    // Reset DB in correct order
     await prisma.eventGuest.deleteMany();
     await prisma.eventOrganizer.deleteMany();
     await prisma.transaction.deleteMany();
@@ -15,11 +31,37 @@ async function main() {
     await prisma.event.deleteMany();
     await prisma.user.deleteMany();
 
-    const hash = (pw) => bcrypt.hashSync(pw, 10);
-
-    // ---- Create 10+ Users ----
-    const usersData = [
-        // Regulars
+    // ============================================================
+    // USERS (50) — ALL START WITH 100 POINTS
+    // ============================================================
+    const staticUsers = [
+        {
+            utorid: "super01",
+            name: "Super Admin",
+            email: "superuser@mail.utoronto.ca",
+            password: hash("Password123!"),
+            role: "superuser",
+            verified: true,
+            points: 100
+        },
+        {
+            utorid: "manag01",
+            name: "Manager Jane",
+            email: "manager@mail.utoronto.ca",
+            password: hash("Password123!"),
+            role: "manager",
+            verified: true,
+            points: 100
+        },
+        {
+            utorid: "cash001",
+            name: "Cashier Bob",
+            email: "cashier@mail.utoronto.ca",
+            password: hash("Password123!"),
+            role: "cashier",
+            verified: true,
+            points: 100
+        },
         {
             utorid: "regular1",
             name: "Regular One",
@@ -27,7 +69,7 @@ async function main() {
             password: hash("Password123!"),
             role: "regular",
             verified: true,
-            points: 50
+            points: 100
         },
         {
             utorid: "regular2",
@@ -36,115 +78,57 @@ async function main() {
             password: hash("Password123!"),
             role: "regular",
             verified: true,
-            points: 75
+            points: 100
         },
-        {
-            utorid: "regular3",
-            name: "Regular Three",
-            email: "regular3@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "regular",
-            verified: true
-        },
-        {
-            utorid: "regular4",
-            name: "Regular Four",
-            email: "regular4@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "regular",
-            verified: true
-        },
-        {
-            utorid: "regular5",
-            name: "Regular Five",
-            email: "regular5@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "regular",
-            verified: true
-        },
-
-        // Cashier
-        {
-            utorid: "cash001",
-            name: "Cashier User",
-            email: "cashier@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "cashier",
-            verified: true
-        },
-
-        // Manager
-        {
-            utorid: "manag01",
-            name: "Manager User",
-            email: "manager@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "manager",
-            verified: true
-        },
-
-        // Superuser
-        {
-            utorid: "super01",
-            name: "Super Admin",
-            email: "superuser@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "superuser",
-            verified: true
-        },
-
-        // Additional filler users
-        {
-            utorid: "test001",
-            name: "Test User 1",
-            email: "test1@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "regular",
-            verified: true
-        },
-        {
-            utorid: "test002",
-            name: "Test User 2",
-            email: "test2@mail.utoronto.ca",
-            password: hash("Password123!"),
-            role: "regular",
-            verified: true
-        }
     ];
 
-    await prisma.user.createMany({ data: usersData });
-    console.log("✔ 10 Users created");
+    const autoUsers = [];
+    for (let i = 1; i <= 45; i++) {
+        autoUsers.push({
+            utorid: `u${i.toString().padStart(3, "0")}`,
+            name: `User ${i}`,
+            email: `user${i}@mail.utoronto.ca`,
+            password: hash("Password123!"),
+            role: "regular",
+            verified: true,
+            points: 100
+        });
+    }
 
-    // ---- Fetch Users ----
+    const usersData = [...staticUsers, ...autoUsers];
+    await prisma.user.createMany({ data: usersData });
+
+    console.log("✔ 50 users created (all start with 100 points)");
+
+    // Lookup table for actual DB user records
     const users = {};
     for (const u of usersData) {
         users[u.utorid] = await prisma.user.findUnique({ where: { utorid: u.utorid } });
     }
 
-    // Primary referenced users
-    const regular1 = users["regular1"];
-    const regular2 = users["regular2"];
-    const regular3 = users["regular3"];
-    const regular4 = users["regular4"];
-    const regular5 = users["regular5"];
     const manager = users["manag01"];
-    const cashier = users["cash001"];
     const superuser = users["super01"];
-    // ---- Create 5 Events ----
-    const createdEvents = [];
-    const baseTime = Date.now();
+    const cashier = users["cash001"];
+    const allUsersArr = Object.values(users);
 
-    for (let i = 1; i <= 5; i++) {
+    // ============================================================
+    // EVENTS (20)
+    // ============================================================
+    const events = [];
+    for (let i = 1; i <= 20; i++) {
+        const start = randomDateInLastYear();
+        const end = new Date(start.getTime() + 2 * 3600000);
+
         const event = await prisma.event.create({
             data: {
-                name: `Sample Event ${i}`,
-                description: `Event #${i} description`,
+                name: `Campus Event ${i}`,
+                description: `Auto generated event ${i}`,
                 location: "Bahen Centre",
-                startTime: new Date(baseTime + i * 3600000),
-                endTime: new Date(baseTime + (i * 3600000) + 7200000),
+                startTime: start,
+                endTime: end,
                 capacity: 100,
                 pointsRemain: 200,
-                pointsAwarded: 5 + i,
+                pointsAwarded: 5 + (i % 6),
                 published: true,
                 organizers: {
                     create: [
@@ -155,108 +139,144 @@ async function main() {
             }
         });
 
-        createdEvents.push(event);
+        events.push(event);
     }
 
-    console.log("✔ 5 Events created");
+    console.log("✔ 20 events created");
 
-    // ---- Event Guests ----
-    await prisma.eventGuest.createMany({
-        data: [
-            { userId: regular1.id, eventId: createdEvents[0].id },
-            { userId: regular2.id, eventId: createdEvents[0].id },
-            { userId: cashier.id, eventId: createdEvents[1].id },
-            { userId: regular1.id, eventId: createdEvents[2].id },
-            { userId: regular3.id, eventId: createdEvents[3].id }
-        ]
-    });
+    // ============================================================
+    // PROMOTIONS (8)
+    // ============================================================
+    const promos = [
+        {
+            name: "Welcome Bonus", type: "onetime", points: 10,
+            startTime: new Date(), endTime: new Date(Date.now() + 86400000 * 20)
+        },
 
-    console.log("✔ Event guests added");
+        {
+            name: "Holiday Double", type: "automatic", rate: 1.0,
+            startTime: new Date(Date.now() - 86400000 * 20), endTime: new Date(Date.now() + 86400000 * 20)
+        },
 
-    // ---- Create 5 Promotions ----
-    await prisma.promotion.createMany({
-        data: [
-            {
-                name: "Welcome Bonus",
-                description: "Gives 10 points",
-                type: "onetime",
-                startTime: new Date(),
-                endTime: new Date(Date.now() + 7 * 86400000),
-                points: 10
-            },
-            {
-                name: "Purchase Booster",
-                description: "Earn +5% points",
-                type: "automatic",
-                startTime: new Date(),
-                endTime: new Date(Date.now() + 30 * 86400000),
-                rate: 0.05
-            },
-            {
-                name: "Event Bonus",
-                description: "Attend and earn +3 points",
-                type: "automatic",
-                startTime: new Date(),
-                endTime: new Date(Date.now() + 14 * 86400000),
-                points: 3
-            },
-            {
-                name: "Holiday 2x",
-                description: "Double event points",
-                type: "automatic",
-                startTime: new Date(),
-                endTime: new Date(Date.now() + 10 * 86400000),
-                rate: 1.0
-            },
-            {
-                name: "Winter Reward",
-                description: "5 points for winter tasks",
-                type: "onetime",
-                startTime: new Date(),
-                endTime: new Date(Date.now() + 21 * 86400000),
-                points: 5
-            }
-        ]
-    });
+        {
+            name: "Exam Stress Relief", type: "onetime", points: 5,
+            startTime: new Date(), endTime: new Date(Date.now() + 86400000 * 40)
+        },
 
-    console.log("✔ 5 Promotions created");
+        {
+            name: "Loyalty Booster", type: "automatic", rate: 0.05,
+            startTime: new Date(), endTime: new Date(Date.now() + 86400000 * 200)
+        },
 
-    // ---- Create 30 Transactions ----
-    const transactionTypes = ["purchase", "redemption", "event"];
+        {
+            name: "Event Plus", type: "automatic", points: 3,
+            startTime: new Date(), endTime: new Date(Date.now() + 86400000 * 100)
+        },
 
-    const allUsersArr = Object.values(users);
-    let txCount = 0;
+        {
+            name: "New Year Bonus", type: "onetime", points: 5,
+            startTime: new Date(), endTime: new Date(Date.now() + 86400000 * 50)
+        },
 
-    for (let i = 0; i < 30; i++) {
-        const user = allUsersArr[i % allUsersArr.length];
-        const type = transactionTypes[i % 3];
+        {
+            name: "Frosh Week special", type: "automatic",
+            startTime: new Date(), endTime: new Date(Date.now() + 86400000 * 60)
+        },
+
+        {
+            name: "Random Surprise", type: "onetime", points: 2,
+            startTime: new Date(), endTime: new Date(Date.now() + 86400000 * 15)
+        }
+    ];
+
+    await prisma.promotion.createMany({ data: promos });
+    const allPromos = await prisma.promotion.findMany();
+
+    console.log("✔ 8 promotions created");
+
+    // ============================================================
+    // TRANSACTIONS (200)
+    // ============================================================
+    const TX_COUNT = 200;
+
+    for (let i = 0; i < TX_COUNT; i++) {
+        const timestamp = randomDateInLastYear();
+
+        // choose user
+        const user = allUsersArr[Math.floor(Math.random() * allUsersArr.length)];
+        const typeRoll = Math.random();
+
+        let type = "purchase";
+        if (typeRoll > 0.6) type = "redemption";
+        if (typeRoll > 0.85) type = "event";
+
+        let amount = 0;
+        let eventId = null;
+
+        if (type === "purchase") {
+            amount = Math.floor(Math.random() * 41) + 10; // 10–50
+        } else if (type === "redemption") {
+            amount = -(Math.floor(Math.random() * 36) + 5);
+        } else if (type === "event") {
+            const ev = events[Math.floor(Math.random() * events.length)];
+            eventId = ev.id;
+            amount = ev.pointsAwarded;
+        }
 
         const txData = {
+            userId: user.id,
             type,
-            amount: type === "redemption" ? -10 : 10,
-            remark: `Seed transaction #${i + 1}`,
+            amount,
+            eventId,
+            processed: true,
+            remark: `Seed tx #${i + 1}`,
             createdBy: "seed",
-            userId: user.id
+            createdAt: timestamp,
+            suspicious: false
         };
 
-        // Event transaction linkage for every 3rd
-        if (type === "event") {
-            const eventIdx = i % createdEvents.length;
-            txData.eventId = createdEvents[eventIdx].id;
-            txData.amount = createdEvents[eventIdx].pointsAwarded;
+        // 20% chance attach promo
+        if (Math.random() < 0.2) {
+            const promo = allPromos[Math.floor(Math.random() * allPromos.length)];
+            txData.promotions = { connect: [{ id: promo.id }] };
         }
 
         await prisma.transaction.create({ data: txData });
-        txCount++;
     }
 
-    console.log(`✔ ${txCount} Transactions created`);
+    console.log(`✔ ${TX_COUNT} transactions created`);
 
-    console.log("🌱 Seeding complete!");
+    // ============================================================
+    // RECALCULATE USER POINT BALANCES (KEEP THIS!)
+    // ============================================================
+
+    console.log("🔄 Recalculating user point balances...");
+
+    const allUsersAfter = await prisma.user.findMany({
+        select: { id: true }
+    });
+
+    for (const u of allUsersAfter) {
+        const txSum = await prisma.transaction.aggregate({
+            _sum: { amount: true },
+            where: { userId: u.id }
+        });
+
+        const totalPoints = txSum._sum.amount || 0;
+
+        await prisma.user.update({
+            where: { id: u.id },
+            data: { points: totalPoints }
+        });
+    }
+
+    console.log("✔ User point totals updated");
+
+    console.log("🌱 Seed complete!");
 }
 
 main()
-    .catch((e) => {
+    .catch(e => {
         console.error(e);
         process.exit(1);
     })

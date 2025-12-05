@@ -212,6 +212,7 @@ router.post("/resets/:resetToken", async (req, res) => {
 // ---------------- /auth/register (POST) ----------------
 router.post("/register", async (req, res) => {
     try {
+        // ---------------- Validate allowed fields ----------------
         const allowed = ["utorid", "name", "email", "birthday", "password"];
         if (Object.keys(req.body).some(k => !allowed.includes(k))) {
             return res.status(400).json({ error: "Invalid fields in request" });
@@ -219,22 +220,22 @@ router.post("/register", async (req, res) => {
 
         const { utorid, name, email, birthday, password } = req.body;
 
-        // Required fields
+        // ---------------- Required ----------------
         if (!utorid || !name || !email || !password) {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
-        // UTORid format
+        // ---------------- UTORid ----------------
         if (!/^[A-Za-z0-9]{7,8}$/.test(utorid)) {
             return res.status(400).json({ error: "Invalid UTORid format" });
         }
 
-        // UofT email required
+        // ---------------- Email ----------------
         if (!/^[A-Za-z0-9._%+-]+@mail\.utoronto\.ca$/.test(email)) {
             return res.status(400).json({ error: "Invalid UofT email" });
         }
 
-        // Password strength
+        // ---------------- Password strength ----------------
         const strong =
             password.length >= 8 &&
             password.length <= 20 &&
@@ -247,7 +248,7 @@ router.post("/register", async (req, res) => {
             return res.status(400).json({ error: "Weak password" });
         }
 
-        // Check if UTORid/email already exist
+        // ---------------- Duplicate check ----------------
         const existing = await prisma.user.findFirst({
             where: { OR: [{ utorid }, { email }] }
         });
@@ -258,11 +259,10 @@ router.post("/register", async (req, res) => {
             });
         }
 
-        // Hash password
+        // ---------------- Create user ----------------
         const hashed = await bcrypt.hash(password, 10);
 
-        // Create the new user
-        await prisma.user.create({
+        const newUser = await prisma.user.create({
             data: {
                 utorid,
                 name,
@@ -276,31 +276,45 @@ router.post("/register", async (req, res) => {
             }
         });
 
-        // Generate verification code
+        // ---------------- Verification code ----------------
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = Date.now() + 10 * 60 * 1000;
-
         verificationCodes.set(utorid, { code, expiresAt });
 
-
-        await sendEmail(
+        // ---------------- Send email (no try/catch needed) ----------------
+        const ok = await sendEmail(
             email,
             "Your BANANACreds Verification Code",
             `
-        <p>Hello ${name},</p>
-        <p>Your BANANACreds verification code is:</p>
-        <h2>${code}</h2>
-        <p>This code expires in 10 minutes.</p>
-    `
+                <p>Hello ${name},</p>
+                <p>Your BANANACreds verification code is:</p>
+                <h2>${code}</h2>
+                <p>This code expires in 10 minutes.</p>
+            `
         );
 
+        // ---------------- Handle email failure ----------------
+        if (!ok) {
+            console.error("Email failed — rolling back user");
+
+            await prisma.user.delete({
+                where: { id: newUser.id }
+            });
+
+            return res.status(400).json({
+                error: "Unable to send verification email. Please ensure your email is valid."
+            });
+        }
+
+        // ---------------- Success ----------------
         return res.status(201).json({ message: "User created" });
 
     } catch (err) {
-        console.error(err);
+        console.error("REGISTER ERROR:", err);
         return res.status(500).json({ error: "Server error" });
     }
 });
+
 
 // ---------------- /auth/verify (POST) ----------------
 router.post("/verify", async (req, res) => {

@@ -74,8 +74,16 @@ router.post(
 
             // ---- minSpending ----
             if (minSpending !== undefined) {
-                if (typeof minSpending !== "number" || minSpending < 0) {
-                    return res.status(400).json({ error: "Invalid minSpending" });
+                if (type === "automatic") {
+                    if (minSpending !== 0) {
+                        return res.status(400).json({
+                            error: "Automatic promotions must have minSpending = 0"
+                        });
+                    }
+                } else {
+                    if (typeof minSpending !== "number" || minSpending < 0) {
+                        return res.status(400).json({ error: "Invalid minSpending" });
+                    }
                 }
             } else {
                 minSpending = null;
@@ -347,7 +355,8 @@ router.patch(
             const allowed = [
                 "name", "description",
                 "startTime", "endTime",
-                "minSpending", "rate", "points"
+                "minSpending", "rate",
+                "points", "type"
             ];
             const keys = Object.keys(req.body);
 
@@ -371,6 +380,15 @@ router.patch(
                     return res.status(400).json({ error: "Invalid description" });
                 }
                 updates.description = req.body.description;
+            }
+
+            // ---------- type ----------
+            if (req.body.type !== undefined) {
+                const types = ["automatic, onetime"];
+                if (types.includes(req.body.type)) {
+                    return res.status(400).json({ error: "Invalid type" });
+                }
+                updates.type = req.body.type;
             }
 
             // ---------- startTime ----------
@@ -422,8 +440,10 @@ router.patch(
 
             // ---------- rate ----------
             if (req.body.rate !== undefined) {
-                const r = req.body.rate;
-                if (typeof r !== "number" || r <= 0) {
+                let r = req.body.rate;
+                if (!r) {
+                    r = null;
+                } else if (typeof r !== "number" || r <= 0) {
                     return res.status(400).json({ error: "Invalid rate" });
                 }
                 updates.rate = r;
@@ -431,8 +451,10 @@ router.patch(
 
             // ---------- points ----------
             if (req.body.points !== undefined) {
-                const pts = req.body.points;
-                if (!Number.isInteger(pts) || pts < 0) {
+                let pts = req.body.points;
+                if (!pts) {
+                    pts = null;
+                } else if (!Number.isInteger(pts) || pts < 0) {
                     return res.status(400).json({ error: "Invalid points" });
                 }
                 updates.points = pts;

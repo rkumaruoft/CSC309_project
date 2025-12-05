@@ -134,11 +134,20 @@ export const AuthProvider = ({ children }) => {
             setUser(userData);
 
             // Initialize role
-            setCurrentRole(userData.role || "regular");
-            localStorage.setItem("currentRole", userData.role || "regular");
+            const role = userData.role || "regular";
+            setCurrentRole(role);
+            localStorage.setItem("currentRole", role);
             localStorage.setItem("user", JSON.stringify(userData));
 
-            navigate("/dashboard");
+            // Role-based navigation
+            if (role === "manager" || role === "superuser") {
+                Promise.resolve().then(() => navigate("/managerDashboard"));
+            } else if (role === "cashier") {
+                Promise.resolve().then(() => navigate("/cashierDashboard"));
+            } else {
+                Promise.resolve().then(() => navigate("/dashboard"));
+            }
+
             return null;
         } catch (e) {
             return "Network error: " + e.message;
@@ -183,11 +192,43 @@ export const AuthProvider = ({ children }) => {
 
     const availableRoles = computeAvailableRoles(user || {});
 
+    // ----------------------------------------------------
+    // SWITCH INTERFACE ROLE
+    // ----------------------------------------------------
     const switchRole = (role) => {
         if (!availableRoles.includes(role)) return;
-        setCurrentRole(role);
-        localStorage.setItem("currentRole", role);
+
+        let targetRole = role;
+
+        // Superuser selecting "manager" → keep superuser interface
+        if (role === "manager" && user && user.role === "superuser") {
+            targetRole = "superuser";
+        }
+
+        // Save new interface role
+        setCurrentRole(targetRole);
+        localStorage.setItem("currentRole", targetRole);
+
+        // Redirect + full refresh
+        if (targetRole === "manager" || targetRole === "superuser") {
+            Promise.resolve().then(() => {
+                navigate("/managerDashboard");
+                setTimeout(() => window.location.reload(), 10);
+            });
+        } else if (targetRole === "cashier") {
+            Promise.resolve().then(() => {
+                navigate("/cashierDashboard");
+                setTimeout(() => window.location.reload(), 10);
+            });
+        } else {
+            Promise.resolve().then(() => {
+                navigate("/dashboard");
+                setTimeout(() => window.location.reload(), 10);
+            });
+        }
     };
+
+
 
     return (
         <AuthContext.Provider

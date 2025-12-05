@@ -4,66 +4,105 @@ import { useAuth } from "./contexts/AuthContext";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Home from "./pages/Home";
+import RegularUserDashboard from "./pages/RegularUserDashboard.jsx";
 import Transfers from "./pages/Transfers";
 import Promotions from "./pages/Promotions.jsx";
 import Transactions from "./pages/Transactions.jsx";
 import Redemption from "./pages/Redemption.jsx";
-import EventsList from "./pages/EventsList.jsx";
+import AvailableEvents from "./pages/AvailableEvents.jsx";
+import OrganizedEvents from "./pages/OrganizedEvents.jsx";
+import ManageEvents from "./pages/ManageEvents.jsx";
 import RequireRole from "./components/RequireRole.jsx";
 import CashierTransactions from "./pages/CashierTransactions.jsx";
 import CashierRedemptions from "./pages/CashierRedemptions.jsx";
+import CashierDashboard from "./pages/CashierDashboard.jsx";
 import Verify from "./pages/Verify.jsx";
 import Profile from "./pages/Profile.jsx";
 import ManageUsers from "./pages/ManageUsers.jsx";
 import ProfileQrModal from "./components/ProfileQrModal.jsx";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ManagePromotions from "./pages/ManagePromotions.jsx";
+import ManagerDashboard from "./pages/ManagerDashboard.jsx";
+import ManagerTransactions from "./pages/ManagerTransactions.jsx";
+import { useEffect } from "react";
+
+function NotFound() {
+    useEffect(() => {
+        document.title = "Page Not Found";
+    }, []);
+
+    return <h2 className="container mt-4">Page Not Found</h2>
+}
 
 export default function App() {
     const { initialized } = useAuth();
 
     if (!initialized) {
+        document.title = "Loading...";
         return <div className="container mt-4">Loading...</div>;
     }
 
     return (
         <>
             <Routes>
-                {/* Public routes */}
-                <Route path="/login" element={<Layout><Login /></Layout>} />
-                <Route path="/register" element={<Layout><Register /></Layout>} />
-                <Route path="/forgot-password" element={<Layout><ForgotPassword /></Layout>} />
+
+                {/* --------------------------------------------------------
+                   PUBLIC ROUTES (No Auth Required)
+                --------------------------------------------------------- */}
+                <Route path="/login" element={<Layout title="Login"><Login /></Layout>} />
+                <Route path="/register" element={<Layout title="Register"><Register /></Layout>} />
+                <Route path="/forgot-password" element={<Layout title="Forgot Password"><ForgotPassword /></Layout>} />
                 <Route path="/reset-password" element={<Layout><ResetPassword /></Layout>} />
                 <Route path="/verify" element={<Layout><Verify /></Layout>} />
 
-                {/* Authenticated general pages */}
-                <Route path="/dashboard" element={<Layout><Home /></Layout>} />
-                <Route path="/transfers" element={<Layout><Transfers /></Layout>} />
-                <Route path="/events" element={<Layout><EventsList /></Layout>} />
-                <Route path="/promotions" element={<Layout><Promotions /></Layout>} />
-                <Route path="/redemption" element={<Layout><Redemption /></Layout>} />
-                <Route path="/profile" element={<Layout><Profile /></Layout>} />
+                {/* --------------------------------------------------------
+                   AUTHENTICATED ROUTES (ALL LOGGED-IN USERS)
+                   Roles: regular, cashier, manager, superuser
+                --------------------------------------------------------- */}
+                <Route element={<RequireRole allowedRoles={["regular", "cashier", "manager", "superuser"]} />}>
+                    <Route path="/dashboard" element={<Layout title="Home"><RegularUserDashboard /></Layout>} />
+                    <Route path="/transfers" element={<Layout title="Transfers"><Transfers /></Layout>} />
+                    <Route path="/events" element={<Layout title="Events"><AvailableEvents /></Layout>} />
+                    <Route path="/events/myEvents" element={<Layout title="My Events"><OrganizedEvents /></Layout>}/>
+                    <Route path="/promotions" element={<Layout title="Promotions"><Promotions /></Layout>} />
+                    <Route path="/profile" element={<Layout title="Profile"><Profile /></Layout>} />
+                </Route>
 
-                {/* Regular User Only */}
+                {/* --------------------------------------------------------
+                   REGULAR USERS ONLY
+                --------------------------------------------------------- */}
                 <Route element={<RequireRole allowedRoles={["regular"]} />}>
-                    <Route path="/transactions" element={<Layout><Transactions /></Layout>} />
+                    <Route path="/transactions" element={<Layout title="Transactions"><Transactions /></Layout>} />
+                    <Route path="/redemption" element={<Layout title="Redemptions"><Redemption /></Layout>} />
                 </Route>
 
-                {/* Cashier Only */}
+                {/* --------------------------------------------------------
+                   CASHIERS ONLY
+                --------------------------------------------------------- */}
                 <Route element={<RequireRole allowedRoles={["cashier"]} />}>
-                    <Route path="/cashier/transactions" element={<Layout><CashierTransactions /></Layout>} />
-                    <Route path="/cashier/redemption" element={<Layout><CashierRedemptions /></Layout>} />
+                    <Route path="/cashierDashboard" element={<Layout title="Dashboard - Cashier"><CashierDashboard /></Layout>} />
+                    <Route path="/cashier/transactions" element={<Layout title="Transactions - Cashier"><CashierTransactions /></Layout>} />
+                    <Route path="/cashier/redemption" element={<Layout title="Redemptions - Cashier"><CashierRedemptions /></Layout>} />
                 </Route>
 
-                {/* Manager / Superuser Only */}
+                {/* --------------------------------------------------------
+                   MANAGERS + SUPERUSERS ONLY
+                --------------------------------------------------------- */}
                 <Route element={<RequireRole allowedRoles={["manager", "superuser"]} />}>
-                    <Route path="/manageUsers" element={<Layout><ManageUsers /></Layout>} />
+                    <Route path="/managerDashboard" element={<Layout title="Home"><ManagerDashboard /></Layout>} />
+                    <Route path="/manageUsers" element={<Layout title="Manage Users"><ManageUsers /></Layout>} />
+                    <Route path="/managePromotions" element={<Layout title="Manage Promotions"><ManagePromotions /></Layout>} />
+                    <Route path="/events/manage" element={<Layout title="Manage Events"><ManageEvents /></Layout>}/>
+                    <Route path="/manager/transactions" element={<Layout title="Manage Transactions"><ManagerTransactions /></Layout>} />
                 </Route>
 
-                {/* Default */}
-                <Route path="/" element={<Navigate to="/login" />} />
-                <Route path="*" element={<h2>Page Not Found</h2>} />
+                {/* --------------------------------------------------------
+                   DEFAULT ROUTES
+                --------------------------------------------------------- */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="*" element={<NotFound />} />
+
             </Routes>
 
             {/* Global QR modal (always mounted) */}

@@ -251,13 +251,16 @@ router.get(
                 amount,
                 operator,
                 page = 1,
-                limit = 10
+                limit = 10,
+
+                // NEW SORTING FIELDS
+                sortField = "createdAt",
+                sortOrder = "desc"
             } = req.query;
 
             const filters = {};
 
             // ---------------- FILTER: name ----------------
-            // Filter by utorid OR name (SQLite: case-sensitive only)
             if (name) {
                 filters.user = {
                     OR: [
@@ -316,6 +319,20 @@ router.get(
                 };
             }
 
+            // ---------------- SORTING (NEW) ----------------
+            const allowedSortFields = ["id", "amount", "type", "createdAt", "utorid"];
+            const field = allowedSortFields.includes(sortField) ? sortField : "createdAt";
+
+            const direction = sortOrder === "asc" ? "asc" : "desc";
+
+            // Prisma: if sorting by related field (utorid)
+            let orderBy;
+            if (field === "utorid") {
+                orderBy = { user: { utorid: direction } };
+            } else {
+                orderBy = { [field]: direction };
+            }
+
             // ---------------- COUNT ----------------
             const count = await prisma.transaction.count({ where: filters });
 
@@ -324,7 +341,7 @@ router.get(
                 where: filters,
                 skip: (page - 1) * limit,
                 take: Number(limit),
-                orderBy: { id: "asc" },
+                orderBy, // <--- NEW SORTING
                 include: {
                     user: true,
                     promotions: true
@@ -343,16 +360,111 @@ router.get(
                     promotionIds: t.promotions.map(p => p.id),
                     suspicious: t.suspicious ?? false,
                     remark: t.remark ?? "",
-                    createdBy: t.createdBy
+                    processed: t.processed,
+                    createdBy: t.createdBy,
+                    createdAt: t.createdAt
                 };
 
-                // Show 'redeemed' for redemption transactions
                 if (t.type === "redemption") {
                     obj.redeemed = Math.abs(t.amount);
                 }
 
                 return obj;
             });
+
+            return res.json({
+                count,
+                results: formatted
+            });
+
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Server error" });
+        }
+    }
+);
+
+
+
+// ---------------- /transactions/processed (GET) ----------------
+// Clearance: Cashier+
+router.get(
+    "/processed",
+    authenticate,
+    requireClearance(["cashier", "manager", "superuser"]),
+    async (req, res) => {
+        try {
+            const {
+                name,
+                type,
+                processed,
+                page = 1,
+                limit = 10,
+
+                // NEW for sorting
+                sortField = "id",
+                sortOrder = "asc"
+            } = req.query;
+
+            const filters = {};
+
+            // ---------------- FILTER: name ----------------
+            if (name) {
+                filters.user = {
+                    OR: [
+                        { utorid: { contains: name } },
+                        { name: { contains: name } }
+                    ]
+                };
+            }
+
+            // ---------------- FILTER: type ----------------
+            if (type) {
+                filters.type = type;
+            }
+
+            // ---------------- FILTER: processed ----------------
+            if (processed !== undefined) {
+                filters.processed = processed === "true";
+            }
+
+            // ---------------- VALID SORT FIELDS ----------------
+            const allowedSortFields = ["id", "amount", "type", "createdAt"];
+            const sortBy = allowedSortFields.includes(sortField)
+                ? sortField
+                : "id";
+
+            const order = sortOrder === "desc" ? "desc" : "asc";
+
+            // ---------------- COUNT ----------------
+            const count = await prisma.transaction.count({ where: filters });
+
+            // ---------------- RESULTS ----------------
+            const results = await prisma.transaction.findMany({
+                where: filters,
+                skip: (page - 1) * limit,
+                take: Number(limit),
+                orderBy: { [sortBy]: order },
+                include: {
+                    user: true,
+                    promotions: true
+                }
+            });
+
+            // ---------------- FORMAT RESPONSE ----------------
+            const formatted = results.map(t => ({
+                id: t.id,
+                utorid: t.user.utorid,
+                amount: t.amount,
+                type: t.type,
+                relatedId: t.relatedId ?? undefined,
+                promotionIds: t.promotions.map(p => p.id),
+                suspicious: t.suspicious ?? false,
+                remark: t.remark ?? "",
+                createdBy: t.createdBy,
+                processed: t.processed ?? false,
+                createdAt: t.createdAt
+            }));
 
             return res.json({
                 count,
