@@ -147,6 +147,7 @@ export default function ManagerTransactions() {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
                     },
+                    credentials: "include",
                     body: JSON.stringify({ suspicious: flag }),
                 }
             );
@@ -187,6 +188,7 @@ export default function ManagerTransactions() {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
                     },
+                    credentials: "include",
                     body: JSON.stringify({ processed: true }),
                 }
             );
@@ -231,6 +233,7 @@ export default function ManagerTransactions() {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify({
                     utorid: selectedTx.utorid,
                     type: "adjustment",
