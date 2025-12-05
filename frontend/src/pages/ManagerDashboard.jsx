@@ -3,6 +3,7 @@ import {
     PieChart, Pie, Cell
 } from "recharts";
 import { useEffect, useState } from "react";
+import { promoTypeLabel } from "../utils/format/promotion";
 
 const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -186,7 +187,7 @@ export default function ManagerDashboard() {
                                 {promosEndingSoon.map(promo => (
                                     <tr key={promo.id}>
                                         <td>{promo.name}</td>
-                                        <td>{promo.type}</td>
+                                        <td>{promoTypeLabel(promo.type)}</td>
                                         <td>{new Date(promo.endTime).toLocaleString()}</td>
                                     </tr>
                                 ))}
