@@ -11,6 +11,7 @@ async function patchPassword(oldPw, newPw) {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"
         },
+        credentials: "include",
         body: JSON.stringify({
             old: oldPw,
             new: newPw

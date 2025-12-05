@@ -75,6 +75,7 @@ function Redemption() {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
             },
+            credentials: "include",
             body: JSON.stringify({
                 type: "redemption",
                 amount: redeemInt

@@ -17,7 +17,8 @@ async function getAllPromos(page, limit, filters) {
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`
-        }
+        },
+        credentials: "include"
     });
     const data = await res.json();
 
@@ -37,7 +38,8 @@ async function getPromoId(id) {
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`
-        }
+        },
+        credentials: "include"
     });
     const data = await res.json();
 
@@ -57,7 +59,8 @@ async function delPromoId(id) {
         method: "DELETE",
         headers: {
             Authorization: `Bearer ${token}`
-        }
+        },
+        credentials: "include"
     });
 
     // Handle request failure
@@ -79,6 +82,7 @@ async function patchPromoId(id, body) {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"
         },
+        credentials: "include",
         body: JSON.stringify(body)
     });
     const data = await res.json();
@@ -96,6 +100,7 @@ async function postPromo(body) {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"
         },
+        credentials: "include",
         body: JSON.stringify(body)
     });
     const data = await res.json();

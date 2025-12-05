@@ -87,6 +87,7 @@ export default function Transfers() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
+        credentials: "include",
         body: JSON.stringify({ type: "transfer", amount: amountInt })
       });
 

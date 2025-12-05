@@ -11,6 +11,7 @@ async function processRedemption(id) {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"
         },
+        credentials: "include",
         body: JSON.stringify({
             processed: true
         })
@@ -41,7 +42,8 @@ async function getUnprocessed(page, name, limit) {
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`
-        }
+        },
+        credentials: "include"
     });
     const data = await res.json();
 

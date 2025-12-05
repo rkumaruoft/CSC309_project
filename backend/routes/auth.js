@@ -27,9 +27,7 @@ router.post("/tokens", async (req, res) => {
             return res.status(400).json({ message: "Missing utorid or password" });
         }
 
-        const user = await prisma.user.findUnique({
-            where: { utorid }
-        });
+        const user = await prisma.user.findUnique({ where: { utorid } });
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -44,28 +42,44 @@ router.post("/tokens", async (req, res) => {
             return res.status(401).json({ message: "Incorrect password" });
         }
 
-        // Block unverified accounts
         if (!user.verified) {
             return res.status(403).json({ error: "Account not verified" });
         }
 
-        // Update lastLogin
+        // lastLogin update
         await prisma.user.update({
             where: { id: user.id },
             data: { lastLogin: new Date().toISOString() }
         });
 
-        const token = jwt.sign(
+        // ---------------- ACCESS TOKEN (10 mins) ----------------
+        const accessToken = jwt.sign(
             { id: user.id, role: user.role },
             JWT_SECRET,
-            { expiresIn: "2h" }
+            { expiresIn: "10m" }
         );
 
-        const expires = new Date(Date.now() + 2 * 60 * 60 * 1000);
+        // ---------------- REFRESH TOKEN (7 days) ----------------
+        const refreshToken = jwt.sign(
+            { id: user.id },
+            JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        // ---------------- SET HTTPONLY COOKIE ----------------
+        res.cookie("refresh_token", refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+
+        // Expiration info for frontend
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
         return res.json({
-            token,
-            expiresAt: expires.toISOString()
+            token: accessToken,
+            expiresAt: expiresAt.toISOString(),
         });
 
     } catch (err) {
@@ -397,5 +411,59 @@ router.post("/verify/resend", async (req, res) => {
         return res.status(500).json({ error: "Server error" });
     }
 });
+
+// ---------------- /auth/refresh (POST) ----------------
+router.post("/refresh", async (req, res) => {
+    try {
+        const token = req.cookies.refresh_token;
+
+        if (!token) {
+            return res.status(401).json({ error: "Missing refresh token" });
+        }
+
+        let payload;
+        try {
+            payload = jwt.verify(token, JWT_SECRET);
+        } catch {
+            return res.status(403).json({ error: "Invalid refresh token" });
+        }
+
+        // refresh token only contains user.id
+        const user = await prisma.user.findUnique({ where: { id: payload.id } });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const accessToken = jwt.sign(
+            { id: user.id, role: user.role },
+            JWT_SECRET,
+            { expiresIn: "10m" }
+        );
+
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+        return res.json({
+            token: accessToken,
+            expiresAt: expiresAt.toISOString(),
+        });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Server error" });
+    }
+});
+
+// ---------------- /auth/logout (POST) ----------------
+router.post("/logout", (req, res) => {
+    res.clearCookie("refresh_token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+    });
+
+    return res.status(200).json({ message: "Logged out" });
+});
+
 
 export default router;

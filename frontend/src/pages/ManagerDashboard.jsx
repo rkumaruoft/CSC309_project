@@ -15,7 +15,8 @@ export default function ManagerDashboard() {
             const token = localStorage.getItem("token");
 
             const res = await fetch(`${VITE_BACKEND_URL}/analytics/manager`, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` },
+                credentials: "include"
             });
 
             if (!res.ok) {

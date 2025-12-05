@@ -108,7 +108,10 @@ export default function ManageUsers() {
             try {
                 const res = await fetch(
                     `${VITE_BACKEND_URL}/users?page=${page}&limit=10&search=${debouncedSearch}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                        credentials: "include"
+                    }
                 );
 
                 if (!res.ok) throw new Error("Failed to load users");
@@ -138,6 +141,7 @@ export default function ManageUsers() {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify(payload),
         });
 
@@ -205,6 +209,7 @@ export default function ManageUsers() {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify(newUser),
             });
 
