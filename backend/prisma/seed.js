@@ -262,7 +262,10 @@ async function main() {
             where: { userId: u.id }
         });
 
-        const totalPoints = txSum._sum.amount || 0;
+        let totalPoints = txSum._sum.amount || 0;
+        if (totalPoints <= 0){
+            totalPoints = 0;
+        }
 
         await prisma.user.update({
             where: { id: u.id },

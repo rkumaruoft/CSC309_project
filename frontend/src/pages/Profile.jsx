@@ -66,6 +66,7 @@ function Profile() {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
+            credentials: "include",
             body: formChanges
         });
         const data = await res.json();

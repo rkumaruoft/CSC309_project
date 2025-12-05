@@ -23,7 +23,9 @@ export default function CashierDashboard() {
             try {
                 const res = await fetch(
                     `${VITE_BACKEND_URL}/promotions?page=1&limit=3`,
-                    { headers }
+                    { headers,
+                        credentials: "include"
+                     }
                 );
                 if (!res.ok) return setPromos([]);
 

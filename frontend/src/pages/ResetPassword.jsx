@@ -32,6 +32,7 @@ export default function ResetPassword() {
             const res = await fetch(`${VITE_BACKEND_URL}/auth/resets/${resetToken}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ utorid, password })
             });
 
