@@ -35,6 +35,7 @@ export const AuthProvider = ({ children }) => {
             try {
                 const res = await fetch(`${BACKEND_URL}/users/me`, {
                     headers: { Authorization: `Bearer ${token}` },
+                    credentials: "include"
                 });
 
                 if (!res.ok) {
@@ -76,6 +77,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const res = await fetch(`${BACKEND_URL}/users/me`, {
                 headers: { Authorization: `Bearer ${token}` },
+                credentials : "include"
             });
 
             if (!res.ok) {
