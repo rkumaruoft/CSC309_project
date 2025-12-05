@@ -14,13 +14,6 @@ export default function Transfers() {
 
   const amountRef = useRef();
 
-    // Autofill data if navigated from link
-    const [searchParams] = useSearchParams();
-    const urlId = searchParams.get("utorid");
-    if (urlId) {
-        setToId(urlId);
-    }
-
   useEffect(() => {
     setError("");
   }, [toId, amount]);

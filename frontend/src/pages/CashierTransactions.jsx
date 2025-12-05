@@ -18,10 +18,14 @@ export default function CashierTransactions() {
 
     // Autofill data if navigated from link
     const [searchParams] = useSearchParams();
-    const urlId = searchParams.get("utorid");
-    if (urlId) {
-        setTid(urlId);
-    }
+
+    useEffect(() => {
+        // Autofill data if navigated from link
+        const urlId = searchParams.get("utorid");
+        if (urlId) {
+            setTid(urlId);
+        }
+    }, [location.searchParams]);
 
   useEffect(() => {
     // load promotions (one-time). We request a large limit so cashiers
