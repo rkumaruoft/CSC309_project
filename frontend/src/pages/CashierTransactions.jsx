@@ -24,7 +24,8 @@ export default function CashierTransactions() {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(`${VITE_BACKEND_URL}/promotions?type=onetime&page=1&limit=50`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          credentials: "include"
         });
         if (!res.ok) {
           setPromos([]);

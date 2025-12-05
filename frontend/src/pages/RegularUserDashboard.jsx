@@ -24,7 +24,7 @@ export default function RegularUserDashboard() {
             try {
                 const res = await fetch(
                     `${VITE_BACKEND_URL}/promotions?page=1&limit=3`,
-                    { headers }
+                    { headers, credentials: "include" }
                 );
                 if (!res.ok) return setPromos([]);
 
@@ -42,7 +42,7 @@ export default function RegularUserDashboard() {
             try {
                 const res = await fetch(
                     `${VITE_BACKEND_URL}/users/me/transactions?page=1&limit=5`,
-                    { headers }
+                    { headers, credentials: "include" }
                 );
                 if (!res.ok) return setRecentTxs([]);
 

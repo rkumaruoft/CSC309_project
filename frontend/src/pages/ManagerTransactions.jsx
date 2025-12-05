@@ -66,6 +66,7 @@ export default function ManagerTransactions() {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
+                    credentials: "include"
                 }
             );
 
