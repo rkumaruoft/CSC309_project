@@ -84,7 +84,7 @@ export default function HeaderBase({ brand, links = [] }) {
                                     </li>
                                     <li>
                                         <Link className="dropdown-item" to="/events/myEvents">
-                                            Manage Events
+                                            My Events
                                         </Link>
                                     </li>
                                 </ul>

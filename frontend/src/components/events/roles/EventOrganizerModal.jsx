@@ -37,11 +37,7 @@ export default function EventOrganizerModal({
     const [awardMode, setAwardMode] = useState(null);
     const [submitted, setSubmitted] = useState(false);
     const [editAttempted, setEditAttempted] = useState(false);
-    const [rewardModel, setRewardModel] = useState({
-        utorid: null,
-        type: "event",
-        amount: 0
-    });
+    
     const [addMemb, setAddingMemb] = useState(false);
     const [addMode, setAddMode] = useState(null);
     const [showAllButtons, setSAB] = useState(true);
@@ -54,6 +50,7 @@ export default function EventOrganizerModal({
     const timeNow = new Date();
     const startTime = new Date(selectedEvent.startTime);
     const endTime = new Date(selectedEvent.endTime);
+
     const isHappening = startTime <= timeNow && timeNow <= endTime;
     const hasNotEnded = timeNow <= endTime;
     useEffect(() => {
@@ -85,16 +82,16 @@ export default function EventOrganizerModal({
     }
 
     async function rewardGuest(){
-        const data = await rewardGuestBackend(selectedEvent, rewardModel);
+        const payload = { type: "event", amount: parseInt(rewardAmount)};
+        if (awardMode === "single"){
+            payload.utorid = recipientId;
+        }
+        const data = await rewardGuestBackend(selectedEvent, payload);
         if (data.error != null){
             setError(data.error);
             return;
         }
-        setRewardModel({
-            utorid: null,
-            type: "event",
-            amount: 0
-        });
+
         await refreshEventDetails();
         setSubmitted(true);
         setRecipientId("");
@@ -138,7 +135,7 @@ export default function EventOrganizerModal({
                                           addMode={addMode} setAddMode={setAddMode} addMemb={addMemb} setAddingMemb={setAddingMemb}
                                           guestId={guestId} setGuestId={setGuestId} submitted={submitted} setSubmitted={setSubmitted}
                                           recipientId={recipientId} setRecipientId={setRecipientId} rewardAmount={rewardAmount} setRewardAmount={setRewardAmount}
-                                          rewardModel={rewardModel} setRewardModel={setRewardModel} addGuest={addGuest} remGuest={remGuest}
+                                          addGuest={addGuest} remGuest={remGuest} 
                                           rewardGuest={rewardGuest} role={role} addOrganizer={addOrganizer} isHappening={isHappening} hasNotEnded={hasNotEnded}          
                          />
                         </>
@@ -164,7 +161,7 @@ export default function EventOrganizerModal({
                     </div>
                 ) : (
                     <>
-                        { !selectedEvent.published && (<Button variant="success" onClick={() => {publish_event(setPublish)}}>publish</Button>)}
+                        { !selectedEvent.published && (<Button variant="success" onClick={() => {publish_event(setPublish)}}>Publish</Button>)}
                         <Button variant="info" onClick={() => {setIsEditing(true); setError(null);}}>Edit Info</Button>
                         <Button variant="danger" onClick={() => {setShowModal(false); setError(null); setGuestId(""); setOrganizer(""); setRewardAmount("");}}>Close</Button>
                     </>
