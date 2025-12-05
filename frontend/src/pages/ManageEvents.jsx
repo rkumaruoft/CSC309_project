@@ -64,7 +64,7 @@ export default function ManageEvents() {
         setShowDeleteConfirm(false);
         setShowModal(false);
         setError(null);
-        fetchEvents(pageNum);
+        fetchEvents(1);
     }
 
     async function addOrganizer(organizer, setOrganizer){

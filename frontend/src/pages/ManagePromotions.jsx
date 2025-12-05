@@ -93,8 +93,8 @@ function ManagePromotions() {
         // Sort entries according to datatype
         let sorted = data.results.sort((a, b) => {
             // Should be strings
-            const fieldA = a[sorting].toUpperCase();
-            const fieldB = b[sorting].toUpperCase();
+            const fieldA = a[sorting];
+            const fieldB = b[sorting];
 
             if (fieldA < fieldB) {
                 return -1;
@@ -228,7 +228,7 @@ function ManagePromotions() {
     useEffect(() => {
         setSorting(null);
         setOrder(null);
-        sortPromotions(pageNum);
+        sortPromotions(1);
         setError(null);
     }, [location, filters, limit]);
 
