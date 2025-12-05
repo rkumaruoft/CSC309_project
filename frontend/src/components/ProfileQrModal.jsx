@@ -10,7 +10,7 @@ export default function ProfileQrModal() {
     function getQR() {
         // Format the qr code
         const id = user.utorid;  // Should always be valid since you must be logged in to access
-        const baseScannedUrl = "https://app.bananacreds.ca/cashier/redemption";
+        const baseScannedUrl = "https://app.bananacreds.ca/cashier/transactions";
         const scannedUrl = `${baseScannedUrl}?utorid=${encodeURIComponent(id)}`
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(scannedUrl)}`;
         return qrUrl;
