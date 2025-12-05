@@ -1169,13 +1169,14 @@ router.get(
             }
 
             // -------- Fetch user's organized events with filters --------
-            const user = await prisma.user.findUnique({
+            let user = {}
+            if (isBasic){
+            user = await prisma.user.findUnique({
                 where: { id: userId },
                 select: {
                     organizedEvents: {
                         select: {
                             event: {
-                                where: filters, 
                                 include: {
                                     guests: { include: { user: true } },
                                     organizers: { include: { user: true } }
@@ -1185,6 +1186,25 @@ router.get(
                     }
                 }
             });
+            }
+            else{
+                user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: {
+                    organizedEvents: {
+                        select: {
+                            event: {
+                                select: filters,
+                                include: {
+                                    guests: { include: { user: true } },
+                                    organizers: { include: { user: true } }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            }
 
             if (!user) return res.status(404).json({ error: "User not found" });
 
@@ -1245,7 +1265,6 @@ router.get(
             return res.status(200).json({ count: total, results });
 
         } catch (err) {
-            console.log(err);
             return res.status(500).json({ error: err.message });
         }
     }

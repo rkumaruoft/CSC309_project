@@ -96,7 +96,7 @@ export default function OrganizedEvents() {
             <Col xs="auto">
                 <Form.Label className="d-flex flex-row">
                     <div className="d-flex align-items-center gap-1">
-                    <h1>My Events</h1>
+                    <h1>Events organized by me</h1>
                     { (user.role === "manager") &&
                         <Image
                             src="../../filter.svg"
@@ -129,10 +129,10 @@ export default function OrganizedEvents() {
                     </thead>
 
                     <tbody>
-                        {events === null ? (
+                        {events.length === 0 ? (
                             <tr>
                                 <td colSpan={5} className="text-center">
-                                        Page {pageNum} could not be found
+                                    You do not currently organize any events.
                                 </td>
                             </tr>
                         ) : (
