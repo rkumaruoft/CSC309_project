@@ -78,8 +78,8 @@ function Promotions() {
         // Sort entries according to datatype
         let sorted = data.results.sort((a, b) => {
             // Should be strings
-            const fieldA = a[sorting].toUpperCase();
-            const fieldB = b[sorting].toUpperCase();
+            const fieldA = a[sorting];
+            const fieldB = b[sorting];
 
             if (fieldA < fieldB) {
                 return -1;

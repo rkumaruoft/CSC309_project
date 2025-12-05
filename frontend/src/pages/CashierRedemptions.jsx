@@ -83,8 +83,8 @@ function CashierRedemptions() {
             let sorted = data.results.sort((a, b) => {
                 // Should be strings/numbers
                 if (typeof a[sorting] === "string") {
-                    const fieldA = a[sorting].toUpperCase();
-                    const fieldB = b[sorting].toUpperCase();
+                    const fieldA = a[sorting];
+                    const fieldB = b[sorting];
 
                     if (fieldA < fieldB) {
                         return -1;
