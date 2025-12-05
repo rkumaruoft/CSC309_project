@@ -1140,13 +1140,15 @@ router.get(
                 });
             }
 
-            // -------- Build filters --------
+            // -------- Build event filters --------
             const filters = {};
             const isManager = ["manager", "superuser"].includes(req.user.role);
             const isBasic = ["regular", "cashier"].includes(req.user.role);
 
+            // Basic users only see published events
             if (isBasic) filters.published = true;
 
+            // Managers may filter by published=true/false
             if (isManager && published !== undefined) {
                 filters.published = (published === "true");
             }
@@ -1168,51 +1170,53 @@ router.get(
                     : { gte: now };
             }
 
-            // -------- Fetch user's organized events with filters --------
-            const user = await prisma.user.findUnique({
-                where: { id: userId },
-                select: {
-                    organizedEvents: {
-                        select: {
-                            event: {
-                                where: filters, 
-                                include: {
-                                    guests: { include: { user: true } },
-                                    organizers: { include: { user: true } }
-                                }
-                            }
+            // ---------------------------------------------------------
+            // Fetch all events this user organizes, applying filters
+            // ---------------------------------------------------------
+            const organizers = await prisma.eventOrganizer.findMany({
+                where: {
+                    userId: userId,
+                    event: filters
+                },
+                include: {
+                    event: {
+                        include: {
+                            guests: { include: { user: true } },
+                            organizers: { include: { user: true } }
                         }
                     }
                 }
             });
 
-            if (!user) return res.status(404).json({ error: "User not found" });
+            // Extract event objects
+            let events = organizers
+                .map(o => o.event)
+                .filter(Boolean);
 
-            // Extract events from the organizedEvents relation
-            const allMatchingEvents = user.organizedEvents
-                .map(({ event }) => event)
-                .filter(e => e !== null);
-
-            // -------- Filter out full events for regular/cashier --------
-            let filtered = allMatchingEvents;
-
+            // ---------------------------------------------------------
+            // Hide full events for regular/cashier
+            // ---------------------------------------------------------
             if (!isManager) {
                 const hideFull = showFull === undefined || showFull === "false";
                 if (hideFull) {
-                    filtered = filtered.filter(e =>
+                    events = events.filter(e =>
                         e.capacity == null || e.guests.length < e.capacity
                     );
                 }
             }
 
-            // -------- Pagination --------
-            const total = filtered.length;
+            // ---------------------------------------------------------
+            // Pagination
+            // ---------------------------------------------------------
+            const total = events.length;
             const startIdx = (pageNum - 1) * limitNum;
-            const paged = filtered.slice(startIdx, startIdx + limitNum);
+            const paged = events.slice(startIdx, startIdx + limitNum);
 
-            // -------- Format response --------
+            // ---------------------------------------------------------
+            // Response formatting
+            // ---------------------------------------------------------
             const results = paged.map(e => {
-                const obj = {
+                const base = {
                     id: e.id,
                     name: e.name,
                     description: e.description,
@@ -1234,12 +1238,12 @@ router.get(
                 };
 
                 if (isManager) {
-                    obj.pointsRemain = e.pointsRemain;
-                    obj.pointsAwarded = e.pointsAwarded;
-                    obj.published = e.published;
+                    base.pointsRemain = e.pointsRemain;
+                    base.pointsAwarded = e.pointsAwarded;
+                    base.published = e.published;
                 }
 
-                return obj;
+                return base;
             });
 
             return res.status(200).json({ count: total, results });
