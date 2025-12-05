@@ -21,6 +21,7 @@ export default function formatEvents(events) {
         new_event.endTime = event.endTime;
         new_event.capacity = (event.capacity == null) ? "unlimited" : event.capacity;
         new_event.availableSeats = remaining_seats;
+        new_event.hasGuests = event.numGuests > 0;
         new_event.pointsRemain = event.pointsRemain || "-1";
         new_event.points = points;
         new_event.published = event.published;
