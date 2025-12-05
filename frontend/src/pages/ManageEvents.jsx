@@ -49,7 +49,7 @@ export default function ManageEvents() {
         // Success - close modal and refresh events list
         setSubmitted(true);
         setError("");
-        fetchEvents(1); // Go to first page to see the new event
+        await fetchEvents(1); // Go to first page to see the new event
     }
 
     async function deleteEvent() {
@@ -64,7 +64,7 @@ export default function ManageEvents() {
         setShowDeleteConfirm(false);
         setShowModal(false);
         setError(null);
-        fetchEvents(1);
+        await fetchEvents(pageNum);
     }
 
     async function addOrganizer(organizer, setOrganizer){
@@ -74,6 +74,7 @@ export default function ManageEvents() {
             setError(res.error);
         }
 
+        await refreshEventDetails();
         setOrganizer(null);
         return;
     }
@@ -294,7 +295,7 @@ export default function ManageEvents() {
         </Modal>
         <DeleteConfirmModal 
             show={showDeleteConfirm}
-            onClose={() => {setShowDeleteConfirm(false); setShowModal(true); setError(false);}}
+            onClose={() => {setShowDeleteConfirm(false); setShowModal(true); setError(null);}}
             onConfirm={deleteEvent}
             eventName={selectedEvent?.name}
             error={error}

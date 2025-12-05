@@ -102,10 +102,10 @@ export default function AvailableEvents() {
                     </thead>
 
                     <tbody>
-                        {events === null ? (
+                        {events.length === 0 ? (
                             <tr>
                                 <td colSpan={5} className="text-center">
-                                        Page {pageNum} could not be found
+                                    There are currently no events available or to attend.
                                 </td>
                             </tr>
                         ) : (

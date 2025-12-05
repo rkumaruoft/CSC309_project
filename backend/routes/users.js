@@ -1170,23 +1170,44 @@ router.get(
                     : { gte: now };
             }
 
-            // ---------------------------------------------------------
-            // Fetch all events this user organizes, applying filters
-            // ---------------------------------------------------------
-            const organizers = await prisma.eventOrganizer.findMany({
-                where: {
-                    userId: userId,
-                    event: filters
-                },
-                include: {
-                    event: {
-                        include: {
-                            guests: { include: { user: true } },
-                            organizers: { include: { user: true } }
+            // -------- Fetch user's organized events with filters --------
+            let user = {}
+            if (isBasic){
+                user = await prisma.user.findUnique({
+                    where: { id: userId },
+                    select: {
+                        organizedEvents: {
+                            select: {
+                                event: {
+                                    include: {
+                                        guests: { include: { user: true } },
+                                        organizers: { include: { user: true } }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                )
+            }
+            else{
+                user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: {
+                    organizedEvents: {
+                        select: {
+                            event: {
+                                select: filters,
+                                include: {
+                                    guests: { include: { user: true } },
+                                    organizers: { include: { user: true } }
+                                }
+                            }
                         }
                     }
                 }
             });
+            }
 
             // Extract event objects
             let events = organizers
@@ -1249,7 +1270,6 @@ router.get(
             return res.status(200).json({ count: total, results });
 
         } catch (err) {
-            console.log(err);
             return res.status(500).json({ error: err.message });
         }
     }
