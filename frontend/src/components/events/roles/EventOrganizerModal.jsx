@@ -111,7 +111,6 @@ export default function EventOrganizerModal({
     }
 
     const published = (selectedEvent.published ? "yes" : "no");
-    
     return (
         <>
             <Modal.Body>
@@ -135,7 +134,7 @@ export default function EventOrganizerModal({
                                           addMode={addMode} setAddMode={setAddMode} addMemb={addMemb} setAddingMemb={setAddingMemb}
                                           guestId={guestId} setGuestId={setGuestId} submitted={submitted} setSubmitted={setSubmitted}
                                           recipientId={recipientId} setRecipientId={setRecipientId} rewardAmount={rewardAmount} setRewardAmount={setRewardAmount}
-                                          addGuest={addGuest} remGuest={remGuest} 
+                                          addGuest={addGuest} remGuest={remGuest} hasGuests={selectedEvent.hasGuests}
                                           rewardGuest={rewardGuest} role={role} addOrganizer={addOrganizer} isHappening={isHappening} hasNotEnded={hasNotEnded}          
                          />
                         </>

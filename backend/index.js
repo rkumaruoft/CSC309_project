@@ -9,9 +9,9 @@ const app = express();
 
 
 const allowedOrigins = [
-    process.env.FRONTEND_URL
+    process.env.FRONTEND_URL,
+    "http://localhost:5173/"
 ];
-
 const corsOptions = {
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -24,7 +24,6 @@ const corsOptions = {
     allowedHeaders: "Content-Type, Authorization",
     credentials: true
 };
-console.log(corsOptions)
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 app.use(express.json());

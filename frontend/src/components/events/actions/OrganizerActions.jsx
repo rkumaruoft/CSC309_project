@@ -4,6 +4,8 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
     error, 
     setError,
 
+    hasGuests,
+
     awardMode, 
     setAwardMode,
 
@@ -45,7 +47,7 @@ export default function OrganizerActions({ // PARAMETERS TO UPDATE ORGANIZER INF
 }){
     return (
         <>
-            {awardMode === null && isHappening && showAllButtons && (
+            {awardMode === null && isHappening && hasGuests && showAllButtons && (
             <div className="d-flex flex-column w-55 mb-3">
             <h5 style={{fontWeight: "bold"}}>Award points</h5>
                 <div className="d-flex flex-row gap-1">
